@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.similarity</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Similarity metrics and concept-reduction helpers.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Similarity metrics and concept-reduction helpers."""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -96,7 +96,7 @@
 <div class="viewcode-block" id="jaccard_similarity">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/similarity/index.html#owlapy.utils.jaccard_similarity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">jaccard_similarity</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the Jaccard similarity between two sets.</span>
+<span class="w">    </span><span class="sd">"""Calculate the Jaccard similarity between two sets.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        set1: First set</span>
@@ -104,7 +104,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Jaccard similarity: intersection(set1, set2) / union(set1, set2)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">set2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span>
     <span class="n">intersection</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">set2</span><span class="p">))</span>
@@ -116,7 +116,7 @@
 <div class="viewcode-block" id="f1_set_similarity">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/similarity/index.html#owlapy.utils.f1_set_similarity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">f1_set_similarity</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the F1 score between two sets.</span>
+<span class="w">    </span><span class="sd">"""Calculate the F1 score between two sets.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        set1: First set (treated as ground truth)</span>
@@ -124,7 +124,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        F1 score</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">set2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span>
 
@@ -166,7 +166,7 @@
 <div class="viewcode-block" id="concept_reducer">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/similarity/index.html#owlapy.utils.concept_reducer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">concept_reducer</span><span class="p">(</span><span class="n">concepts</span><span class="p">:</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span><span class="n">Callable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reduces a set of concepts by applying a binary operation to each pair of concepts.</span>
 
 <span class="sd">    Args:</span>
@@ -184,7 +184,7 @@
 
 <span class="sd">    Note:</span>
 <span class="sd">        The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">result</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
@@ -197,7 +197,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">concept_reducer_properties</span><span class="p">(</span>
         <span class="n">concepts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Map a set of owl concepts and a set of properties into OWL Restrictions</span>
 
 <span class="sd">    Args:</span>
@@ -208,10 +208,10 @@
 
 <span class="sd">    Returns: List of OWL Restrictions</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">&quot;Concepts must be an Iterable&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">&quot;properties must be an Iterable&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">Callable</span><span class="p">),</span> <span class="s2">&quot;cls must be an Callable&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">"Concepts must be an Iterable"</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">"properties must be an Iterable"</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">Callable</span><span class="p">),</span> <span class="s2">"cls must be an Callable"</span>
     <span class="k">assert</span> <span class="n">cardinality</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="n">result</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>

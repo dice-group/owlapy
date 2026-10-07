@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.iri</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;OWL IRI&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""OWL IRI"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
@@ -118,20 +118,25 @@
 <div class="viewcode-block" id="IRI">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IRI</span><span class="p">(</span><span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_IRI</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An IRI, consisting of a namespace and a remainder.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_namespace&#39;</span><span class="p">,</span> <span class="s1">&#39;_remainder&#39;</span><span class="p">,</span> <span class="s1">&#39;__weakref__&#39;</span>
+<span class="w">    </span><span class="sd">"""An IRI, consisting of a namespace and a remainder."""</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">'_namespace'</span><span class="p">,</span> <span class="s1">'_remainder'</span><span class="p">,</span> <span class="s1">'__weakref__'</span>
     <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">_namespace</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_remainder</span><span class="p">:</span> <span class="nb">str</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">],</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">is_file_path</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">],</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">is_file_path</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">):</span>
             <span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">ns</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected 'namespace' to be an instance of str or Namespaces, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">namespace</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instead (</span><span class="si">{</span><span class="n">namespace</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">is_file_path</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">namespace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;It should be a valid IRI based on /, :, and #. &quot;</span>
-                                                      <span class="s2">&quot;Are you saving a file? - then set is_file_path=True &quot;</span>
-                                                      <span class="s2">&quot;to overcome this assertion.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="n">namespace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"#"</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"It should be a valid IRI based on /, :, and #. "</span>
+                                  <span class="s2">"Are you saving a file? - then set is_file_path=True "</span>
+                                  <span class="s2">"to overcome this assertion."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected 'remainder' to be an instance of str, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instead (</span><span class="si">{</span><span class="n">remainder</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
         <span class="c1"># https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="n">namespace</span><span class="p">)</span>
@@ -140,29 +145,32 @@
 <div class="viewcode-block" id="IRI.create">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.create">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="n">iri</span><span class="p">:</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_file_path</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="o">|</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Input must be a string or an instance of Namespaces. Currently, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">if</span> <span class="n">is_file_path</span> <span class="ow">and</span> <span class="n">iri</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">is_file_path</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="n">iri</span><span class="p">:</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_file_path</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'IRI'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected 'iri' to be an instance of str or Namespaces, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instead (</span><span class="si">{</span><span class="n">iri</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_file_path</span> <span class="ow">and</span> <span class="n">iri</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">is_file_path</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">remainder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span><span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Remainder must be string. Currently, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected 'remainder' to be an instance of str, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instead (</span><span class="si">{</span><span class="n">remainder</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">remainder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> \
-                <span class="sa">f</span><span class="s2">&quot;iri must be string if remainder is None. Currently, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected 'iri' to be an instance of str when 'remainder' is None, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instead (</span><span class="si">{</span><span class="n">iri</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
             <span class="c1"># Extract remainder from input string</span>
-            <span class="k">assert</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">iri</span><span class="p">,</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input must contain /</span><span class="se">\t</span><span class="s2">Currently, </span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2">. Are you saving a file? - then &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;set is_file_path=True to overcome this assertion.&quot;</span><span class="p">)</span>
-            <span class="c1"># assert &quot;:&quot; in iri, &quot;Input must contain :&quot;</span>
-            <span class="k">assert</span> <span class="s2">&quot; &quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">iri</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Input must not contain whitespace. Currently:</span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">),</span> <span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s2">"/"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">iri</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input must contain /</span><span class="se">\t</span><span class="s2">Currently, </span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2">. Are you saving a file? - then "</span>
+                                  <span class="sa">f</span><span class="s2">"set is_file_path=True to overcome this assertion."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">" "</span> <span class="ow">in</span> <span class="n">iri</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input must not contain whitespace. Currently:</span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">"/"</span><span class="p">),</span> <span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">":"</span><span class="p">),</span> <span class="n">iri</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">"#"</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="n">iri</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">index</span><span class="p">],</span> <span class="n">iri</span><span class="p">[</span><span class="n">index</span><span class="p">:])</span></div>
 
 
 <div class="viewcode-block" id="IRI.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;IRI(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"IRI(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span></div>
 
 
 <div class="viewcode-block" id="IRI.__eq__">
@@ -176,17 +184,17 @@
 <div class="viewcode-block" id="IRI.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;IRI&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">"IRI"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="IRI.is_nothing">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_nothing">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is equal to the IRI that owl:Nothing is named with.</span>
+<span class="w">        </span><span class="sd">"""Determines if this IRI is equal to the IRI that owl:Nothing is named with.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :True if this IRI is equal to &lt;http://www.w3.org/2002/07/owl#Nothing&gt; and otherwise False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">iri</span></div>
 
@@ -194,11 +202,11 @@
 <div class="viewcode-block" id="IRI.is_thing">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_thing">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is equal to the IRI that owl:Thing is named with.</span>
+<span class="w">        </span><span class="sd">"""Determines if this IRI is equal to the IRI that owl:Thing is named with.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :True if this IRI is equal to &lt;http://www.w3.org/2002/07/owl#Thing&gt; and otherwise False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">iri</span></div>
 
@@ -206,20 +214,20 @@
 <div class="viewcode-block" id="IRI.is_reserved_vocabulary">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_reserved_vocabulary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_reserved_vocabulary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with</span>
+<span class="w">        </span><span class="sd">"""Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with</span>
 <span class="sd">        &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; or &lt;http://www.w3.org/2000/01/rdf-schema#&gt; or</span>
 <span class="sd">        &lt;http://www.w3.org/2001/XMLSchema#&gt; or &lt;http://www.w3.org/2002/07/owl#&gt;.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            True if the IRI is in the reserved vocabulary, otherwise False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">==</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">==</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDF</span>
                 <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">==</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDFS</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">==</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="IRI.as_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.as_iri">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'IRI'</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -227,49 +235,49 @@
 <div class="viewcode-block" id="IRI.as_str">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.as_str">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        CD: Should be deprecated.</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The string that specifies the IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The string that specifies the IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The string corresponding to the remainder of the IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span>
 
 <div class="viewcode-block" id="IRI.get_namespace">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.get_namespace">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The namespace as string.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span></div>
 
 
 <div class="viewcode-block" id="IRI.get_remainder">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.get_remainder">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The remainder (coincident with NCName usually) for this IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span></div>
 </div>
 

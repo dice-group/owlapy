@@ -1,0 +1,455 @@
+owlapy.owl_reasoner_nir
+=======================
+
+.. py:module:: owlapy.owl_reasoner_nir
+
+.. autoapi-nested-parse::
+
+   NIR (Neural Instance Retrieval) reasoner.
+
+   TBox / hierarchy / role queries are delegated to a symbolic fallback
+   (:class:`~owlapy.owl_reasoner.StructuralReasoner` on an owlready2
+   :class:`~owlapy.owl_ontology.Ontology`, otherwise
+   :class:`~owlapy.owl_reasoner_rdflib.RDFLibReasoner`). Instance retrieval for
+   class expressions longer than ``symbolic_max_length`` is answered by a
+   pretrained NIR encoder (Transformer / LSTM / GRU / Composite) implemented in
+   :mod:`owlapy.nir`.
+
+   This is the neural counterpart of :class:`~owlapy.owl_reasoner.EBR`, but it
+   does **not** use ``NeuralOntology`` / ``dicee``. It scores class expressions
+   in DL syntax against DeCaL (or any CSV) entity embeddings.
+
+   Requires ``torch``, ``transformers``, and ``pandas``. Those are imported lazily
+   so installing owlapy without them still works.
+
+   .. rubric:: Example
+
+   ::
+
+       from owlapy.owl_ontology import Ontology
+       from owlapy.owl_reasoner import NIRReasoner
+
+       onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+       reasoner = NIRReasoner(
+           onto,
+           model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+           embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+       )
+       instances = set(reasoner.instances(named_class))
+
+   Pretrained encoders and DeCaL embeddings:
+   https://files.dice-research.org/datasets/CNIR/trained_models.zip
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.owl_reasoner_nir.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.owl_reasoner_nir.NIRReasoner
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: NIRReasoner(ontology: Union[owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, str], *, model_path: str, embeddings_path: Optional[str] = None, dataset_dir: Optional[str] = None, th: float = 0.5, chunksize: int = 1024, symbolic_max_length: int = 1, model: Optional[str] = None, device: Optional[str] = None, fallback_reasoner: Optional[owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner] = None)
+
+   Bases: :py:obj:`owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner`
+
+
+   Neural instance retriever as an :class:`~owlapy.abstracts.AbstractOWLReasoner`.
+
+   :param ontology: Ontology whose named individuals are scored.
+   :param model_path: Directory of a pretrained NIR encoder (``config.json`` + weights + tokenizer).
+   :param embeddings_path: Path to ``*entity_embeddings.csv``, or a dataset / embeddings directory.
+                           Composite also loads a sibling ``*relation_embeddings.csv`` when present.
+   :param dataset_dir: Alternative to ``embeddings_path``: a NIR dataset folder (``kb/``, ``embeddings/``).
+   :param th: Membership threshold (paper default 0.5).
+   :param chunksize: Individuals scored per forward pass.
+   :param symbolic_max_length: Concepts of this length or shorter are answered by the fallback
+                               symbolic reasoner. Encoders were trained on longer expressions; named classes
+                               (length 1) should stay symbolic.
+   :param model: Optional architecture name (``transformer`` / ``lstm`` / ``gru`` / ``composite``).
+                 Inferred from ``config.json`` when omitted.
+   :param device: Torch device. Defaults to CUDA when available.
+   :param fallback_reasoner: Optional TBox reasoner. Defaults to StructuralReasoner / RDFLibReasoner.
+
+
+   .. py:attribute:: ontology
+
+
+   .. py:attribute:: th
+      :value: 0.5
+
+
+
+   .. py:attribute:: chunksize
+      :value: 1024
+
+
+
+   .. py:attribute:: symbolic_max_length
+      :value: 1
+
+
+
+   .. py:attribute:: dls_renderer
+
+
+   .. py:attribute:: device
+
+
+   .. py:attribute:: model_name
+
+
+   .. py:attribute:: all_individuals_arr
+
+
+   .. py:attribute:: all_ind_embs
+
+
+   .. py:method:: reset_retrieval_stats() -> None
+
+
+   .. py:method:: retrieval_stats() -> dict
+
+
+   .. py:method:: membership_scores(expr: Union[str, owlapy.class_expression.OWLClassExpression])
+
+
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Gets the individuals which are instances of the specified class expression.
+
+      :param ce: The class expression whose instances are to be retrieved.
+      :param direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
+                     retrieved (False).
+      :param timeout: Time limit in seconds until results must be returned, else empty set is returned.
+
+      :returns: If direct is True, each named individual j where the set of reasoner axioms entails
+                DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
+                entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then
+                nothing returned.
+
+
+
+   .. py:method:: get_root_ontology() -> owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology
+
+      Gets the "root" ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
+      this ontology and its import's closure.
+
+
+
+   .. py:method:: __str__() -> str
+
+
+   .. py:method:: data_property_domains(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the class expressions that are the direct or indirect domains of this property with respect to the
+         imports closure of the root ontology.
+
+      :param pe: The property expression whose domains are to be retrieved.
+      :param direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+                     (False).
+
+      :returns: Let N = equivalent_classes(DataSomeValuesFrom(pe rdfs:Literal)). If direct is True: then if N is not
+                empty then the return value is N, else the return value is the result of
+                super_classes(DataSomeValuesFrom(pe rdfs:Literal), true). If direct is False: then the result of
+                super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.
+                (Note, rdfs:Literal is the top datatype).
+
+
+
+   .. py:method:: object_property_domains(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the class expressions that are the direct or indirect domains of this property with respect to the
+         imports closure of the root ontology.
+
+      :param pe: The property expression whose domains are to be retrieved.
+      :param direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+                     (False).
+
+      :returns: Let N = equivalent_classes(ObjectSomeValuesFrom(pe owl:Thing)). If direct is True: then if N is not empty
+                then the return value is N, else the return value is the result of
+                super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of
+                super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.
+
+
+
+   .. py:method:: object_property_ranges(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the class expressions that are the direct or indirect ranges of this property with respect to the
+         imports closure of the root ontology.
+
+      :param pe: The property expression whose ranges are to be retrieved.
+      :param direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+                     (False).
+
+      :returns: Let N = equivalent_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing)). If direct is True: then
+                if N is not empty then the return value is N, else the return value is the result of
+                super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), true). If direct is False: then
+                the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N
+                if N is non-empty.
+
+
+
+   .. py:method:: equivalent_classes(ce: owlapy.class_expression.OWLClassExpression, *args, **kwargs) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the class expressions that are equivalent to the specified class expression with respect to the set of
+      reasoner axioms.
+
+      :param ce: The class expression whose equivalent classes are to be retrieved.
+
+      :returns: All class expressions C where the root ontology imports closure entails EquivalentClasses(ce C). If ce is
+                not a class name (i.e. it is an anonymous class expression) and there are no such classes C then there will
+                be no result. If ce is unsatisfiable with respect to the set of reasoner axioms then  owl:Nothing, i.e. the
+                bottom node, will be returned.
+
+
+
+   .. py:method:: disjoint_classes(ce: owlapy.class_expression.OWLClassExpression, *args, **kwargs) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the class expressions that are disjoint with specified class expression with respect to the set of
+      reasoner axioms.
+
+      :param ce: The class expression whose disjoint classes are to be retrieved.
+
+      :returns: All class expressions D where the set of reasoner axioms entails EquivalentClasses(D ObjectComplementOf(ce))
+                or StrictSubClassOf(D ObjectComplementOf(ce)).
+
+
+
+   .. py:method:: different_individuals(ind: owlapy.owl_individual.OWLNamedIndividual) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Gets the individuals that are different from the specified individual with respect to the set of
+      reasoner axioms.
+
+      :param ind: The individual whose different individuals are to be retrieved.
+
+      :returns: All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).
+
+
+
+   .. py:method:: same_individuals(ind: owlapy.owl_individual.OWLNamedIndividual) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Gets the individuals that are the same as the specified individual with respect to the set of
+      reasoner axioms.
+
+      :param ind: The individual whose same individuals are to be retrieved.
+
+      :returns: All individuals x where the root ontology imports closure entails SameIndividual(ind x).
+
+
+
+   .. py:method:: equivalent_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
+
+      Gets the simplified object properties that are equivalent to the specified object property with respect
+      to the set of reasoner axioms.
+
+      :param op: The object property whose equivalent object properties are to be retrieved.
+
+      :returns: All simplified object properties e where the root ontology imports closure entails
+                EquivalentObjectProperties(op e). If op is unsatisfiable with respect to the set of reasoner axioms
+                then owl:bottomDataProperty will be returned.
+
+
+
+   .. py:method:: equivalent_data_properties(dp: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the data properties that are equivalent to the specified data property with respect to the set of
+      reasoner axioms.
+
+      :param dp: The data property whose equivalent data properties are to be retrieved.
+
+      :returns: All data properties e where the root ontology imports closure entails EquivalentDataProperties(dp e).
+                If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will
+                be returned.
+
+
+
+   .. py:method:: data_property_values(e: owlapy.owl_object.OWLEntity, pe: owlapy.owl_property.OWLDataProperty, *args, **kwargs) -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the data property values for the specified entity and data property expression.
+
+      :param e: The owl entity (usually an individual) that is the subject of the data property values.
+      :param pe: The data property expression whose values are to be retrieved for the specified entity.
+
+      Note: Can be used to get values, for example, of 'label' property of owl entities such as classes and properties
+      too (not only individuals).
+
+      :returns: A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+                axioms entails DataPropertyAssertion(pe ind l).
+
+
+
+   .. py:method:: object_property_values(ind: owlapy.owl_individual.OWLNamedIndividual, pe: owlapy.owl_property.OWLObjectPropertyExpression, *args, **kwargs) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Gets the object property values for the specified individual and object property expression.
+
+      :param ind: The individual that is the subject of the object property values.
+      :param pe: The object property expression whose values are to be retrieved for the specified individual.
+
+      :returns: The named individuals such that for each individual j, the set of reasoner axioms entails
+                ObjectPropertyAssertion(pe ind j).
+
+
+
+   .. py:method:: sub_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class
+      expression with respect to the reasoner axioms.
+
+      :param ce: The class expression whose strict (direct) subclasses are to be retrieved.
+      :param direct: Specifies if the direct subclasses should be retrieved (True) or if the all subclasses
+                     (descendant) classes should be retrieved (False).
+
+      :returns: If direct is True, each class C where reasoner axioms entails DirectSubClassOf(C, ce). If direct is False,
+                each class C where reasoner axioms entails StrictSubClassOf(C, ce). If ce is equivalent to owl:Nothing then
+                nothing will be returned.
+
+
+
+   .. py:method:: super_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
+      class expression with respect to the imports closure of the root ontology.
+
+      :param ce: The class expression whose strict (direct) super classes are to be retrieved.
+      :param direct: Specifies if the direct super classes should be retrieved (True) or if the all super classes
+                     (ancestors) classes should be retrieved (False).
+
+      :returns: If direct is True, each class C where the set of reasoner axioms entails DirectSubClassOf(ce, C).
+                If direct is False, each class C where  set of reasoner axioms entails StrictSubClassOf(ce, C).
+                If ce is equivalent to owl:Thing then nothing will be returned.
+
+
+
+   .. py:method:: disjoint_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
+
+      Gets the simplified object properties that are disjoint with the specified object property with respect
+      to the set of reasoner axioms.
+
+      :param op: The object property whose disjoint object properties are to be retrieved.
+
+      :returns: All simplified object properties e where the root ontology imports closure entails
+                EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or
+                StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).
+
+
+
+   .. py:method:: disjoint_data_properties(dp: owlapy.owl_property.OWLDataProperty, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the data properties that are disjoint with the specified data property with respect
+      to the set of reasoner axioms.
+
+      :param dp: The data property whose disjoint data properties are to be retrieved.
+
+      :returns: All data properties e where the root ontology imports closure entails
+                EquivalentDataProperties(e DataPropertyComplementOf(dp)) or
+                StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).
+
+
+
+   .. py:method:: sub_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the set of named data properties that are the strict (potentially direct) subproperties of the
+      specified data property expression with respect to the imports closure of the root ontology.
+
+      :param dp: The data property whose strict (direct) subproperties are to be retrieved.
+      :param direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+                     (descendants) should be retrieved (False).
+
+      :returns: If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).
+                If direct is False, each property P where the set of reasoner axioms entails
+                StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be
+                returned.
+
+
+
+   .. py:method:: super_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the stream of data properties that are the strict (potentially direct) super properties of the
+      specified data property with respect to the imports closure of the root ontology.
+
+      :param dp: The data property whose super properties are to be retrieved.
+      :type dp: OWLDataProperty
+      :param direct: Specifies if the direct super properties should be retrieved (True) or if the all
+                     super properties (ancestors) should be retrieved (False).
+      :type direct: bool
+
+      :returns: Iterable of super properties.
+
+
+
+   .. py:method:: sub_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
+
+      Gets the stream of simplified object property expressions that are the strict (potentially direct)
+      subproperties of the specified object property expression with respect to the imports closure of the root
+      ontology.
+
+      :param op: The object property expression whose strict (direct) subproperties are to be retrieved.
+      :param direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+                     (descendants) should be retrieved (False).
+
+      :returns: If direct is True, simplified object property expressions, such that for each simplified object property
+                expression, P, the set of reasoner axioms entails DirectSubObjectPropertyOf(P, pe).
+                If direct is False, simplified object property expressions, such that for each simplified object property
+                expression, P, the set of reasoner axioms entails StrictSubObjectPropertyOf(P, pe).
+                If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.
+
+
+
+   .. py:method:: super_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False, *args, **kwargs) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
+
+      Gets the stream of object properties that are the strict (potentially direct) super properties of the
+      specified object property with respect to the imports closure of the root ontology.
+
+      :param op: The object property expression whose super properties are to be
+                 retrieved.
+      :type op: OWLObjectPropertyExpression
+      :param direct: Specifies if the direct super properties should be retrieved (True) or if the all
+                     super properties (ancestors) should be retrieved (False).
+      :type direct: bool
+
+      :returns: Iterable of super properties.
+
+
+
+   .. py:method:: types(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = False) -> Iterable
+
+      Gets the named classes which are (potentially direct) types of the specified named individual.
+
+      :param ind: The individual whose types are to be retrieved.
+      :param direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved
+                     (False).
+
+      :returns: If direct is True, each named class C where the set of reasoner axioms entails
+                DirectClassAssertion(C, ind). If direct is False, each named class C where the set of reasoner axioms
+                entails ClassAssertion(C, ind).
+
+
+
+   .. py:method:: data_property_ranges(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_data_ranges.OWLDataRange]
+
+      Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports
+      closure of the root ontology.
+
+      :param pe: The property expression whose ranges are to be retrieved.
+      :param direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+                     (False).
+
+      Returns:
+
+
+

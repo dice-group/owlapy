@@ -1,0 +1,642 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.nir &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.nir.composite" href="composite/index.html" />
+    <link rel="prev" title="owlapy.namespaces" href="../namespaces/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../agen_kg/index.html">owlapy.agen_kg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expressivity/index.html">owlapy.expressivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.nir</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="composite/index.html">owlapy.nir.composite</a></li>
+<li class="toctree-l5"><a class="reference internal" href="config/index.html">owlapy.nir.config</a></li>
+<li class="toctree-l5"><a class="reference internal" href="models/index.html">owlapy.nir.models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="nandnet/index.html">owlapy.nir.nandnet</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.nir.NIRComposite"><code class="docutils literal notranslate"><span class="pre">NIRComposite</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.config_class"><code class="docutils literal notranslate"><span class="pre">NIRComposite.config_class</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.config"><code class="docutils literal notranslate"><span class="pre">NIRComposite.config</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.loss_fn"><code class="docutils literal notranslate"><span class="pre">NIRComposite.loss_fn</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.input_size"><code class="docutils literal notranslate"><span class="pre">NIRComposite.input_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.individual_size"><code class="docutils literal notranslate"><span class="pre">NIRComposite.individual_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.NAND"><code class="docutils literal notranslate"><span class="pre">NIRComposite.NAND</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.Le"><code class="docutils literal notranslate"><span class="pre">NIRComposite.Le</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.Self"><code class="docutils literal notranslate"><span class="pre">NIRComposite.Self</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.Inverse"><code class="docutils literal notranslate"><span class="pre">NIRComposite.Inverse</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.batch_training"><code class="docutils literal notranslate"><span class="pre">NIRComposite.batch_training</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.projection_layer"><code class="docutils literal notranslate"><span class="pre">NIRComposite.projection_layer</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.head"><code class="docutils literal notranslate"><span class="pre">NIRComposite.head</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.activation"><code class="docutils literal notranslate"><span class="pre">NIRComposite.activation</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.find_innermost_parentheses"><code class="docutils literal notranslate"><span class="pre">NIRComposite.find_innermost_parentheses()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.process_negation"><code class="docutils literal notranslate"><span class="pre">NIRComposite.process_negation()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.get_expression_embedding"><code class="docutils literal notranslate"><span class="pre">NIRComposite.get_expression_embedding()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.parse_batch"><code class="docutils literal notranslate"><span class="pre">NIRComposite.parse_batch()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.parse_single"><code class="docutils literal notranslate"><span class="pre">NIRComposite.parse_single()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRComposite.forward"><code class="docutils literal notranslate"><span class="pre">NIRComposite.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.nir.NIRConfig"><code class="docutils literal notranslate"><span class="pre">NIRConfig</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.model_type"><code class="docutils literal notranslate"><span class="pre">NIRConfig.model_type</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.num_attention_heads"><code class="docutils literal notranslate"><span class="pre">NIRConfig.num_attention_heads</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.num_encoder_layers"><code class="docutils literal notranslate"><span class="pre">NIRConfig.num_encoder_layers</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.num_rnn_layers"><code class="docutils literal notranslate"><span class="pre">NIRConfig.num_rnn_layers</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.embedding_dim"><code class="docutils literal notranslate"><span class="pre">NIRConfig.embedding_dim</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.pe_dropout"><code class="docutils literal notranslate"><span class="pre">NIRConfig.pe_dropout</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.max_length"><code class="docutils literal notranslate"><span class="pre">NIRConfig.max_length</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.vocab_size"><code class="docutils literal notranslate"><span class="pre">NIRConfig.vocab_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.pad_token_id"><code class="docutils literal notranslate"><span class="pre">NIRConfig.pad_token_id</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.input_size"><code class="docutils literal notranslate"><span class="pre">NIRConfig.input_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.individual_size"><code class="docutils literal notranslate"><span class="pre">NIRConfig.individual_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.device"><code class="docutils literal notranslate"><span class="pre">NIRConfig.device</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.output_size"><code class="docutils literal notranslate"><span class="pre">NIRConfig.output_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.batch_training"><code class="docutils literal notranslate"><span class="pre">NIRConfig.batch_training</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRConfig.hidden_size"><code class="docutils literal notranslate"><span class="pre">NIRConfig.hidden_size</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.nir.NIRGRU"><code class="docutils literal notranslate"><span class="pre">NIRGRU</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.config_class"><code class="docutils literal notranslate"><span class="pre">NIRGRU.config_class</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.config"><code class="docutils literal notranslate"><span class="pre">NIRGRU.config</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.batch_training"><code class="docutils literal notranslate"><span class="pre">NIRGRU.batch_training</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.loss_fn"><code class="docutils literal notranslate"><span class="pre">NIRGRU.loss_fn</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.max_length"><code class="docutils literal notranslate"><span class="pre">NIRGRU.max_length</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.embedding"><code class="docutils literal notranslate"><span class="pre">NIRGRU.embedding</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.gru"><code class="docutils literal notranslate"><span class="pre">NIRGRU.gru</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.fc"><code class="docutils literal notranslate"><span class="pre">NIRGRU.fc</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.sigmoid"><code class="docutils literal notranslate"><span class="pre">NIRGRU.sigmoid</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRGRU.forward"><code class="docutils literal notranslate"><span class="pre">NIRGRU.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.nir.NIRLSTM"><code class="docutils literal notranslate"><span class="pre">NIRLSTM</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.config_class"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.config_class</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.config"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.config</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.batch_training"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.batch_training</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.loss_fn"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.loss_fn</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.max_length"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.max_length</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.embedding"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.embedding</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.lstm"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.lstm</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.fc"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.fc</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.sigmoid"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.sigmoid</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRLSTM.forward"><code class="docutils literal notranslate"><span class="pre">NIRLSTM.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.nir.NIRTransformer"><code class="docutils literal notranslate"><span class="pre">NIRTransformer</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.config_class"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.config_class</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.config"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.config</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.loss_fn"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.loss_fn</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.max_length"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.max_length</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.embedding"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.embedding</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.encoder"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.encoder</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.fc"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.fc</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.activation"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.activation</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.nir.NIRTransformer.forward"><code class="docutils literal notranslate"><span class="pre">NIRTransformer.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_nir/index.html">owlapy.owl_reasoner_nir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scripts/index.html">owlapy.scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.nir</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/nir/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.nir">
+<span id="owlapy-nir"></span><h1>owlapy.nir<a class="headerlink" href="#module-owlapy.nir" title="Link to this heading"></a></h1>
+<p>Inference-only NIR encoders used by <code class="xref py py-class docutils literal notranslate"><span class="pre">NIRReasoner</span></code>.</p>
+<p>Architectures match the pretrained HuggingFace checkpoints from
+<a class="reference external" href="https://github.com/fosterreproducibleresearch/NIR">https://github.com/fosterreproducibleresearch/NIR</a>
+(Transformer / LSTM / GRU / Composite).
+<code class="docutils literal notranslate"><span class="pre">torch</span></code> and <code class="docutils literal notranslate"><span class="pre">transformers</span></code> are imported when the classes are loaded.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="composite/index.html">owlapy.nir.composite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config/index.html">owlapy.nir.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/index.html">owlapy.nir.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nandnet/index.html">owlapy.nir.nandnet</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.nir.NIRComposite" title="owlapy.nir.NIRComposite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRComposite</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.nir.NIRConfig" title="owlapy.nir.NIRConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRConfig</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.nir.NIRGRU" title="owlapy.nir.NIRGRU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRGRU</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.nir.NIRLSTM" title="owlapy.nir.NIRLSTM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRLSTM</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.nir.NIRTransformer" title="owlapy.nir.NIRTransformer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRTransformer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.nir.</span></span><span class="sig-name descname"><span class="pre">NIRComposite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">transformers.PreTrainedModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.loss_fn">
+<span class="sig-name descname"><span class="pre">loss_fn</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.loss_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.input_size">
+<span class="sig-name descname"><span class="pre">input_size</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.input_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.individual_size">
+<span class="sig-name descname"><span class="pre">individual_size</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.individual_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.NAND">
+<span class="sig-name descname"><span class="pre">NAND</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.NAND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.Le">
+<span class="sig-name descname"><span class="pre">Le</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.Le" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.Self">
+<span class="sig-name descname"><span class="pre">Self</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.Self" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.Inverse">
+<span class="sig-name descname"><span class="pre">Inverse</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.Inverse" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.batch_training">
+<span class="sig-name descname"><span class="pre">batch_training</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.batch_training" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.projection_layer">
+<span class="sig-name descname"><span class="pre">projection_layer</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.projection_layer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.head">
+<span class="sig-name descname"><span class="pre">head</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.head" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.activation">
+<span class="sig-name descname"><span class="pre">activation</span></span><a class="headerlink" href="#owlapy.nir.NIRComposite.activation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.find_innermost_parentheses">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">find_innermost_parentheses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.find_innermost_parentheses" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.process_negation">
+<span class="sig-name descname"><span class="pre">process_negation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_embeddings_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">individual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.process_negation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.get_expression_embedding">
+<span class="sig-name descname"><span class="pre">get_expression_embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">innermost</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_embeddings_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings_mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.get_expression_embedding" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.parse_batch">
+<span class="sig-name descname"><span class="pre">parse_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_embeddings_dict_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.parse_batch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.parse_single">
+<span class="sig-name descname"><span class="pre">parse_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_embeddings_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encodings_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.parse_single" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRComposite.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind_emb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_embeddings_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRComposite.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.nir.</span></span><span class="sig-name descname"><span class="pre">NIRConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_attention_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_encoder_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_rnn_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">transformers.PretrainedConfig</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nir'</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.model_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.num_attention_heads">
+<span class="sig-name descname"><span class="pre">num_attention_heads</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.num_attention_heads" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.num_encoder_layers">
+<span class="sig-name descname"><span class="pre">num_encoder_layers</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.num_encoder_layers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.num_rnn_layers">
+<span class="sig-name descname"><span class="pre">num_rnn_layers</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.num_rnn_layers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.embedding_dim">
+<span class="sig-name descname"><span class="pre">embedding_dim</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">256</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.embedding_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.pe_dropout">
+<span class="sig-name descname"><span class="pre">pe_dropout</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.1</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.pe_dropout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">128</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.vocab_size">
+<span class="sig-name descname"><span class="pre">vocab_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">512</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.vocab_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.pad_token_id">
+<span class="sig-name descname"><span class="pre">pad_token_id</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.pad_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.input_size">
+<span class="sig-name descname"><span class="pre">input_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">256</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.input_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.individual_size">
+<span class="sig-name descname"><span class="pre">individual_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">256</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.individual_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.device">
+<span class="sig-name descname"><span class="pre">device</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.device" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.output_size">
+<span class="sig-name descname"><span class="pre">output_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.output_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.batch_training">
+<span class="sig-name descname"><span class="pre">batch_training</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.batch_training" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRConfig.hidden_size">
+<span class="sig-name descname"><span class="pre">hidden_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">128</span></span><a class="headerlink" href="#owlapy.nir.NIRConfig.hidden_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.nir.</span></span><span class="sig-name descname"><span class="pre">NIRGRU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRGRU" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">transformers.PreTrainedModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.batch_training">
+<span class="sig-name descname"><span class="pre">batch_training</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.batch_training" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.loss_fn">
+<span class="sig-name descname"><span class="pre">loss_fn</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.loss_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.embedding" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.gru">
+<span class="sig-name descname"><span class="pre">gru</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.gru" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.fc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.sigmoid">
+<span class="sig-name descname"><span class="pre">sigmoid</span></span><a class="headerlink" href="#owlapy.nir.NIRGRU.sigmoid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRGRU.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRGRU.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.nir.</span></span><span class="sig-name descname"><span class="pre">NIRLSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRLSTM" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">transformers.PreTrainedModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.batch_training">
+<span class="sig-name descname"><span class="pre">batch_training</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.batch_training" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.loss_fn">
+<span class="sig-name descname"><span class="pre">loss_fn</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.loss_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.embedding" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.lstm">
+<span class="sig-name descname"><span class="pre">lstm</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.lstm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.fc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.sigmoid">
+<span class="sig-name descname"><span class="pre">sigmoid</span></span><a class="headerlink" href="#owlapy.nir.NIRLSTM.sigmoid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRLSTM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRLSTM.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.nir.</span></span><span class="sig-name descname"><span class="pre">NIRTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">transformers.PreTrainedModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.loss_fn">
+<span class="sig-name descname"><span class="pre">loss_fn</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.loss_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.embedding" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.encoder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.fc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.activation">
+<span class="sig-name descname"><span class="pre">activation</span></span><a class="headerlink" href="#owlapy.nir.NIRTransformer.activation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.nir.NIRTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#owlapy.nir.NIRTransformer.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../namespaces/index.html" class="btn btn-neutral float-left" title="owlapy.namespaces" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="composite/index.html" class="btn btn-neutral float-right" title="owlapy.nir.composite" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

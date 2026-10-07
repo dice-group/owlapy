@@ -84,7 +84,7 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># Owlready2</span>
 <span class="c1"># Copyright (C) 2013-2019 Jean-Baptiste LAMY</span>
-<span class="c1"># LIMICS (Laboratoire d&#39;informatique médicale et d&#39;ingénierie des connaissances en santé), UMR_S 1142</span>
+<span class="c1"># LIMICS (Laboratoire d'informatique médicale et d'ingénierie des connaissances en santé), UMR_S 1142</span>
 <span class="c1"># University Paris 13, Sorbonne paris-Cité, Bobigny, France</span>
 
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
@@ -132,7 +132,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">LOADING</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">()</span>
     
   <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;entities&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">"entities"</span><span class="p">:</span>
       <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
       <span class="k">else</span><span class="p">:</span>
@@ -191,9 +191,9 @@
       <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_set_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">)</span>
       
   <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="n">onto</span> <span class="o">=</span> <span class="s2">&quot;, ontology = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span>
-    <span class="k">else</span><span class="p">:</span>                                                    <span class="n">onto</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;AllDisjoint([</span><span class="si">%s</span><span class="s2">]</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">Class</span><span class="p">)</span> <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">),</span> <span class="n">onto</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="n">onto</span> <span class="o">=</span> <span class="s2">", ontology = </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span>
+    <span class="k">else</span><span class="p">:</span>                                                    <span class="n">onto</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">return</span> <span class="s2">"AllDisjoint([</span><span class="si">%s</span><span class="s2">]</span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">Class</span><span class="p">)</span> <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">),</span> <span class="n">onto</span><span class="p">)</span></div>
 
     
 <span class="n">AllDifferent</span> <span class="o">=</span> <span class="n">AllDisjoint</span>
@@ -216,9 +216,9 @@
 <span class="c1">#   def __repr__(self):</span>
 <span class="c1">#     s = []</span>
 <span class="c1">#     for x in self.Classes:</span>
-<span class="c1">#       if isinstance(x, LogicalClassConstruct): s.append(&quot;(%s)&quot; % x)</span>
+<span class="c1">#       if isinstance(x, LogicalClassConstruct): s.append("(%s)" % x)</span>
 <span class="c1">#       else:                                    s.append(repr(x))</span>
-<span class="c1">#     return &quot;%s([%s])&quot; % (self.__class__.__name__, &quot;, &quot;.join(s))</span>
+<span class="c1">#     return "%s([%s])" % (self.__class__.__name__, ", ".join(s))</span>
 </pre></div>
 
            </div>

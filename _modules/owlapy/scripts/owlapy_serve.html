@@ -102,18 +102,18 @@
 <div class="viewcode-block" id="InferenceType">
 <a class="viewcode-back" href="../../../autoapi/owlapy/scripts/owlapy_serve/index.html#owlapy.scripts.owlapy_serve.InferenceType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InferenceType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">InferredClassAssertionAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span>
-    <span class="n">InferredSubClassAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span>
-    <span class="n">InferredDisjointClassesAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span>
-    <span class="n">InferredEquivalentClassAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span>
-    <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span>
-    <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span>
-    <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span>
-    <span class="n">InferredSubDataPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span>
-    <span class="n">InferredSubObjectPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span>
-    <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span>
-    <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span> <span class="o">=</span> <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span>
-    <span class="n">All</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span></div>
+    <span class="n">InferredClassAssertionAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredClassAssertionAxiomGenerator"</span>
+    <span class="n">InferredSubClassAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredSubClassAxiomGenerator"</span>
+    <span class="n">InferredDisjointClassesAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredDisjointClassesAxiomGenerator"</span>
+    <span class="n">InferredEquivalentClassAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredEquivalentClassAxiomGenerator"</span>
+    <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredEquivalentDataPropertiesAxiomGenerator"</span>
+    <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredEquivalentObjectPropertyAxiomGenerator"</span>
+    <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredInverseObjectPropertiesAxiomGenerator"</span>
+    <span class="n">InferredSubDataPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredSubDataPropertyAxiomGenerator"</span>
+    <span class="n">InferredSubObjectPropertyAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredSubObjectPropertyAxiomGenerator"</span>
+    <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredDataPropertyCharacteristicAxiomGenerator"</span>
+    <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span> <span class="o">=</span> <span class="s2">"InferredObjectPropertyCharacteristicAxiomGenerator"</span>
+    <span class="n">All</span> <span class="o">=</span> <span class="s2">"all"</span></div>
 
 
 
@@ -147,59 +147,59 @@
         <span class="c1"># Startup logic</span>
         <span class="c1"># Load the ontology</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ontology_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ontology file not found at </span><span class="si">{</span><span class="n">ontology_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ontology file not found at </span><span class="si">{</span><span class="n">ontology_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">ontology_path</span><span class="p">)</span>
 
         <span class="c1"># Validate and initialize the reasoner</span>
-        <span class="n">valid_reasoners</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Pellet&#39;</span><span class="p">,</span> <span class="s1">&#39;HermiT&#39;</span><span class="p">,</span> <span class="s1">&#39;JFact&#39;</span><span class="p">,</span> <span class="s1">&#39;Openllet&#39;</span><span class="p">]</span>
+        <span class="n">valid_reasoners</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Pellet'</span><span class="p">,</span> <span class="s1">'HermiT'</span><span class="p">,</span> <span class="s1">'JFact'</span><span class="p">,</span> <span class="s1">'Openllet'</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">reasoner_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_reasoners</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid reasoner &#39;</span><span class="si">{</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39;. Valid options are: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">valid_reasoners</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid reasoner '</span><span class="si">{</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">'. Valid options are: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">valid_reasoners</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">reasoner</span> <span class="o">=</span> <span class="n">SyncReasoner</span><span class="p">(</span><span class="n">ontology</span><span class="o">=</span><span class="n">ontology</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">=</span><span class="n">reasoner_name</span><span class="p">)</span>
 
         <span class="k">yield</span>
         <span class="n">stopJVM</span><span class="p">()</span>
 
-    <span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;OWLAPY API&quot;</span><span class="p">,</span> <span class="n">lifespan</span><span class="o">=</span><span class="n">lifespan</span><span class="p">)</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"OWLAPY API"</span><span class="p">,</span> <span class="n">lifespan</span><span class="o">=</span><span class="n">lifespan</span><span class="p">)</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/instances&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/instances"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_instances</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ClassIRIRequest</span><span class="p">):</span>
         <span class="n">class_iri</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">class_iri</span>
         <span class="n">owl_class</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">class_iri</span><span class="p">)</span>
         <span class="n">instances</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">owl_class</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">instance_iris</span> <span class="o">=</span> <span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="n">instance_iris</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"instances"</span><span class="p">:</span> <span class="n">instance_iris</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/classes&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/classes"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_classes</span><span class="p">():</span>
         <span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="n">classes</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"classes"</span><span class="p">:</span> <span class="n">classes</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/object_properties&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/object_properties"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_object_properties</span><span class="p">():</span>
         <span class="n">object_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;object_properties&quot;</span><span class="p">:</span> <span class="n">object_properties</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"object_properties"</span><span class="p">:</span> <span class="n">object_properties</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/data_properties&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/data_properties"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_data_properties</span><span class="p">():</span>
         <span class="n">data_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data_properties&quot;</span><span class="p">:</span> <span class="n">data_properties</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data_properties"</span><span class="p">:</span> <span class="n">data_properties</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/individuals&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/individuals"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_individuals</span><span class="p">():</span>
         <span class="n">individuals</span> <span class="o">=</span> <span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;individuals&quot;</span><span class="p">:</span> <span class="n">individuals</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"individuals"</span><span class="p">:</span> <span class="n">individuals</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/abox&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/abox"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_abox</span><span class="p">():</span>
         <span class="n">abox</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">get_abox_axioms</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;abox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">abox</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"abox"</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">abox</span><span class="p">]}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/tbox&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/tbox"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_tbox</span><span class="p">():</span>
         <span class="n">tbox</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">get_tbox_axioms</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tbox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">tbox</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"tbox"</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">tbox</span><span class="p">]}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/infer_axioms&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/infer_axioms"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_axioms</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">InfrenceTypeRequest</span><span class="p">):</span>
         <span class="n">inference_type</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">inference_type</span>
         <span class="k">if</span> <span class="n">inference_type</span> <span class="o">==</span> <span class="n">InferenceType</span><span class="o">.</span><span class="n">All</span><span class="p">:</span>
@@ -209,7 +209,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inferred_axioms</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">infer_axioms</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">inference_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;inferred_axioms&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">inferred_axioms</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"inferred_axioms"</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">inferred_axioms</span><span class="p">]}</span>
 
     <span class="k">return</span> <span class="n">app</span></div>
 
@@ -218,15 +218,15 @@
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../../autoapi/owlapy/scripts/owlapy_serve/index.html#owlapy.scripts.owlapy_serve.main">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Start OWLAPY API server.&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--path_kb&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Path to the ontology file&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--reasoner&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;HermiT&#39;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Reasoner to use (Pellet, HermiT, JFact, Openllet)&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--host&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Host to listen on&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Port to listen on&#39;</span><span class="p">)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">'Start OWLAPY API server.'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--path_kb'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">'Path to the ontology file'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--reasoner'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">'HermiT'</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">'Reasoner to use (Pellet, HermiT, JFact, Openllet)'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--host'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">'0.0.0.0'</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">'Host to listen on'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--port'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">'Port to listen on'</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path_kb</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">reasoner</span><span class="p">)</span>
@@ -234,7 +234,7 @@
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 

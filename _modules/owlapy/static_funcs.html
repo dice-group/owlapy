@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.static_funcs</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Static functions for general purposes.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Static functions for general purposes."""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">resources</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
@@ -98,17 +98,17 @@
 <div class="viewcode-block" id="move">
 <a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.move">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;Move&quot; an imported class to the current module by setting the classes __module__ attribute.</span>
+<span class="w">    </span><span class="sd">""""Move" an imported class to the current module by setting the classes __module__ attribute.</span>
 
 <span class="sd">    This is useful for documentation purposes to hide internal packages in sphinx.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        args: List of classes to move.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">currentframe</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">currentframe</span><span class="p">()</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">f_back</span>
-    <span class="n">mod</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">f_globals</span><span class="p">[</span><span class="s1">&#39;__name__&#39;</span><span class="p">]</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">f_globals</span><span class="p">[</span><span class="s1">'__name__'</span><span class="p">]</span>
     <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="bp">cls</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="n">mod</span></div>
 
@@ -118,16 +118,16 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.download_external_files">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_external_files</span><span class="p">(</span><span class="n">ftp_link</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">ftp_link</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">ftp_link</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">'..'</span><span class="p">))</span>
     <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">file_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])):</span>
-        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;curl&#39;</span><span class="p">,</span> <span class="s1">&#39;-O&#39;</span><span class="p">,</span> <span class="n">ftp_link</span><span class="p">])</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">'curl'</span><span class="p">,</span> <span class="s1">'-O'</span><span class="p">,</span> <span class="n">ftp_link</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
-            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;-xf&#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"Windows"</span><span class="p">:</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">'tar'</span><span class="p">,</span> <span class="s1">'-xf'</span><span class="p">,</span> <span class="n">file_name</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;unzip&#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">])</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">'unzip'</span><span class="p">,</span> <span class="n">file_name</span><span class="p">])</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">file_name</span><span class="p">))</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">current_dir</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">)</span></div>
 
@@ -136,16 +136,16 @@
 <div class="viewcode-block" id="startJVM">
 <a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.startJVM">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">startJVM</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the JVM with jar dependencies. This method is called automatically on object initialization,</span>
-<span class="sd">    if the JVM is not started yet.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Start the JVM with jar dependencies. This method is called automatically on object initialization,</span>
+<span class="sd">    if the JVM is not started yet."""</span>
 
-    <span class="c1"># Access the jar_dependencies folder inside the &#39;owlapy&#39; package</span>
-    <span class="k">with</span> <span class="n">resources</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s1">&#39;owlapy&#39;</span><span class="p">,</span> <span class="s1">&#39;jar_dependencies&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">jar_folder_path</span><span class="p">:</span>
+    <span class="c1"># Access the jar_dependencies folder inside the 'owlapy' package</span>
+    <span class="k">with</span> <span class="n">resources</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s1">'owlapy'</span><span class="p">,</span> <span class="s1">'jar_dependencies'</span><span class="p">)</span> <span class="k">as</span> <span class="n">jar_folder_path</span><span class="p">:</span>
         <span class="n">jar_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">jar_folder_path</span><span class="p">)</span>
         <span class="n">jar_files</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.jar&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.jar'</span><span class="p">)</span>
         <span class="p">]</span>
 
     <span class="c1"># Start JVM with the found jar files</span>
@@ -156,7 +156,7 @@
 <div class="viewcode-block" id="stopJVM">
 <a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.stopJVM">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">stopJVM</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype."""</span>
     <span class="k">if</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
         <span class="n">jpype</span><span class="o">.</span><span class="n">detachThreadFromJVM</span><span class="p">()</span>
         <span class="n">jpype</span><span class="o">.</span><span class="n">shutdownJVM</span><span class="p">()</span></div>

@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.nnf</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Negation Normal Form and Top-Level CNF/DNF transformation for OWLClassExpression.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Negation Normal Form and Top-Level CNF/DNF transformation for OWLClassExpression."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span>
 
@@ -120,12 +120,12 @@
 <div class="viewcode-block" id="NNF">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.NNF">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NNF</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class contains functions to transform a Class Expression into Negation Normal Form.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""This class contains functions to transform a Class Expression into Negation Normal Form."""</span>
 <div class="viewcode-block" id="NNF.get_class_nnf">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.NNF.get_class_nnf">[docs]</a>
     <span class="nd">@singledispatchmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_class_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Class Expression to Negation Normal Form. Operands will be sorted.</span>
+<span class="w">        </span><span class="sd">"""Convert a Class Expression to Negation Normal Form. Operands will be sorted.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ce: Class Expression.</span>
@@ -133,7 +133,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Class Expression in Negation Normal Form.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -312,14 +312,14 @@
 <div class="viewcode-block" id="get_top_level_cnf">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.get_top_level_cnf">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_cnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</span>
+<span class="w">    </span><span class="sd">"""Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        ce: Class Expression.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Class Expression in Top-Level Conjunctive Normal Form.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
 
@@ -328,14 +328,14 @@
 <div class="viewcode-block" id="get_top_level_dnf">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.get_top_level_dnf">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_dnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</span>
+<span class="w">    </span><span class="sd">"""Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        ce: Class Expression.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Class Expression in Top-Level Disjunctive Normal Form.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
 
@@ -344,7 +344,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
                         <span class="n">type_a</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">],</span>
                         <span class="n">type_b</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Transforms a class expression (that&#39;s already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.</span>
+<span class="w">    </span><span class="sd">""" Transforms a class expression (that's already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.</span>
 <span class="sd">    Here type_a specifies the operand which should be distributed inwards over type_b.</span>
 
 <span class="sd">    Conjunctive Normal form:</span>
@@ -353,7 +353,7 @@
 <span class="sd">    Disjunctive Normal form:</span>
 <span class="sd">        type_a = OWLObjectIntersectionOf</span>
 <span class="sd">        type_b = OWLObjectUnionOf</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">distributive_law</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">type_a</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">op</span><span class="p">])</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
@@ -386,7 +386,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">ce</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Top-Level CNF/DNF only applicable on class expressions&#39;</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Top-Level CNF/DNF only applicable on class expressions'</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
 </pre></div>
 
            </div>

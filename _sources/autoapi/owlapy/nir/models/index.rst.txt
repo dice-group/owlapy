@@ -1,0 +1,145 @@
+owlapy.nir.models
+=================
+
+.. py:module:: owlapy.nir.models
+
+.. autoapi-nested-parse::
+
+   NIR encoder architectures (inference). Weight-compatible with the original NIR checkpoints.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.nir.models.PositionalEncoding
+   owlapy.nir.models.NIRTransformer
+   owlapy.nir.models.NIRLSTM
+   owlapy.nir.models.NIRGRU
+
+
+Module Contents
+---------------
+
+.. py:class:: PositionalEncoding(d_model: int, dropout: float = 0.1, max_length: int = 128)
+
+   Bases: :py:obj:`torch.nn.Module`
+
+
+   Sinusoidal positional encoding used by :class:`NIRTransformer`.
+
+
+   .. py:attribute:: dropout
+
+
+   .. py:method:: forward(x: torch.Tensor) -> torch.Tensor
+
+
+.. py:class:: NIRTransformer(config)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: encoder
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: activation
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None)
+
+
+.. py:class:: NIRLSTM(config, batch_training=True)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: batch_training
+      :value: True
+
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: lstm
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: sigmoid
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None, mask=None)
+
+
+.. py:class:: NIRGRU(config, batch_training=True)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: batch_training
+      :value: True
+
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: gru
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: sigmoid
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None, mask=None)
+
+

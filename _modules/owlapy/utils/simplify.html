@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.simplify</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Syntactic simplification of OWLClassExpression (redundancy removal, factorization, absorption).&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Syntactic simplification of OWLClassExpression (redundancy removal, factorization, absorption)."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat</span>
@@ -124,13 +124,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.nnf</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_top_level_dnf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.ordering</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConceptOperandSorter</span><span class="p">,</span> <span class="n">_sort_by_ordered_owl_object</span><span class="p">,</span> <span class="n">combine_nary_expressions</span>
 
-<span class="n">_O</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_O&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
+<span class="n">_O</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'_O'</span><span class="p">)</span>  <span class="c1">#:</span>
 
 
 <div class="viewcode-block" id="get_remaining">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/simplify/index.html#owlapy.utils.get_remaining">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_remaining</span><span class="p">(</span><span class="n">original_set</span><span class="p">,</span> <span class="n">common_part</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used in factorization function &#39;factor_nary_expression&#39;.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Used in factorization function 'factor_nary_expression'."""</span>
     <span class="n">remaining</span> <span class="o">=</span> <span class="n">original_set</span> <span class="o">-</span> <span class="n">common_part</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">remaining</span> <span class="o">=</span> <span class="n">remaining</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
@@ -144,11 +144,11 @@
 <div class="viewcode-block" id="factor_nary_expression">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/simplify/index.html#owlapy.utils.factor_nary_expression">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">factor_nary_expression</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">],</span> <span class="n">transform_to_dnf_on_first_iteration</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This</span>
+<span class="w">    </span><span class="sd">"""Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This</span>
 <span class="sd">    factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)</span>
-<span class="sd">    for that.&quot;&quot;&quot;</span>
+<span class="sd">    for that."""</span>
 
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">])),</span> <span class="s2">&quot;Expression must be an OWLObjectIntersectionOf or an OWLObjectUnionOf&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">])),</span> <span class="s2">"Expression must be an OWLObjectIntersectionOf or an OWLObjectUnionOf"</span>
 
     <span class="k">if</span> <span class="n">transform_to_dnf_on_first_iteration</span><span class="p">:</span>
         <span class="n">expr</span> <span class="o">=</span> <span class="n">get_top_level_dnf</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
@@ -208,7 +208,7 @@
             <span class="c1"># type has any common expression. The moment we find a common expression we perform a factorization for</span>
             <span class="c1"># those 2 nary expressions and depending on the length of the operands to process we decide whether to</span>
             <span class="c1"># return the factorization or go through another cycle of factorization using the union of the</span>
-            <span class="c1"># localized factorization with what&#39;s left from other operands.</span>
+            <span class="c1"># localized factorization with what's left from other operands.</span>
             <span class="n">i_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">i</span><span class="p">}:</span>
                 <span class="n">j_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
@@ -240,7 +240,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_factor_negation_outof_oneofs</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factor negation for objectOneOf expression</span>
+<span class="w">    </span><span class="sd">"""Factor negation for objectOneOf expression</span>
 <span class="sd">        E.g. #1: ¬{a} ⊓ ¬{b} ⊓ ¬{c}  =&gt; ¬({a} ⊔ {b} ⊔ {c}) =&gt; ¬{a ⊔ b ⊔ c}</span>
 <span class="sd">        E.g. #2:  ¬{a} ⊔ ¬{b} =&gt; ¬({a} ⊓ {b}) =&gt; ¬(⊥) =&gt; ⊤    // considering that a != b</span>
 
@@ -248,7 +248,7 @@
 <span class="sd">        example 2 is not semantically valid unless proven that a != b.</span>
 <span class="sd">        P.S: Comparing individuals will require a reasoner. We will leave that when implementing the semantic</span>
 <span class="sd">        simplifier.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nary_exp</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">neg_one_of</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">others</span> <span class="o">=</span> <span class="p">[]</span>
@@ -287,7 +287,7 @@
 <div class="viewcode-block" id="CESimplifier">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/simplify/index.html#owlapy.utils.CESimplifier">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CESimplifier</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.</span>
+<span class="w">    </span><span class="sd">"""Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.</span>
 <span class="sd">        Simplifications include:</span>
 <span class="sd">        - Merging redundant cardinality restrictions</span>
 <span class="sd">        - Merging redundant existential restrictions</span>
@@ -298,7 +298,7 @@
 
 <span class="sd">        Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is</span>
 <span class="sd">        unique as long as its name is unique.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># TODO AB: This simplifier considers only syntactic simplifications (CWA). It can be extended to consider semantic</span>
     <span class="c1">#          simplifications. This will require passing a reasoner to access TBox information.</span>
@@ -348,7 +348,7 @@
         <span class="c1"># if isinstance(restriction, OWLObjectExactCardinality):</span>
             <span class="c1"># TODO AB: implement solution when we have exact cardinality restrictions. Need to take in consideration</span>
             <span class="c1">#          scenarios when the cardinality in this kind of restrictions is subsumed by min/max cardinality restriction.</span>
-            <span class="c1">#          Immediate idea includes a lot of &quot;ifs&quot; which does not feel right. Find a better way if possible.</span>
+            <span class="c1">#          Immediate idea includes a lot of "ifs" which does not feel right. Find a better way if possible.</span>
 
 
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">cardinality</span><span class="p">,</span>
@@ -790,7 +790,7 @@
 <div class="viewcode-block" id="simplify_class_expression">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/simplify/index.html#owlapy.utils.simplify_class_expression">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">simplify_class_expression</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplify a class expression by removing redundant expressions and sorting operands.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Simplify a class expression by removing redundant expressions and sorting operands."""</span>
     <span class="k">return</span> <span class="n">transformer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
 
 </pre></div>

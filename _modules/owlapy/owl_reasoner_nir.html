@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owl_reasoner_nir &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.owl_reasoner_nir</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.owl_reasoner_nir</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""NIR (Neural Instance Retrieval) reasoner.</span>
+
+<span class="sd">TBox / hierarchy / role queries are delegated to a symbolic fallback</span>
+<span class="sd">(:class:`~owlapy.owl_reasoner.StructuralReasoner` on an owlready2</span>
+<span class="sd">:class:`~owlapy.owl_ontology.Ontology`, otherwise</span>
+<span class="sd">:class:`~owlapy.owl_reasoner_rdflib.RDFLibReasoner`). Instance retrieval for</span>
+<span class="sd">class expressions longer than ``symbolic_max_length`` is answered by a</span>
+<span class="sd">pretrained NIR encoder (Transformer / LSTM / GRU / Composite) implemented in</span>
+<span class="sd">:mod:`owlapy.nir`.</span>
+
+<span class="sd">This is the neural counterpart of :class:`~owlapy.owl_reasoner.EBR`, but it</span>
+<span class="sd">does **not** use ``NeuralOntology`` / ``dicee``. It scores class expressions</span>
+<span class="sd">in DL syntax against DeCaL (or any CSV) entity embeddings.</span>
+
+<span class="sd">Requires ``torch``, ``transformers``, and ``pandas``. Those are imported lazily</span>
+<span class="sd">so installing owlapy without them still works.</span>
+
+<span class="sd">Example</span>
+<span class="sd">-------</span>
+<span class="sd">::</span>
+
+<span class="sd">    from owlapy.owl_ontology import Ontology</span>
+<span class="sd">    from owlapy.owl_reasoner import NIRReasoner</span>
+
+<span class="sd">    onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")</span>
+<span class="sd">    reasoner = NIRReasoner(</span>
+<span class="sd">        onto,</span>
+<span class="sd">        model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",</span>
+<span class="sd">        embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",</span>
+<span class="sd">    )</span>
+<span class="sd">    instances = set(reasoner.instances(named_class))</span>
+
+<span class="sd">Pretrained encoders and DeCaL embeddings:</span>
+<span class="sd">https://files.dice-research.org/datasets/CNIR/trained_models.zip</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLNothing</span><span class="p">,</span> <span class="n">OWLThing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataRange</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.render</span><span class="w"> </span><span class="kn">import</span> <span class="n">DLSyntaxObjectRenderer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_expression_length</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_ARCH_TO_CLASS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"NIRTransformer"</span><span class="p">:</span> <span class="s2">"NIRTransformer"</span><span class="p">,</span>
+    <span class="s2">"transformer"</span><span class="p">:</span> <span class="s2">"NIRTransformer"</span><span class="p">,</span>
+    <span class="s2">"NIRLSTM"</span><span class="p">:</span> <span class="s2">"NIRLSTM"</span><span class="p">,</span>
+    <span class="s2">"lstm"</span><span class="p">:</span> <span class="s2">"NIRLSTM"</span><span class="p">,</span>
+    <span class="s2">"NIRGRU"</span><span class="p">:</span> <span class="s2">"NIRGRU"</span><span class="p">,</span>
+    <span class="s2">"gru"</span><span class="p">:</span> <span class="s2">"NIRGRU"</span><span class="p">,</span>
+    <span class="s2">"NIRComposite"</span><span class="p">:</span> <span class="s2">"NIRComposite"</span><span class="p">,</span>
+    <span class="s2">"composite"</span><span class="p">:</span> <span class="s2">"NIRComposite"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_short_name</span><span class="p">(</span><span class="n">iri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"/"</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">text</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_entity_embeddings</span><span class="p">(</span><span class="n">embeddings_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dataset_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Load a DeCaL-style ``*entity_embeddings.csv`` (index = entity IRI or short name)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+    <span class="n">csv_path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">search_roots</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">embeddings_path</span><span class="p">:</span>
+        <span class="n">search_roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embeddings_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dataset_dir</span><span class="p">:</span>
+        <span class="n">search_roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">search_roots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="ow">and</span> <span class="n">root</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".csv"</span><span class="p">):</span>
+            <span class="n">csv_path</span> <span class="o">=</span> <span class="n">root</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+            <span class="n">hits</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"*entity_embeddings.csv"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">hits</span><span class="p">:</span>
+                <span class="n">hits</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"embeddings"</span><span class="p">,</span> <span class="s2">"*entity_embeddings.csv"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">hits</span><span class="p">:</span>
+                <span class="n">csv_path</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">csv_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="s2">"No *entity_embeddings.csv found. Pass embeddings_path to a CSV file "</span>
+            <span class="s2">"or a dataset directory that contains embeddings/."</span>
+        <span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Paper loader drops duplicate rows on the first embedding column ("0").</span>
+    <span class="k">if</span> <span class="s2">"0"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">"0"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_short_name</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">"first"</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">csv_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_relation_embeddings_csv</span><span class="p">(</span><span class="n">entity_csv_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">embeddings_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dataset_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Locate ``*relation_embeddings.csv`` next to the entity CSV or under the search roots."""</span>
+    <span class="n">candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sibling</span> <span class="o">=</span> <span class="n">entity_csv_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"entity_embeddings.csv"</span><span class="p">,</span> <span class="s2">"relation_embeddings.csv"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sibling</span> <span class="o">!=</span> <span class="n">entity_csv_path</span><span class="p">:</span>
+        <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sibling</span><span class="p">)</span>
+    <span class="n">search_roots</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">entity_csv_path</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">embeddings_path</span><span class="p">:</span>
+        <span class="n">search_roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embeddings_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dataset_dir</span><span class="p">:</span>
+        <span class="n">search_roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">search_roots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="ow">and</span> <span class="n">root</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"relation_embeddings.csv"</span><span class="p">):</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"*relation_embeddings.csv"</span><span class="p">)))</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"embeddings"</span><span class="p">,</span> <span class="s2">"*relation_embeddings.csv"</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">path</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge_relation_embeddings</span><span class="p">(</span><span class="n">entity_df</span><span class="p">,</span> <span class="n">entity_csv_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">embeddings_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dataset_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Append relation rows (needed by Composite to look up roles in DL strings)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+    <span class="n">rel_path</span> <span class="o">=</span> <span class="n">_find_relation_embeddings_csv</span><span class="p">(</span><span class="n">entity_csv_path</span><span class="p">,</span> <span class="n">embeddings_path</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rel_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">entity_df</span>
+    <span class="n">rel</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">rel</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_short_name</span><span class="p">)</span>
+    <span class="n">rel</span> <span class="o">=</span> <span class="n">rel</span><span class="p">[</span><span class="o">~</span><span class="n">rel</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">"first"</span><span class="p">)]</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">entity_df</span><span class="p">,</span> <span class="n">rel</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">combined</span><span class="p">[</span><span class="o">~</span><span class="n">combined</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">"first"</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mean_pool_named_class_embeddings</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Replace class rows with the mean of their instances (paper ``read_embs_and_apply_agg`` without PMA)."""</span>
+    <span class="n">named</span> <span class="o">=</span> <span class="p">{</span><span class="n">_short_name</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">str</span><span class="p">):</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">short</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">named</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">short</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">inst_shorts</span> <span class="o">=</span> <span class="p">[</span><span class="n">_short_name</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">fallback</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">)]</span>
+        <span class="n">inst_shorts</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">inst_shorts</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">inst_shorts</span><span class="p">:</span>
+            <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">short</span><span class="p">]</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">inst_shorts</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">embeddings</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_component_embeddings_for_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Map each atomic token of a DL string to an embedding row (paper ``InferenceDataset``)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span>
+    <span class="n">cardinality</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\[(≤|≥)\s-?\d+(\.\d+)?\]"</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cardinality</span><span class="p">:</span>
+        <span class="n">expr_modified</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">cardinality</span><span class="o">.</span><span class="n">group</span><span class="p">(),</span> <span class="s2">" ⊤"</span><span class="p">)</span>
+        <span class="n">expr_modified</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[ \(\)⊔.∃∀⊓¬⁻≤:\[]+"</span><span class="p">,</span> <span class="s2">"|"</span><span class="p">,</span> <span class="n">expr_modified</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">expr_modified</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[ \(\)⊔.∃∀⊓¬⁻≤:\[]+"</span><span class="p">,</span> <span class="s2">"|"</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">({</span><span class="n">comp</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">expr_modified</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"|"</span><span class="p">)</span> <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">strip</span><span class="p">()})</span>
+    <span class="k">if</span> <span class="s2">"⊥"</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"⊥"</span><span class="p">)</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"⊤"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s2">"</span><span class="si">{True}</span><span class="s2">"</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"</span><span class="si">{True}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"⊤"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s2">"</span><span class="si">{False}</span><span class="s2">"</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"</span><span class="si">{False}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"⊤"</span><span class="p">)</span>
+
+    <span class="n">index_str</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">top_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">embeddings</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="s2">"⊤"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">component_embeddings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">comp</span> <span class="o">==</span> <span class="s2">"⊤"</span><span class="p">:</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">top_tensor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">index_str</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">rf</span><span class="s2">".*(?&lt;![\-\s+])\b</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span><span class="si">}</span><span class="s2">\b\s*$"</span><span class="p">)</span>
+            <span class="n">matched</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">matched</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                <span class="n">matched</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="n">comp</span><span class="p">]]</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">matched</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">component_embeddings</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span>
+    <span class="k">if</span> <span class="s2">"⊤"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">component_embeddings</span><span class="p">:</span>
+        <span class="n">component_embeddings</span><span class="p">[</span><span class="s2">"⊤"</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_tensor</span>
+    <span class="k">for</span> <span class="n">comp</span><span class="p">,</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">component_embeddings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">component_embeddings</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">component_embeddings</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_score_all_inds</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">all_ind_embs</span><span class="p">,</span> <span class="n">exprs</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Membership scores for every individual vs. each DL expression (copied from nir.utils)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+        <span class="n">exprs</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="s2">"max_length"</span><span class="p">,</span>
+        <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">max_length</span><span class="p">,</span>
+        <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">input_ids</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">attention_mask</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">all_ind_embs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chunk_size</span><span class="p">):</span>
+        <span class="n">ind_embs</span> <span class="o">=</span> <span class="n">all_ind_embs</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">]</span>
+        <span class="n">ind_embs_reshaped</span> <span class="o">=</span> <span class="n">ind_embs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">exprs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">ind_embs_reshaped</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ind_embs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_architecture</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model_name</span>
+    <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="s2">"config.json"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">archs</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"architectures"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">archs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">archs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="s2">"NIRTransformer"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register_and_load</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">architecture</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">"NIRReasoner requires torch and transformers. Install with: pip install torch transformers"</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.nir</span><span class="w"> </span><span class="kn">import</span> <span class="n">NIRGRU</span><span class="p">,</span> <span class="n">NIRLSTM</span><span class="p">,</span> <span class="n">NIRComposite</span><span class="p">,</span> <span class="n">NIRTransformer</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">architecture</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">class_name</span> <span class="o">=</span> <span class="n">_ARCH_TO_CLASS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">class_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unsupported NIR architecture </span><span class="si">{</span><span class="n">architecture</span><span class="si">!r}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Supported: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_ARCH_TO_CLASS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"NIRTransformer"</span><span class="p">:</span> <span class="n">NIRTransformer</span><span class="p">,</span>
+        <span class="s2">"NIRLSTM"</span><span class="p">:</span> <span class="n">NIRLSTM</span><span class="p">,</span>
+        <span class="s2">"NIRGRU"</span><span class="p">:</span> <span class="n">NIRGRU</span><span class="p">,</span>
+        <span class="s2">"NIRComposite"</span><span class="p">:</span> <span class="n">NIRComposite</span><span class="p">,</span>
+    <span class="p">}[</span><span class="n">class_name</span><span class="p">]</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">class_name</span> <span class="o">==</span> <span class="s2">"NIRComposite"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_score_all_inds_composite</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">exprs</span><span class="p">,</span> <span class="n">all_ind_embs</span><span class="p">,</span> <span class="n">component_embeddings_dict</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Membership scores for Composite (no tokenizer; DL string is parsed inside the model)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">all_ind_embs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chunk_size</span><span class="p">):</span>
+        <span class="n">ind_embs</span> <span class="o">=</span> <span class="n">all_ind_embs</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">]</span>
+        <span class="n">ind_embs_expanded</span> <span class="o">=</span> <span class="n">ind_embs</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">exprs</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">exprs</span><span class="p">,</span> <span class="n">ind_embs_expanded</span><span class="p">,</span> <span class="n">component_embeddings_dict</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ind_embs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_fallback</span><span class="p">(</span><span class="n">ontology</span><span class="p">:</span> <span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="n">fallback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractOWLReasoner</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLReasoner</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">fallback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fallback</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasoner</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner_rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFLibReasoner</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">StructuralReasoner</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">RDFLibReasoner</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NIRReasoner">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NIRReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Neural instance retriever as an :class:`~owlapy.abstracts.AbstractOWLReasoner`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ontology: Ontology whose named individuals are scored.</span>
+<span class="sd">        model_path: Directory of a pretrained NIR encoder (``config.json`` + weights + tokenizer).</span>
+<span class="sd">        embeddings_path: Path to ``*entity_embeddings.csv``, or a dataset / embeddings directory.</span>
+<span class="sd">            Composite also loads a sibling ``*relation_embeddings.csv`` when present.</span>
+<span class="sd">        dataset_dir: Alternative to ``embeddings_path``: a NIR dataset folder (``kb/``, ``embeddings/``).</span>
+<span class="sd">        th: Membership threshold (paper default 0.5).</span>
+<span class="sd">        chunksize: Individuals scored per forward pass.</span>
+<span class="sd">        symbolic_max_length: Concepts of this length or shorter are answered by the fallback</span>
+<span class="sd">            symbolic reasoner. Encoders were trained on longer expressions; named classes</span>
+<span class="sd">            (length 1) should stay symbolic.</span>
+<span class="sd">        model: Optional architecture name (``transformer`` / ``lstm`` / ``gru`` / ``composite``).</span>
+<span class="sd">            Inferred from ``config.json`` when omitted.</span>
+<span class="sd">        device: Torch device. Defaults to CUDA when available.</span>
+<span class="sd">        fallback_reasoner: Optional TBox reasoner. Defaults to StructuralReasoner / RDFLibReasoner.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">embeddings_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dataset_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">th</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">chunksize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">symbolic_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fallback_reasoner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractOWLReasoner</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ontology</span><span class="p">):</span>
+                <span class="n">ontology</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">"file://"</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">ontology</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ontology</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span> <span class="o">=</span> <span class="n">_make_fallback</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">fallback_reasoner</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">th</span> <span class="o">=</span> <span class="n">th</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span> <span class="o">=</span> <span class="n">chunksize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbolic_max_length</span> <span class="o">=</span> <span class="n">symbolic_max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dls_renderer</span> <span class="o">=</span> <span class="n">DLSyntaxObjectRenderer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"NIR model directory not found: </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">architecture</span> <span class="o">=</span> <span class="n">_resolve_architecture</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">architecture</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_encoder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">_register_and_load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">architecture</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">embeddings</span><span class="p">,</span> <span class="n">entity_csv</span> <span class="o">=</span> <span class="n">_load_entity_embeddings</span><span class="p">(</span><span class="n">embeddings_path</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_composite</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoder</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"NIRComposite"</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_composite</span><span class="p">:</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">_merge_relation_embeddings</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">entity_csv</span><span class="p">,</span> <span class="n">embeddings_path</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">)</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">_mean_pool_named_class_embeddings</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_embeddings</span> <span class="o">=</span> <span class="n">embeddings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_short_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">scored_shorts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">():</span>
+            <span class="n">short</span> <span class="o">=</span> <span class="n">_short_name</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_short_to_ind</span><span class="p">[</span><span class="n">short</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind</span>
+            <span class="k">if</span> <span class="n">short</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                <span class="n">scored_shorts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">short</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">scored_shorts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"No overlapping individuals between the ontology signature and the embedding index."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_individuals_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">scored_shorts</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_ind_embs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">all_individuals_arr</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_composite</span> <span class="ow">and</span> <span class="s2">"⊤"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">"⊤"</span><span class="p">]</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">all_individuals_arr</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_embeddings</span> <span class="o">=</span> <span class="n">embeddings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_retrieval_stats</span><span class="p">()</span>
+
+<div class="viewcode-block" id="NIRReasoner.reset_retrieval_stats">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.reset_retrieval_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_retrieval_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_retrieval_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_nir_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_symbolic_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_cache_hits</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queried_lengths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_score_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.retrieval_stats">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.retrieval_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">retrieval_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queried_lengths</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"n_retrieval_calls"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_retrieval_calls</span><span class="p">,</span>
+            <span class="s2">"n_nir_calls"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_nir_calls</span><span class="p">,</span>
+            <span class="s2">"n_pellet_calls"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_symbolic_calls</span><span class="p">,</span>
+            <span class="s2">"n_symbolic_calls"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_symbolic_calls</span><span class="p">,</span>
+            <span class="s2">"n_cache_hits"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cache_hits</span><span class="p">,</span>
+            <span class="s2">"n_unique_queries"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_score_cache</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_cache</span><span class="p">),</span>
+            <span class="s2">"mean_query_length"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">))</span> <span class="k">if</span> <span class="n">lengths</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"max_query_length"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">lengths</span><span class="p">))</span> <span class="k">if</span> <span class="n">lengths</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"symbolic_max_length"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbolic_max_length</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">concept</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">concept</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dls_renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">concept</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NIRReasoner.membership_scores">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.membership_scores">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">membership_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">]):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_cache_hits</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">cached</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_composite</span><span class="p">:</span>
+                <span class="n">component_embeddings</span> <span class="o">=</span> <span class="n">_component_embeddings_for_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_embeddings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_score_all_inds_composite</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_encoder</span><span class="p">,</span>
+                    <span class="p">[</span><span class="n">expr</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">all_ind_embs</span><span class="p">,</span>
+                    <span class="p">[</span><span class="n">component_embeddings</span><span class="p">],</span>
+                    <span class="n">chunk_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_score_all_inds</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_encoder</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">all_ind_embs</span><span class="p">,</span>
+                    <span class="p">[</span><span class="n">expr</span><span class="p">],</span>
+                    <span class="n">hidden_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">all_ind_embs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">chunk_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_score_cache</span><span class="p">[</span><span class="n">expr</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span>
+        <span class="k">return</span> <span class="n">scores</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nir_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">membership_scores</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="n">retrieved_short</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_individuals_arr</span><span class="p">[</span><span class="n">scores</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">th</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_short_to_ind</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">retrieved_short</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_short_to_ind</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NIRReasoner.instances">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.instances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">instances</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="s2">"is_owl_thing"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">())</span> <span class="ow">or</span> <span class="n">ce</span> <span class="ow">is</span> <span class="n">OWLThing</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="n">OWLNothing</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="s2">"is_owl_nothing"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_nothing</span><span class="p">()):</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">get_expression_length</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_retrieval_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queried_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbolic_max_length</span><span class="p">:</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_cache_hits</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_symbolic_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">yield from</span> <span class="n">cached</span>
+                <span class="k">return</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_cache</span><span class="p">[</span><span class="n">expr</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_symbolic_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">yield from</span> <span class="n">result</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_nir_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nir_instances</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.get_root_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.get_root_ontology">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.__str__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"NIRReasoner(model=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">, th=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">th</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"symbolic_max_length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbolic_max_length</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># --- TBox / ABox delegated to the symbolic fallback ---------------------------------</span>
+
+<div class="viewcode-block" id="NIRReasoner.data_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.data_property_domains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">data_property_domains</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.object_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.object_property_domains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">object_property_domains</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.object_property_ranges">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.object_property_ranges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">object_property_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.equivalent_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.equivalent_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">equivalent_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.disjoint_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.disjoint_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">disjoint_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.different_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.different_individuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">different_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">different_individuals</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.same_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.same_individuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">same_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">same_individuals</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.equivalent_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.equivalent_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">equivalent_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.equivalent_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.equivalent_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">equivalent_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.data_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.data_property_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.object_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.object_property_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_values</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.sub_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.sub_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.super_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.super_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.disjoint_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.disjoint_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">disjoint_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.disjoint_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.disjoint_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">disjoint_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.sub_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.sub_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">sub_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.super_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.super_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">super_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.sub_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.sub_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_object_properties</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.super_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.super_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_object_properties</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">super_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.types">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.types">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">types</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NIRReasoner.data_property_ranges">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_nir/index.html#owlapy.NIRReasoner.data_property_ranges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fallback</span><span class="o">.</span><span class="n">data_property_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

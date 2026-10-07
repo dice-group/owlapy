@@ -408,6 +408,72 @@ Module Contents
 
 
 
+   .. py:method:: contains_class_in_signature(entity: Union[owlapy.iri.IRI, str, owlapy.class_expression.OWLClass], include_imports_closure: bool = True) -> bool
+
+      Check whether a class with this IRI is in the signature of this ontology.
+
+      :param entity: The class (or its IRI) to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if a class with this IRI is in the signature, False otherwise.
+
+
+
+   .. py:method:: contains_object_property_in_signature(entity: Union[owlapy.iri.IRI, str, owlapy.owl_property.OWLObjectProperty], include_imports_closure: bool = True) -> bool
+
+      Check whether an object property with this IRI is in the signature of this ontology.
+
+      :param entity: The object property (or its IRI) to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if an object property with this IRI is in the signature, False otherwise.
+
+
+
+   .. py:method:: contains_data_property_in_signature(entity: Union[owlapy.iri.IRI, str, owlapy.owl_property.OWLDataProperty], include_imports_closure: bool = True) -> bool
+
+      Check whether a data property with this IRI is in the signature of this ontology.
+
+      :param entity: The data property (or its IRI) to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if a data property with this IRI is in the signature, False otherwise.
+
+
+
+   .. py:method:: contains_annotation_property_in_signature(entity: Union[owlapy.iri.IRI, str, owlapy.owl_axiom.OWLAnnotationProperty], include_imports_closure: bool = True) -> bool
+
+      Check whether an annotation property with this IRI is in the signature of this ontology.
+
+      :param entity: The annotation property (or its IRI) to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if an annotation property with this IRI is in the signature, False otherwise.
+
+
+
+   .. py:method:: contains_individual_in_signature(entity: Union[owlapy.iri.IRI, str, owlapy.owl_individual.OWLNamedIndividual], include_imports_closure: bool = True) -> bool
+
+      Check whether a named individual with this IRI is in the signature of this ontology.
+
+      :param entity: The named individual (or its IRI) to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if a named individual with this IRI is in the signature, False otherwise.
+
+
+
+   .. py:method:: is_declared(entity: Union[owlapy.class_expression.OWLClass, owlapy.owl_property.OWLObjectProperty, owlapy.owl_property.OWLDataProperty, owlapy.owl_axiom.OWLAnnotationProperty, owlapy.owl_datatype.OWLDatatype, owlapy.owl_individual.OWLNamedIndividual], include_imports_closure: bool = True) -> bool
+
+      Check whether the given entity has a declaration axiom in this ontology.
+
+      :param entity: The class, object/data/annotation property, datatype, or named individual to check.
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: True if the entity is declared, False otherwise.
+
+
+
    .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
 
       Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
@@ -467,6 +533,17 @@ Module Contents
 
 
 
+   .. py:method:: annotation_assertion_axioms(entity: Union[owlapy.owl_object.OWLEntity, owlapy.iri.IRI]) -> Iterable[owlapy.owl_axiom.OWLAnnotationAssertionAxiom]
+
+      Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+      `rdfs:label`/`rdfs:comment` or any other `owl:AnnotationProperty` assertion.
+
+      :param entity: The entity (or its IRI directly) to get annotation assertions for.
+
+      :returns: Annotation assertion axioms whose subject is the given entity's IRI.
+
+
+
    .. py:method:: get_signature(include_imports_closure: bool = True)
 
       Gets the entities that are in the signature of this ontology.
@@ -474,6 +551,37 @@ Module Contents
       :param include_imports_closure: Whether to include/exclude imports from searches.
 
       :returns: Entities in signature.
+
+
+
+   .. py:method:: get_punned_iris(include_imports_closure: bool = True) -> Iterable[owlapy.iri.IRI]
+
+      Get the IRIs that are used for more than one entity type in this ontology (punning), e.g. an
+      IRI that is used both as a class and as a named individual.
+
+      :param include_imports_closure: Whether to include/exclude imports from the search.
+
+      :returns: The punned IRIs.
+
+
+
+   .. py:method:: get_axioms(include_imports_closure: bool = True) -> Iterable[owlapy.owl_axiom.OWLAxiom]
+
+      Get all axioms in this ontology.
+
+      :param include_imports_closure: Whether to include/exclude imports from searches.
+
+      :returns: All axioms in this ontology.
+
+
+
+   .. py:method:: contains_axiom(axiom: owlapy.owl_axiom.OWLAxiom) -> bool
+
+      Check whether this ontology contains the given axiom (imports excluded).
+
+      :param axiom: The axiom to check for.
+
+      :returns: True if this ontology contains the axiom, False otherwise.
 
 
 
@@ -709,6 +817,23 @@ Module Contents
 
 
    .. py:method:: get_abox_axioms_between_individuals_and_classes() -> Iterable[owlapy.owl_axiom.OWLClassAssertionAxiom]
+
+
+   .. py:method:: annotation_assertion_axioms(entity: Union[owlapy.owl_object.OWLEntity, owlapy.iri.IRI]) -> Iterable[owlapy.owl_axiom.OWLAnnotationAssertionAxiom]
+
+      Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+      `rdfs:label`/`rdfs:comment`.
+
+      Recognizes the well-known annotation predicates (`rdfs:label`, `rdfs:comment`, `rdfs:seeAlso`,
+      `rdfs:isDefinedBy`, `owl:versionInfo`, `owl:deprecated`, `owl:priorVersion`,
+      `owl:backwardCompatibleWith`, `owl:incompatibleWith`) plus any predicate explicitly declared
+      `rdf:type owl:AnnotationProperty` in the loaded graph. A blank-node annotation value (an
+      anonymous individual) is skipped, matching how blank nodes are handled elsewhere in this class.
+
+      :param entity: The entity (or its IRI directly) to get annotation assertions for.
+
+      :returns: Annotation assertion axioms whose subject is the given entity's IRI.
+
 
 
    .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]

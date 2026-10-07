@@ -208,7 +208,7 @@ Module Contents
    .. py:method:: __eq__(other)
 
 
-.. py:class:: DataRangeAtom(datatype: owlapy.owl_datatype.OWLDatatype, argument1: DVariable)
+.. py:class:: DataRangeAtom(datatype: owlapy.owl_datatype.OWLDatatype, argument1: Union[DVariable, owlapy.owl_literal.OWLLiteral])
 
    Bases: :py:obj:`Atom`
 
@@ -217,7 +217,7 @@ Module Contents
 
 
    .. py:attribute:: argument1
-      :type:  DVariable
+      :type:  Union[DVariable, owlapy.owl_literal.OWLLiteral]
 
 
    .. py:attribute:: datatype
@@ -430,7 +430,7 @@ Module Contents
    .. py:method:: __eq__(other)
 
 
-.. py:class:: BuiltInAtom(predicate: owlapy.iri.IRI, arguments: List[Union[DVariable, owlapy.owl_literal.OWLLiteral]])
+.. py:class:: BuiltInAtom(predicate: owlapy.iri.IRI, arguments: List[Union[IVariable, DVariable, owlapy.owl_literal.OWLLiteral]])
 
    Bases: :py:obj:`Atom`
 
@@ -443,7 +443,7 @@ Module Contents
 
 
    .. py:attribute:: arguments
-      :type:  List[Union[DVariable, owlapy.owl_literal.OWLLiteral]]
+      :type:  List[Union[IVariable, DVariable, owlapy.owl_literal.OWLLiteral]]
 
 
    .. py:method:: is_class_assertion()

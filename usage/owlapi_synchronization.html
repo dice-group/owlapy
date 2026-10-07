@@ -124,12 +124,12 @@ showing how to use the aforementioned classes:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncReasoner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.static_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">stopJVM</span>
 
-<span class="c1"># (.) Load the &#39;father&#39; ontology into a SyncOntology object</span>
-<span class="n">ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">)</span>
+<span class="c1"># (.) Load the 'father' ontology into a SyncOntology object</span>
+<span class="n">ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">"KGs/Family/father.owl"</span><span class="p">)</span>
 
 <span class="c1"># (.) Use your ontology as you usually do</span>
 <span class="c1"># (..) Add a new class</span>
-<span class="n">ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="s2">&quot;http://example.com/father#some_new_class&quot;</span><span class="p">)))</span>
+<span class="n">ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="s2">"http://example.com/father#some_new_class"</span><span class="p">)))</span>
 <span class="c1"># (..) Print classes in signature</span>
 <span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()]</span>
 
@@ -137,12 +137,12 @@ showing how to use the aforementioned classes:</p>
 <span class="n">reasoner</span> <span class="o">=</span> <span class="n">SyncReasoner</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
 
 <span class="c1"># (..) Check ontology consistency</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is the ontology consistent? Answer: </span><span class="si">{</span><span class="n">reasoner</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Is the ontology consistent? Answer: </span><span class="si">{</span><span class="n">reasoner</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># (..) Print all male individuals</span>
-<span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="s2">&quot;http://example.com/father#male&quot;</span><span class="p">))]</span>
+<span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="s2">"http://example.com/father#male"</span><span class="p">))]</span>
 
-<span class="c1"># (.) Stop the JVM if you no longer intend to use &quot;Sync&quot; classes</span>
+<span class="c1"># (.) Stop the JVM if you no longer intend to use "Sync" classes</span>
 <span class="n">stopJVM</span><span class="p">()</span>
 
 

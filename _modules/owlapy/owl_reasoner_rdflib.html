@@ -81,17 +81,21 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.owl_reasoner_rdflib</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;RDFLib-based OWL Reasoner - Pure Python implementation.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""RDFLib-based OWL Reasoner - Pure Python implementation."""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">URIRef</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWL</span><span class="p">,</span> <span class="n">RDF</span><span class="p">,</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">URIRef</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">OWLClass</span><span class="p">,</span>
     <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
     <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
     <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
     <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
@@ -110,11 +114,11 @@
 <div class="viewcode-block" id="RDFLibReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RDFLibReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A pure Python OWL reasoner based on RDFLib.</span>
 
 <span class="sd">    This reasoner uses SPARQL queries over an RDF graph to perform reasoning tasks.</span>
-<span class="sd">    It&#39;s designed as a drop-in replacement for StructuralReasoner with better</span>
+<span class="sd">    It's designed as a drop-in replacement for StructuralReasoner with better</span>
 <span class="sd">    predictability and no owlready2/Java dependencies for basic operations.</span>
 
 <span class="sd">    Features:</span>
@@ -132,7 +136,7 @@
 <span class="sd">      hierarchies, not full description logic reasoning</span>
 <span class="sd">    - Best suited for ontology navigation and simple instance retrieval</span>
 <span class="sd">    - Does not handle all complex class expressions (nominals, cardinalities may be limited)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -145,7 +149,7 @@
         <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the RDFLib-based reasoner.</span>
 
 <span class="sd">        Args:</span>
@@ -156,14 +160,14 @@
 <span class="sd">            property_cache: Whether to cache property assertions.</span>
 <span class="sd">            infer_property_values: Whether to infer property values from sub-properties.</span>
 <span class="sd">            infer_data_property_values: Whether to infer data property values.</span>
-<span class="sd">            negation_default: Whether to assume a missing fact means it is false (&quot;closed world</span>
-<span class="sd">                view&quot;, the default) when evaluating OWLObjectComplementOf in instances(). If</span>
+<span class="sd">            negation_default: Whether to assume a missing fact means it is false ("closed world</span>
+<span class="sd">                view", the default) when evaluating OWLObjectComplementOf in instances(). If</span>
 <span class="sd">                False (open world), a complement never contributes any results, since nothing can</span>
 <span class="sd">                be inferred to NOT be a member of a class without an explicit negative assertion.</span>
 <span class="sd">            sub_properties: Whether instances() should also match individuals connected via a</span>
 <span class="sd">                sub-property of the property used in someValuesFrom/allValuesFrom/hasValue/</span>
-<span class="sd">                cardinality restrictions, mirroring StructuralReasoner&#39;s sub_properties flag.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                cardinality restrictions, mirroring StructuralReasoner's sub_properties flag.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># Parse straight into rdflib -- no owlready2 objects, no JVM.</span>
             <span class="n">ontology</span> <span class="o">=</span> <span class="n">RDFLibOntology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
@@ -190,7 +194,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_graph</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize or reload the RDF graph from the ontology.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize or reload the RDF graph from the ontology."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">RDFLibOntology</span><span class="p">):</span>
             <span class="c1"># Already backed by an rdflib graph -- reuse it directly. No owlready2/JVM involved.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">rdflib_graph</span>
@@ -201,43 +205,53 @@
             <span class="c1"># have no rdflib graph of their own, so round-trip through a serialized file.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">):</span>
                 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-                <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.owl&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">'.owl'</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
                     <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">name</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;xml&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'xml'</span><span class="p">)</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">):</span>
                 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-                <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.owl&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">'.owl'</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
                     <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">name</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;xml&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'xml'</span><span class="p">)</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="s1">&#39;get_iri&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="s1">'get_iri'</span><span class="p">):</span>
                 <span class="c1"># Try loading from IRI/path</span>
                 <span class="n">ontology_iri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;xml&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'xml'</span><span class="p">)</span>
+
+        <span class="n">undeclared</span> <span class="o">=</span> <span class="p">[</span><span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span>
+                      <span class="k">if</span> <span class="p">(</span><span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">),</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">OWL</span><span class="o">.</span><span class="n">NamedIndividual</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">undeclared</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">triple</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">individual</span> <span class="ow">in</span> <span class="n">undeclared</span><span class="p">:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">individual</span><span class="p">,</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">OWL</span><span class="o">.</span><span class="n">NamedIndividual</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="o">=</span> <span class="n">graph</span>
 
         <span class="c1"># Build caches if enabled</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_cache_enabled</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_class_hierarchy_cache</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_class_hierarchy_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build subclass/superclass hierarchy cache using SPARQL.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Build subclass/superclass hierarchy cache using SPARQL."""</span>
         <span class="c1"># Query for all rdfs:subClassOf relationships</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">        SELECT ?sub ?super</span>
 <span class="s2">        WHERE {</span>
 <span class="s2">            ?sub rdfs:subClassOf ?super .</span>
 <span class="s2">            FILTER(isIRI(?sub) &amp;&amp; isIRI(?super))</span>
 <span class="s2">        }</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
@@ -265,7 +279,7 @@
         <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get individuals that are instances of the specified class expression.</span>
 
 <span class="sd">        Args:</span>
@@ -275,18 +289,18 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of named individuals that are instances of ce.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;direct=True not fully implemented, returning all instances&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"direct=True not fully implemented, returning all instances"</span><span class="p">)</span>
 
         <span class="c1"># Handle simple named classes efficiently</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instances_of_class</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
 
-        <span class="c1"># OWLObjectMaxCardinality / cardinality==0 restrictions need special-casing: see</span>
+        <span class="c1"># Max-cardinality / cardinality==0 restrictions need special-casing: see</span>
         <span class="c1"># _at_most_cardinality_instances for why.</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
-                <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">))</span> <span class="ow">or</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_at_most_cardinality_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
 
         <span class="c1"># For complex class expressions, use SPARQL conversion</span>
@@ -308,34 +322,30 @@
                     <span class="n">individuals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">ind_uri</span><span class="p">)))</span>
 
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">individuals</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to convert class expression to SPARQL: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to convert class expression to SPARQL: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="c1"># Fallback to manual filtering (slower)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instances_manual</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_at_most_cardinality_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Special-cased handling for OWLObjectMaxCardinality (any N) and cardinality==0 (any</span>
-<span class="sd">        restriction type).</span>
-
-<span class="sd">        The natural SPARQL translation of these needs to identify individuals with ZERO matching</span>
-<span class="sd">        relations, via a FILTER NOT EXISTS/OPTIONAL+!BOUND pattern correlated per candidate</span>
-<span class="sd">        individual. rdflib&#39;s SPARQL engine evaluates that as an expensive per-candidate check</span>
-<span class="sd">        (not a proper join), which is catastrophically slow on non-trivial ontologies -- confirmed</span>
-<span class="sd">        via profiling on KGs/Mutagenesis/mutagenesis.owl (14k+ candidate individuals). Instead,</span>
-<span class="sd">        compute set-theoretically in Python using only the fast, uncorrelated</span>
-<span class="sd">        OWLObjectMinCardinality path (which never needs a &quot;zero match&quot; branch, since &gt;=1 and</span>
-<span class="sd">        &gt;=N+1 both require at least one match to even appear as a GROUP BY row).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_at_most_cardinality_instances</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Use minimum-cardinality queries and set differences to avoid costly</span>
+<span class="sd">        per-individual OPTIONAL checks for zero matching values.</span>
+<span class="sd">        """</span>
         <span class="n">prop</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
         <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="n">min_restriction</span> <span class="o">=</span> <span class="n">OWLDataMinCardinality</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLObjectMinCardinality</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">):</span>
-            <span class="c1"># Only reached when n == 0: &quot;&gt;= 0&quot; is trivially satisfied by every individual.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">)):</span>
+            <span class="c1"># Only reached when n == 0: "&gt;= 0" is trivially satisfied by every individual.</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()))</span>
 
-        <span class="n">at_least_one</span> <span class="o">=</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
+        <span class="n">at_least_one</span> <span class="o">=</span> <span class="n">min_restriction</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
         <span class="n">s_any</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_one</span><span class="p">))</span>
         <span class="n">s_zero</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span> <span class="o">-</span> <span class="n">s_any</span>
 
@@ -343,16 +353,16 @@
             <span class="c1"># Max/Exact cardinality 0: satisfied only by individuals with no matching relation.</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">s_zero</span><span class="p">)</span>
 
-        <span class="n">at_least_n_plus_one</span> <span class="o">=</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
+        <span class="n">at_least_n_plus_one</span> <span class="o">=</span> <span class="n">min_restriction</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
         <span class="n">s_too_many</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_n_plus_one</span><span class="p">))</span>
         <span class="n">s_in_range</span> <span class="o">=</span> <span class="n">s_any</span> <span class="o">-</span> <span class="n">s_too_many</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">)):</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">s_in_range</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">s_in_range</span> <span class="o">|</span> <span class="n">s_zero</span><span class="p">)</span>  <span class="c1"># OWLObjectMaxCardinality</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">s_in_range</span> <span class="o">|</span> <span class="n">s_zero</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances_of_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get instances of a named class using SPARQL.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get instances of a named class using SPARQL."""</span>
         <span class="c1"># Check cache first</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_cache_enabled</span> <span class="ow">and</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">[</span><span class="bp">cls</span><span class="p">])</span>
@@ -370,17 +380,17 @@
         <span class="c1"># rather than the general `Atom` class) -- expand via a bounded VALUES list rather than a</span>
         <span class="c1"># flat `?ind a &lt;cls&gt;` triple, which would silently miss them.</span>
         <span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;"</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">)</span>
 
         <span class="c1"># SPARQL query for instances</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?ind</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            ?ind a ?type .</span>
 <span class="s2">            VALUES ?type </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?ind))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">individuals</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
@@ -395,17 +405,17 @@
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">individuals</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sub_property_resolver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolver passed to owl_expression_to_sparql when sub_properties=True.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resolver passed to owl_expression_to_sparql when sub_properties=True."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_data_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_inverse_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Declared owl:inverseOf partner(s) of prop (bidirectional -- only one direction may be</span>
+<span class="w">        </span><span class="sd">"""Declared owl:inverseOf partner(s) of prop (bidirectional -- only one direction may be</span>
 <span class="sd">        physically asserted). Always passed as inverse_property_resolver to owl_expression_to_sparql</span>
-<span class="sd">        -- this fills in missing OWL entailment, it isn&#39;t an opt-in StructuralReasoner-parity flag.&quot;&quot;&quot;</span>
+<span class="sd">        -- this fills in missing OWL entailment, it isn't an opt-in StructuralReasoner-parity flag."""</span>
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?inv</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; owl:inverseOf ?inv </span><span class="se">}}</span>
@@ -413,26 +423,26 @@
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> ?inv owl:inverseOf &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?inv) &amp;&amp; ?inv != &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">inv</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances_manual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Manual instance checking for complex expressions (fallback).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Manual instance checking for complex expressions (fallback)."""</span>
         <span class="c1"># Get all individuals and filter</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?ind</span>
 <span class="s2">        WHERE {</span>
 <span class="s2">            ?ind a ?type .</span>
 <span class="s2">            FILTER(isIRI(?ind))</span>
 <span class="s2">        }</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 
         <span class="c1"># This is a placeholder - proper implementation would check</span>
         <span class="c1"># each individual against the class expression semantics</span>
         <span class="c1"># For now, return empty to avoid incorrect results</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Manual instance checking not fully implemented for complex expressions&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Manual instance checking not fully implemented for complex expressions"</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
 <div class="viewcode-block" id="RDFLibReasoner.sub_classes">
@@ -443,7 +453,7 @@
         <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get subclasses of the specified class expression.</span>
 
 <span class="sd">        Args:</span>
@@ -453,9 +463,9 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of subclass expressions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sub_classes for complex expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"sub_classes for complex expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
@@ -465,20 +475,20 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get direct subclasses using cache or SPARQL.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get direct subclasses using cache or SPARQL."""</span>
         <span class="c1"># Check cache</span>
         <span class="k">if</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subclass_cache</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_subclass_cache</span><span class="p">[</span><span class="bp">cls</span><span class="p">])</span>
 
         <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?sub</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            ?sub rdfs:subClassOf &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; .</span>
 <span class="s2">            FILTER(isIRI(?sub))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">subclasses</span> <span class="o">=</span> <span class="p">{</span>
@@ -492,9 +502,9 @@
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">subclasses</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_all_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all descendant subclasses recursively.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get all descendant subclasses recursively."""</span>
         <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">yielded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Track what we&#39;ve already yielded to prevent duplicates</span>
+        <span class="n">yielded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Track what we've already yielded to prevent duplicates</span>
         <span class="n">to_process</span> <span class="o">=</span> <span class="p">{</span><span class="bp">cls</span><span class="p">}</span>
 
         <span class="k">while</span> <span class="n">to_process</span><span class="p">:</span>
@@ -523,7 +533,7 @@
         <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get superclasses of the specified class expression.</span>
 
 <span class="sd">        Args:</span>
@@ -533,9 +543,9 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of superclass expressions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;super_classes for complex expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"super_classes for complex expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
@@ -545,20 +555,20 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_superclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get direct superclasses using cache or SPARQL.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get direct superclasses using cache or SPARQL."""</span>
         <span class="c1"># Check cache</span>
         <span class="k">if</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_superclass_cache</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_superclass_cache</span><span class="p">[</span><span class="bp">cls</span><span class="p">])</span>
 
         <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?super</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; rdfs:subClassOf ?super .</span>
 <span class="s2">            FILTER(isIRI(?super))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">superclasses</span> <span class="o">=</span> <span class="p">{</span>
@@ -572,9 +582,9 @@
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">superclasses</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_all_superclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all ancestor superclasses recursively.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get all ancestor superclasses recursively."""</span>
         <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">yielded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Track what we&#39;ve already yielded to prevent duplicates</span>
+        <span class="n">yielded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Track what we've already yielded to prevent duplicates</span>
         <span class="n">to_process</span> <span class="o">=</span> <span class="p">{</span><span class="bp">cls</span><span class="p">}</span>
 
         <span class="k">while</span> <span class="n">to_process</span><span class="p">:</span>
@@ -602,7 +612,7 @@
         <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
         <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get classes equivalent to the specified class expression.</span>
 
 <span class="sd">        Args:</span>
@@ -611,13 +621,13 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of equivalent class expressions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?equiv</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; owl:equivalentClass ?equiv </span><span class="se">}}</span>
@@ -625,7 +635,7 @@
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> ?equiv owl:equivalentClass &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?equiv) &amp;&amp; ?equiv != &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -641,7 +651,7 @@
         <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
         <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get classes disjoint with the specified class expression.</span>
 
 <span class="sd">        Args:</span>
@@ -650,13 +660,13 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of disjoint class expressions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?disjoint</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; owl:disjointWith ?disjoint </span><span class="se">}}</span>
@@ -664,7 +674,7 @@
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> ?disjoint owl:disjointWith &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?disjoint) &amp;&amp; ?disjoint != &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -681,7 +691,7 @@
         <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span>
         <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get object property values for an individual.</span>
 
 <span class="sd">        Args:</span>
@@ -691,11 +701,11 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of individuals that are values of the property for ind.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_property_values_query</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">forward</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Complex property expressions not fully supported&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Complex property expressions not fully supported"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_property_values_query</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">forward</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
@@ -706,18 +716,18 @@
         <span class="n">ind_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
         <span class="c1"># Expand the predicate with a reverse (`^`) alternative for each declared owl:inverseOf</span>
         <span class="c1"># partner, so prop is matched even if it has no physically-asserted triples of its own but</span>
-        <span class="c1"># a declared inverse does (mirrors the same expansion done in converter.py&#39;s render()).</span>
-        <span class="n">alternatives</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;^&lt;</span><span class="si">{</span><span class="n">inv</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;&quot;</span> <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)]</span>
-        <span class="n">predicate</span> <span class="o">=</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">alternatives</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
-        <span class="n">triple</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> ?value .&quot;</span> <span class="k">if</span> <span class="n">forward</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;?value </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; .&quot;</span>
+        <span class="c1"># a declared inverse does (mirrors the same expansion done in converter.py's render()).</span>
+        <span class="n">alternatives</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;"</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"^&lt;</span><span class="si">{</span><span class="n">inv</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt;"</span> <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)]</span>
+        <span class="n">predicate</span> <span class="o">=</span> <span class="s2">"("</span> <span class="o">+</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">alternatives</span><span class="p">)</span> <span class="o">+</span> <span class="s2">")"</span>
+        <span class="n">triple</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> ?value ."</span> <span class="k">if</span> <span class="n">forward</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"?value </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; ."</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?value</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="si">{</span><span class="n">triple</span><span class="si">}</span>
 <span class="s2">            FILTER(isIRI(?value))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -728,7 +738,7 @@
 <div class="viewcode-block" id="RDFLibReasoner.flush">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.flush">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush all cached data and reload the ontology.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Flush all cached data and reload the ontology."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_subclass_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_superclass_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -742,14 +752,14 @@
 <div class="viewcode-block" id="RDFLibReasoner.get_root_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.get_root_ontology">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the root ontology that is loaded into this reasoner.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the root ontology that is loaded into this reasoner."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.types">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.types">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Gets the named classes which are (potentially direct) types of the specified named individual.</span>
 
 <span class="sd">        Args:</span>
@@ -758,16 +768,16 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of OWLClass representing the types of the individual.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ind_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?type</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; a ?type .</span>
 <span class="s2">            FILTER(isIRI(?type))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">types_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">type</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
@@ -789,20 +799,20 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_property_domains_or_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">predicate</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shared SPARQL/semantics for {data,object}_property_domains and object_property_ranges.</span>
+<span class="w">        </span><span class="sd">"""Shared SPARQL/semantics for {data,object}_property_domains and object_property_ranges.</span>
 
-<span class="sd">        Mirrors StructuralReasoner&#39;s actual behavior (owl_reasoner.py): direct=True yields only the</span>
+<span class="sd">        Mirrors StructuralReasoner's actual behavior (owl_reasoner.py): direct=True yields only the</span>
 <span class="sd">        asserted domain/range classes that are not themselves a subclass of another asserted class;</span>
 <span class="sd">        direct=False additionally yields every subclass of each asserted class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?cls</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> ?cls .</span>
 <span class="s2">            FILTER(isIRI(?cls))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">asserted</span> <span class="o">=</span> <span class="p">{</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">cls</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
 
@@ -817,45 +827,45 @@
 <div class="viewcode-block" id="RDFLibReasoner.data_property_domains">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.data_property_domains">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the domains of this data property.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">&quot;rdfs:domain&quot;</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">"""Gets the class expressions that are the domains of this data property."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">"rdfs:domain"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.object_property_domains">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.object_property_domains">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the domains of this object property.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">&quot;rdfs:domain&quot;</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">"""Gets the class expressions that are the domains of this object property."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">"rdfs:domain"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.object_property_ranges">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.object_property_ranges">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the ranges of this object property.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">&quot;rdfs:range&quot;</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">"""Gets the class expressions that are the ranges of this object property."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_domains_or_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">"rdfs:range"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.data_property_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified entity and data property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the data property values for the specified entity and data property."""</span>
         <span class="n">e_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?value</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">e_uri</span><span class="si">}</span><span class="s2">&gt; &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; ?value .</span>
 <span class="s2">            FILTER(isLiteral(?value))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="n">lit</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">value</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">lit</span><span class="o">.</span><span class="n">toPython</span><span class="p">())</span>
             <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
-                <span class="c1"># Datatypes rdflib can&#39;t map to a native Python type (e.g. xsd:duration, or a</span>
+                <span class="c1"># Datatypes rdflib can't map to a native Python type (e.g. xsd:duration, or a</span>
                 <span class="c1"># custom/unrecognized datatype URI, which toPython() returns unchanged) fall back</span>
                 <span class="c1"># to a plain string literal rather than dropping the value.</span>
                 <span class="k">yield</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">lit</span><span class="p">),</span> <span class="n">StringOWLDatatype</span><span class="p">)</span></div>
@@ -864,10 +874,10 @@
 <div class="viewcode-block" id="RDFLibReasoner.different_individuals">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.different_individuals">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">different_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals that are different from the specified individual.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the individuals that are different from the specified individual."""</span>
         <span class="n">ind_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?other</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; owl:differentFrom ?other </span><span class="se">}}</span>
@@ -889,7 +899,7 @@
 <span class="s2">            </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?other) &amp;&amp; ?other != &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">other</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span></div>
@@ -898,10 +908,10 @@
 <div class="viewcode-block" id="RDFLibReasoner.same_individuals">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.same_individuals">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">same_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals that are the same as the specified individual.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the individuals that are the same as the specified individual."""</span>
         <span class="n">ind_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?same</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; owl:sameAs ?same </span><span class="se">}}</span>
@@ -909,20 +919,20 @@
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> ?same owl:sameAs &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?same) &amp;&amp; ?same != &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">same</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_equivalent_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shared SPARQL for equivalent_object_properties/equivalent_data_properties.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Shared SPARQL for equivalent_object_properties/equivalent_data_properties."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;equivalent properties for non-named property expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"equivalent properties for non-named property expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?equiv</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; owl:equivalentProperty ?equiv </span><span class="se">}}</span>
@@ -930,38 +940,38 @@
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> ?equiv owl:equivalentProperty &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?equiv) &amp;&amp; ?equiv != &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">wrap_cls</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">equiv</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RDFLibReasoner.equivalent_object_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.equivalent_object_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the object properties that are equivalent to the specified object property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the object properties that are equivalent to the specified object property."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_equivalent_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.equivalent_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.equivalent_data_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data properties that are equivalent to the specified data property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the data properties that are equivalent to the specified data property."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_equivalent_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_disjoint_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shared SPARQL for disjoint_object_properties/disjoint_data_properties.</span>
+<span class="w">        </span><span class="sd">"""Shared SPARQL for disjoint_object_properties/disjoint_data_properties.</span>
 
 <span class="sd">        Handles both pairwise owl:propertyDisjointWith triples and the RDF-list-based</span>
-<span class="sd">        owl:AllDisjointProperties/owl:members form (the only form seen in this repo&#39;s test</span>
+<span class="sd">        owl:AllDisjointProperties/owl:members form (the only form seen in this repo's test</span>
 <span class="sd">        ontologies), using the `rdf:rest*/rdf:first` property-path trick to test list membership</span>
 <span class="sd">        without walking the RDF collection in Python.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;disjoint properties for non-named property expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"disjoint properties for non-named property expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?other</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; owl:propertyDisjointWith ?other </span><span class="se">}}</span>
@@ -976,37 +986,37 @@
 <span class="s2">            </span><span class="se">}}</span>
 <span class="s2">            FILTER(isIRI(?other) &amp;&amp; ?other != &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt;)</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">wrap_cls</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">other</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RDFLibReasoner.disjoint_object_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.disjoint_object_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the object properties that are disjoint with the specified object property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the object properties that are disjoint with the specified object property."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disjoint_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RDFLibReasoner.disjoint_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.disjoint_data_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data properties that are disjoint with the specified data property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the data properties that are disjoint with the specified data property."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disjoint_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_sub_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Direct rdfs:subPropertyOf children of prop, using cache.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Direct rdfs:subPropertyOf children of prop, using cache."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache_enabled</span> <span class="ow">and</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span>
 
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?sub</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            ?sub rdfs:subPropertyOf &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; .</span>
 <span class="s2">            FILTER(isIRI(?sub))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">subs</span> <span class="o">=</span> <span class="p">{</span><span class="n">wrap_cls</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">sub</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
 
@@ -1015,18 +1025,18 @@
         <span class="k">return</span> <span class="n">subs</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_super_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">wrap_cls</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Direct rdfs:subPropertyOf parents of prop, using cache.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Direct rdfs:subPropertyOf parents of prop, using cache."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache_enabled</span> <span class="ow">and</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span>
 
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?super</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; rdfs:subPropertyOf ?super .</span>
 <span class="s2">            FILTER(isIRI(?super))</span>
 <span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">supers</span> <span class="o">=</span> <span class="p">{</span><span class="n">wrap_cls</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">super</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
 
@@ -1035,11 +1045,11 @@
         <span class="k">return</span> <span class="n">supers</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_all_related_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">direct_fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterative (non-recursive) transitive closure over a direct sub/super relation.</span>
+<span class="w">        </span><span class="sd">"""Iterative (non-recursive) transitive closure over a direct sub/super relation.</span>
 
 <span class="sd">        Mirrors _all_subclasses/_all_superclasses: no recursion (avoids stack-overflow/circular</span>
 <span class="sd">        dependency issues), and de-duplicates yielded results.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">yielded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">to_process</span> <span class="o">=</span> <span class="p">{</span><span class="n">prop</span><span class="p">}</span>
@@ -1062,9 +1072,9 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.sub_object_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the sub object properties of the specified object property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the sub object properties of the specified object property."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sub_object_properties for non-named property expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"sub_object_properties for non-named property expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">direct_fn</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
@@ -1077,9 +1087,9 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.super_object_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">super_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the super object properties of the specified object property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the super object properties of the specified object property."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;super_object_properties for non-named property expressions not fully implemented&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"super_object_properties for non-named property expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">direct_fn</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
@@ -1091,7 +1101,7 @@
 <div class="viewcode-block" id="RDFLibReasoner.sub_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.sub_data_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the sub data properties of the specified data property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the sub data properties of the specified data property."""</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">direct_fn</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_sub_properties</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_data_prop_cache</span><span class="p">)</span>
 
@@ -1101,7 +1111,7 @@
 <div class="viewcode-block" id="RDFLibReasoner.super_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.super_data_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the super data properties of the specified data property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Gets the super data properties of the specified data property."""</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">direct_fn</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_super_properties</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_data_prop_cache</span><span class="p">)</span>
 
@@ -1111,7 +1121,7 @@
 <div class="viewcode-block" id="RDFLibReasoner.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RDFLibReasoner(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"RDFLibReasoner(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="si">}</span><span class="s2">)"</span></div>
 </div>
 
 </pre></div>

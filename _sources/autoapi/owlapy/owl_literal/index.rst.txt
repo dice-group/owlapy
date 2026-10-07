@@ -22,6 +22,7 @@ Attributes
    owlapy.owl_literal.FloatOWLDatatype
    owlapy.owl_literal.DecimalOWLDatatype
    owlapy.owl_literal.IntOWLDatatype
+   owlapy.owl_literal.LongOWLDatatype
    owlapy.owl_literal.IntegerOWLDatatype
    owlapy.owl_literal.NonNegativeIntegerOWLDatatype
    owlapy.owl_literal.NonPositiveIntegerOWLDatatype
@@ -53,6 +54,14 @@ Classes
    owlapy.owl_literal.OWLLiteral
 
 
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.owl_literal.lexical_literal
+
+
 Module Contents
 ---------------
 
@@ -78,6 +87,9 @@ Module Contents
    :type:  Final
 
 .. py:data:: IntOWLDatatype
+   :type:  Final
+
+.. py:data:: LongOWLDatatype
    :type:  Final
 
 .. py:data:: IntegerOWLDatatype
@@ -482,5 +494,12 @@ Module Contents
 
       :returns: The OWLDatatype that types this literal.
 
+
+
+.. py:function:: lexical_literal(lexical: str, datatype: owlapy.owl_datatype.OWLDatatype) -> OWLLiteral
+
+   Create a literal that keeps *lexical* verbatim under *datatype*, bypassing the Python-value parsing that
+   :class:`OWLLiteral` applies for datatypes it knows (e.g. ``xsd:duration``, ``xsd:gYear``). Used when reading
+   literals of datatypes that have no faithful Python representation, so that nothing is lost or degraded.
 
 

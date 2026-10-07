@@ -81,10 +81,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.owlapi_dlsyntax</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;OWLAPI-based DL Syntax parser and renderer.</span>
+<span></span><span class="sd">"""OWLAPI-based DL Syntax parser and renderer.</span>
 
 <span class="sd">This module provides DL (Description Logic) syntax parsing and rendering</span>
-<span class="sd">using the OWLAPI Java library via JPype. It leverages OWLAPI&#39;s</span>
+<span class="sd">using the OWLAPI Java library via JPype. It leverages OWLAPI's</span>
 <span class="sd">``DLSyntaxObjectRenderer`` and ``DLSyntaxParser`` to handle both OWL class</span>
 <span class="sd">expressions and OWL axioms in DL notation, and uses :class:`OWLAPIMapper`</span>
 <span class="sd">to convert between owlapi Java objects and owlapy Python objects.</span>
@@ -94,16 +94,16 @@
 <span class="sd">    from owlapy.owlapi_dlsyntax import OWLAPIDLSyntaxParser, OWLAPIDLSyntaxRenderer</span>
 
 <span class="sd">    renderer = OWLAPIDLSyntaxRenderer()</span>
-<span class="sd">    parser = OWLAPIDLSyntaxParser(namespace=&quot;http://example.org/&quot;)</span>
+<span class="sd">    parser = OWLAPIDLSyntaxParser(namespace="http://example.org/")</span>
 
 <span class="sd">    # Render an owlapy object to DL syntax string</span>
 <span class="sd">    dl_string = renderer.render(some_owlapy_class_expression)</span>
 <span class="sd">    dl_axiom_string = renderer.render(some_owlapy_axiom)</span>
 
 <span class="sd">    # Parse a DL syntax string to an owlapy object</span>
-<span class="sd">    ce = parser.parse_expression(&quot;∃ r.A ⊓ B&quot;)</span>
-<span class="sd">    axiom = parser.parse_axiom(&quot;A ⊑ ∃ r.B&quot;)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ce = parser.parse_expression("∃ r.A ⊓ B")</span>
+<span class="sd">    axiom = parser.parse_axiom("A ⊑ ∃ r.B")</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
@@ -130,7 +130,7 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxRenderer">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLAPIDLSyntaxRenderer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;DL Syntax renderer backed by OWLAPI&#39;s ``DLSyntaxObjectRenderer``.</span>
+<span class="w">    </span><span class="sd">"""DL Syntax renderer backed by OWLAPI's ``DLSyntaxObjectRenderer``.</span>
 
 <span class="sd">    Renders owlapy OWL objects (class expressions and axioms) into</span>
 <span class="sd">    Description Logic syntax strings by first mapping them to OWLAPI Java</span>
@@ -142,12 +142,12 @@
 <span class="sd">        &gt;&gt;&gt; from owlapy.owl_property import OWLObjectProperty</span>
 <span class="sd">        &gt;&gt;&gt; from owlapy.iri import IRI</span>
 <span class="sd">        &gt;&gt;&gt; renderer = OWLAPIDLSyntaxRenderer()</span>
-<span class="sd">        &gt;&gt;&gt; A = OWLClass(IRI.create(&quot;http://example.org/&quot;, &quot;A&quot;))</span>
-<span class="sd">        &gt;&gt;&gt; r = OWLObjectProperty(IRI.create(&quot;http://example.org/&quot;, &quot;r&quot;))</span>
+<span class="sd">        &gt;&gt;&gt; A = OWLClass(IRI.create("http://example.org/", "A"))</span>
+<span class="sd">        &gt;&gt;&gt; r = OWLObjectProperty(IRI.create("http://example.org/", "r"))</span>
 <span class="sd">        &gt;&gt;&gt; expr = OWLObjectSomeValuesFrom(r, A)</span>
 <span class="sd">        &gt;&gt;&gt; renderer.render(expr)</span>
-<span class="sd">        &#39;∃ r.A&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        '∃ r.A'</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span> <span class="o">=</span> <span class="n">OWLAPIMapper</span><span class="p">()</span>
@@ -156,7 +156,7 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxRenderer.render">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer.render">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render an owlapy OWL object to a DL syntax string.</span>
+<span class="w">        </span><span class="sd">"""Render an owlapy OWL object to a DL syntax string.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obj: An owlapy OWL object — can be an ``OWLClassExpression``,</span>
@@ -169,7 +169,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: If the object type is not supported by</span>
 <span class="sd">                the mapper.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">owlapi_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">owlapi_obj</span><span class="p">))</span></div>
 </div>
@@ -179,7 +179,7 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxParser">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLAPIDLSyntaxParser</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;DL Syntax parser backed by OWLAPI&#39;s ``DLSyntaxParser``.</span>
+<span class="w">    </span><span class="sd">"""DL Syntax parser backed by OWLAPI's ``DLSyntaxParser``.</span>
 
 <span class="sd">    Parses DL syntax strings into owlapy OWL objects (class expressions</span>
 <span class="sd">    and axioms) by delegating to the OWLAPI Java parser, then mapping</span>
@@ -187,16 +187,16 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        namespace: Default namespace for resolving unqualified names.</span>
-<span class="sd">            For example ``&quot;http://example.org/&quot;`` will resolve ``A`` to</span>
-<span class="sd">            ``&lt;http://example.org/#A&gt;``. Note that OWLAPI&#39;s DL parser</span>
+<span class="sd">            For example ``"http://example.org/"`` will resolve ``A`` to</span>
+<span class="sd">            ``&lt;http://example.org/#A&gt;``. Note that OWLAPI's DL parser</span>
 <span class="sd">            appends ``#`` between the namespace and local name.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from owlapy.owlapi_dlsyntax import OWLAPIDLSyntaxParser</span>
-<span class="sd">        &gt;&gt;&gt; parser = OWLAPIDLSyntaxParser(namespace=&quot;http://example.org/&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; ce = parser.parse_expression(&quot;∃ r.A ⊓ B&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; axiom = parser.parse_axiom(&quot;A ⊑ ∃ r.B&quot;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; parser = OWLAPIDLSyntaxParser(namespace="http://example.org/")</span>
+<span class="sd">        &gt;&gt;&gt; ce = parser.parse_expression("∃ r.A ⊓ B")</span>
+<span class="sd">        &gt;&gt;&gt; axiom = parser.parse_axiom("A ⊑ ∃ r.B")</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span> <span class="o">=</span> <span class="n">OWLAPIMapper</span><span class="p">()</span>
@@ -204,19 +204,19 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The default namespace used for resolving unqualified names.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The default namespace used for resolving unqualified names."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span>
 
     <span class="nd">@namespace</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;_OWLAPI_DLSyntaxParser&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a fresh OWLAPI DLSyntaxParser for the given string.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'_OWLAPI_DLSyntaxParser'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a fresh OWLAPI DLSyntaxParser for the given string.</span>
 
 <span class="sd">        The OWLAPI ``DLSyntaxParser`` is stateful (token-stream based),</span>
 <span class="sd">        so a new instance is created for each parse operation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">_OWLAPI_DLSyntaxParser</span><span class="p">(</span><span class="n">jpype</span><span class="o">.</span><span class="n">JString</span><span class="p">(</span><span class="n">expression_str</span><span class="p">))</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">setOWLDataFactory</span><span class="p">(</span><span class="n">_data_factory</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -226,19 +226,19 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxParser.parse_expression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_expression">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a DL syntax string into an owlapy ``OWLClassExpression``.</span>
+<span class="w">        </span><span class="sd">"""Parse a DL syntax string into an owlapy ``OWLClassExpression``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            expression_str: DL syntax string representing a class expression.</span>
-<span class="sd">                Examples: ``&quot;A&quot;``, ``&quot;∃ r.A ⊓ B&quot;``, ``&quot;¬A ⊔ (∀ r.B)&quot;``.</span>
+<span class="sd">                Examples: ``"A"``, ``"∃ r.A ⊓ B"``, ``"¬A ⊔ (∀ r.B)"``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The corresponding owlapy ``OWLClassExpression``.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: If the string cannot be parsed as a valid DL class</span>
-<span class="sd">                expression (wraps OWLAPI&#39;s ``ParseException``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                expression (wraps OWLAPI's ``ParseException``).</span>
+<span class="sd">        """</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_parser</span><span class="p">(</span><span class="n">expression_str</span><span class="p">)</span>
         <span class="n">owlapi_ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parseDescription</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">owlapi_ce</span><span class="p">)</span></div>
@@ -247,11 +247,11 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxParser.parse_axiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axiom">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAxiom</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a DL syntax string into an owlapy ``OWLAxiom``.</span>
+<span class="w">        </span><span class="sd">"""Parse a DL syntax string into an owlapy ``OWLAxiom``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            axiom_str: DL syntax string representing an axiom.</span>
-<span class="sd">                Examples: ``&quot;A ⊑ ∃ r.B&quot;`` (subclass), ``&quot;A ≡ B ⊓ C&quot;``</span>
+<span class="sd">                Examples: ``"A ⊑ ∃ r.B"`` (subclass), ``"A ≡ B ⊓ C"``</span>
 <span class="sd">                (equivalent classes).</span>
 
 <span class="sd">        Returns:</span>
@@ -259,8 +259,8 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: If the string cannot be parsed as a valid DL axiom</span>
-<span class="sd">                (wraps OWLAPI&#39;s ``ParseException``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                (wraps OWLAPI's ``ParseException``).</span>
+<span class="sd">        """</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_parser</span><span class="p">(</span><span class="n">axiom_str</span><span class="p">)</span>
         <span class="n">owlapi_axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parseAxiom</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">owlapi_axiom</span><span class="p">)</span></div>
@@ -269,7 +269,7 @@
 <div class="viewcode-block" id="OWLAPIDLSyntaxParser.parse_axioms">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_dlsyntax/index.html#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axioms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axioms_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a DL syntax string containing multiple axioms.</span>
+<span class="w">        </span><span class="sd">"""Parse a DL syntax string containing multiple axioms.</span>
 
 <span class="sd">        The OWLAPI ``DLSyntaxParser.parseAxioms()`` expects axioms to be</span>
 <span class="sd">        newline-separated.</span>
@@ -282,9 +282,9 @@
 <span class="sd">            A list of owlapy ``OWLAxiom`` objects.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            Exception: If any axiom cannot be parsed (wraps OWLAPI&#39;s</span>
+<span class="sd">            Exception: If any axiom cannot be parsed (wraps OWLAPI's</span>
 <span class="sd">                ``ParseException``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_parser</span><span class="p">(</span><span class="n">axioms_str</span><span class="p">)</span>
         <span class="n">owlapi_axiom_set</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parseAxioms</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">owlapi_axiom_set</span><span class="p">]</span></div>

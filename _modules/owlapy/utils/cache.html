@@ -81,17 +81,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.cache</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;LRU cache adaptation, decoupled from functools.lru_cache internals so it can be reused directly.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""LRU cache adaptation, decoupled from functools.lru_cache internals so it can be reused directly."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span>
 
-<span class="n">_K</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_K&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
-<span class="n">_V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_V&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
+<span class="n">_K</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'_K'</span><span class="p">)</span>  <span class="c1">#:</span>
+<span class="n">_V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'_V'</span><span class="p">)</span>  <span class="c1">#:</span>
 
 
 <div class="viewcode-block" id="LRUCache">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/index.html#owlapy.utils.cache.LRUCache">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LRUCache</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_K</span><span class="p">,</span> <span class="n">_V</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constants shares by all lru cache instances.</span>
+<span class="w">    </span><span class="sd">"""Constants shares by all lru cache instances.</span>
 
 <span class="sd">    Adapted from functools.lru_cache.</span>
 
@@ -101,9 +101,9 @@
 <span class="sd">        NEXT: Name for the link field 1.</span>
 <span class="sd">        KEY: Name for the link field 2.</span>
 <span class="sd">        RESULT: Name for the link field 3.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+    <span class="nb">sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
     <span class="n">PREV</span><span class="p">,</span> <span class="n">NEXT</span><span class="p">,</span> <span class="n">KEY</span><span class="p">,</span> <span class="n">RESULT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>  <span class="c1"># names for the link fields</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -114,7 +114,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">full</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cache_get</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">get</span>  <span class="c1"># bound method to lookup a key or return None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cache_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="fm">__len__</span>  <span class="c1"># get cache size without calling len()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">RLock</span><span class="p">()</span>  <span class="c1"># because linkedlist updates aren&#39;t threadsafe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">RLock</span><span class="p">()</span>  <span class="c1"># because linkedlist updates aren't threadsafe</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># root of the circular doubly linked list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># initialize by pointing to self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxsize</span> <span class="o">=</span> <span class="n">maxsize</span>
@@ -167,7 +167,7 @@
                 <span class="c1"># Keep a reference to the old key and old result to</span>
                 <span class="c1"># prevent their ref counts from going to zero during the</span>
                 <span class="c1"># update. That will prevent potentially arbitrary object</span>
-                <span class="c1"># clean-up code (i.e. __del__) from running while we&#39;re</span>
+                <span class="c1"># clean-up code (i.e. __del__) from running while we're</span>
                 <span class="c1"># still adjusting the links.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">oldroot</span><span class="p">[</span><span class="n">LRUCache</span><span class="o">.</span><span class="n">NEXT</span><span class="p">]</span>
                 <span class="n">oldkey</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="n">LRUCache</span><span class="o">.</span><span class="n">KEY</span><span class="p">]</span>
@@ -193,17 +193,17 @@
 <div class="viewcode-block" id="LRUCache.cache_info">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/index.html#owlapy.utils.cache.LRUCache.cache_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cache_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Report cache statistics.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Report cache statistics."""</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
-            <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;CacheInfo&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;hits&quot;</span><span class="p">,</span> <span class="s2">&quot;misses&quot;</span><span class="p">,</span> <span class="s2">&quot;maxsize&quot;</span><span class="p">,</span> <span class="s2">&quot;currsize&quot;</span><span class="p">])(</span>
+            <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">"CacheInfo"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"hits"</span><span class="p">,</span> <span class="s2">"misses"</span><span class="p">,</span> <span class="s2">"maxsize"</span><span class="p">,</span> <span class="s2">"currsize"</span><span class="p">])(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">misses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_len</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="LRUCache.cache_clear">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/index.html#owlapy.utils.cache.LRUCache.cache_clear">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cache_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the cache and cache statistics.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Clear the cache and cache statistics."""</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>

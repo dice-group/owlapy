@@ -91,19 +91,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 
-<span class="n">_OI</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_OI&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLOntologyID&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
+<span class="n">_OI</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'_OI'</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">'OWLOntologyID'</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
 
 
 <div class="viewcode-block" id="AbstractOWLOntology">
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractOWLOntology</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an OWL 2 Ontology  in the OWL 2 specification.</span>
+<span class="w">    </span><span class="sd">"""Represents an OWL 2 Ontology  in the OWL 2 specification.</span>
 
 <span class="sd">    An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.</span>
 <span class="sd">    An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then</span>
 <span class="sd">    it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2</span>
 <span class="sd">    Structural Specification).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -111,11 +111,11 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.classes_in_signature">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">classes_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the classes in the signature of this object.</span>
+<span class="w">        </span><span class="sd">"""Gets the classes in the signature of this object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Classes in the signature of this object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -123,11 +123,11 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.data_properties_in_signature">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_properties_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the data properties that are in the signature of this object.</span>
+<span class="w">        </span><span class="sd">"""Get the data properties that are in the signature of this object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Data properties that are in the signature of this object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -135,11 +135,11 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.object_properties_in_signature">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_properties_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that obtains the object properties that are in the signature of this object.</span>
+<span class="w">        </span><span class="sd">"""A convenience method that obtains the object properties that are in the signature of this object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Object properties that are in the signature of this object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -147,11 +147,11 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.individuals_in_signature">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">individuals_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that obtains the individuals that are in the signature of this object.</span>
+<span class="w">        </span><span class="sd">"""A convenience method that obtains the individuals that are in the signature of this object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Individuals that are in the signature of this object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -159,14 +159,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.equivalent_classes_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_classes_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLEquivalentClassesAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.</span>
+<span class="w">        </span><span class="sd">""" Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            c: The class for which the EquivalentClasses axioms should be retrieved.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            EquivalentClasses axioms contained in this ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -174,12 +174,12 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.general_class_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">general_class_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression</span>
+<span class="w">        </span><span class="sd">"""Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression</span>
 <span class="sd">           as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            General class axioms contained in this ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -187,14 +187,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.data_property_domain_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_property_domain_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataPropertyDomainAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.</span>
+<span class="w">        </span><span class="sd">"""Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            property: The property which is equal to the property of the retrieved axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The axioms matching the search.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -202,14 +202,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.data_property_range_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_property_range_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataPropertyRangeAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.</span>
+<span class="w">        </span><span class="sd">"""Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            property: The property which is equal to the property of the retrieved axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The axioms matching the search.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -217,14 +217,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.object_property_domain_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_property_domain_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.</span>
+<span class="w">        </span><span class="sd">"""Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            property: The property which is equal to the property of the retrieved axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The axioms matching the search.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -232,14 +232,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.object_property_range_axioms">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_property_range_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.</span>
+<span class="w">        </span><span class="sd">"""Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            property: The property which is equal to the property of the retrieved axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The axioms matching the search.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -247,18 +247,18 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.get_ontology_id">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ontology_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_OI</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the OWLOntologyID belonging to this object.</span>
+<span class="w">        </span><span class="sd">"""Gets the OWLOntologyID belonging to this object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The OWLOntologyID.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="AbstractOWLOntology.is_anonymous">
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.is_anonymous">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_anonymous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether this ontology does contain an IRI or not.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Check whether this ontology does contain an IRI or not."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ontology_id</span><span class="p">()</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">()</span></div>
 
 
@@ -266,14 +266,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.add_axiom">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add the specified axiom/axioms to the ontology.</span>
+<span class="w">        </span><span class="sd">"""Add the specified axiom/axioms to the ontology.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            axiom: Can be a single axiom or a collection of axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -281,14 +281,14 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.remove_axiom">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes the specified axiom/axioms to the ontology.</span>
+<span class="w">        </span><span class="sd">"""Removes the specified axiom/axioms to the ontology.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            axiom: Can be a single axiom or a collection of axioms.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -296,13 +296,13 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology.save">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_iri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IRI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves this ontology, using its IRI to determine where/how the ontology should be</span>
+<span class="w">        </span><span class="sd">"""Saves this ontology, using its IRI to determine where/how the ontology should be</span>
 <span class="sd">         saved.</span>
 
 <span class="sd">         Args:</span>
 <span class="sd">             document_iri: Whether you want to save in a different location.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 </div>
 

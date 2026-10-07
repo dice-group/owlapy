@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.length</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Structural length calculation for OWLClassExpression.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Structural length calculation for OWLClassExpression."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -114,10 +114,10 @@
 <div class="viewcode-block" id="OWLClassExpressionLengthMetric">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/length/index.html#owlapy.utils.OWLClassExpressionLengthMetric">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLClassExpressionLengthMetric</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Length calculation of OWLClassExpression</span>
+<span class="w">    </span><span class="sd">"""Length calculation of OWLClassExpression</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        class_length: Class: &quot;C&quot;</span>
+<span class="sd">        class_length: Class: "C"</span>
 <span class="sd">        object_intersection_length: Intersection: A ⨅ B</span>
 <span class="sd">        object_union_length: Union: A ⨆ B</span>
 <span class="sd">        object_complement_length: Complement: ¬ C</span>
@@ -139,15 +139,15 @@
 <span class="sd">        data_complement_length: Data Complement: ¬datatype</span>
 <span class="sd">        data_intersection_length: Data Intersection: datatype ⨅ datatype</span>
 <span class="sd">        data_union_length: Data Union: datatype ⨆ datatype</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;class_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_intersection_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_union_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_complement_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;object_some_values_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_all_values_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_has_value_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;object_cardinality_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_has_self_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_one_of_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;data_some_values_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_all_values_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_has_value_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;data_cardinality_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_property_length&#39;</span><span class="p">,</span> <span class="s1">&#39;object_inverse_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_property_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;datatype_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_one_of_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_complement_length&#39;</span><span class="p">,</span> <span class="s1">&#39;data_intersection_length&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;data_union_length&#39;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">'class_length'</span><span class="p">,</span> <span class="s1">'object_intersection_length'</span><span class="p">,</span> <span class="s1">'object_union_length'</span><span class="p">,</span> <span class="s1">'object_complement_length'</span><span class="p">,</span> \
+                <span class="s1">'object_some_values_length'</span><span class="p">,</span> <span class="s1">'object_all_values_length'</span><span class="p">,</span> <span class="s1">'object_has_value_length'</span><span class="p">,</span> \
+                <span class="s1">'object_cardinality_length'</span><span class="p">,</span> <span class="s1">'object_has_self_length'</span><span class="p">,</span> <span class="s1">'object_one_of_length'</span><span class="p">,</span> \
+                <span class="s1">'data_some_values_length'</span><span class="p">,</span> <span class="s1">'data_all_values_length'</span><span class="p">,</span> <span class="s1">'data_has_value_length'</span><span class="p">,</span> \
+                <span class="s1">'data_cardinality_length'</span><span class="p">,</span> <span class="s1">'object_property_length'</span><span class="p">,</span> <span class="s1">'object_inverse_length'</span><span class="p">,</span> <span class="s1">'data_property_length'</span><span class="p">,</span> \
+                <span class="s1">'datatype_length'</span><span class="p">,</span> <span class="s1">'data_one_of_length'</span><span class="p">,</span> <span class="s1">'data_complement_length'</span><span class="p">,</span> <span class="s1">'data_intersection_length'</span><span class="p">,</span> \
+                <span class="s1">'data_union_length'</span>
 
     <span class="n">class_length</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">object_intersection_length</span><span class="p">:</span> <span class="nb">int</span>
@@ -222,7 +222,7 @@
 <div class="viewcode-block" id="OWLClassExpressionLengthMetric.get_default">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/length/index.html#owlapy.utils.OWLClassExpressionLengthMetric.get_default">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_default</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLClassExpressionLengthMetric&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_default</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s1">'OWLClassExpressionLengthMetric'</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">OWLClassExpressionLengthMetric</span><span class="p">(</span>
             <span class="n">class_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">object_intersection_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>

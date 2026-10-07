@@ -68,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../nir/index.html">owlapy.nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
@@ -77,6 +78,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owl_literal</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.OWLTopObjectProperty"><code class="docutils literal notranslate"><span class="pre">OWLTopObjectProperty</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.OWLBottomObjectProperty"><code class="docutils literal notranslate"><span class="pre">OWLBottomObjectProperty</span></code></a></li>
@@ -86,6 +88,7 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.FloatOWLDatatype"><code class="docutils literal notranslate"><span class="pre">FloatOWLDatatype</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.DecimalOWLDatatype"><code class="docutils literal notranslate"><span class="pre">DecimalOWLDatatype</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.IntOWLDatatype"><code class="docutils literal notranslate"><span class="pre">IntOWLDatatype</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.LongOWLDatatype"><code class="docutils literal notranslate"><span class="pre">LongOWLDatatype</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.IntegerOWLDatatype"><code class="docutils literal notranslate"><span class="pre">IntegerOWLDatatype</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.NonNegativeIntegerOWLDatatype"><code class="docutils literal notranslate"><span class="pre">NonNegativeIntegerOWLDatatype</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.NonPositiveIntegerOWLDatatype"><code class="docutils literal notranslate"><span class="pre">NonPositiveIntegerOWLDatatype</span></code></a></li>
@@ -154,6 +157,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_literal.OWLLiteral.get_datatype"><code class="docutils literal notranslate"><span class="pre">OWLLiteral.get_datatype()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_literal.lexical_literal"><code class="docutils literal notranslate"><span class="pre">lexical_literal()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -162,6 +166,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_nir/index.html">owlapy.owl_reasoner_nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
@@ -239,64 +244,67 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.IntOWLDatatype" title="owlapy.owl_literal.IntOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IntOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.IntegerOWLDatatype" title="owlapy.owl_literal.IntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IntegerOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.LongOWLDatatype" title="owlapy.owl_literal.LongOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LongOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.NonNegativeIntegerOWLDatatype" title="owlapy.owl_literal.NonNegativeIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NonNegativeIntegerOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.IntegerOWLDatatype" title="owlapy.owl_literal.IntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IntegerOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.NonPositiveIntegerOWLDatatype" title="owlapy.owl_literal.NonPositiveIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NonPositiveIntegerOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.NonNegativeIntegerOWLDatatype" title="owlapy.owl_literal.NonNegativeIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NonNegativeIntegerOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.NegativeIntegerOWLDatatype" title="owlapy.owl_literal.NegativeIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NegativeIntegerOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.NonPositiveIntegerOWLDatatype" title="owlapy.owl_literal.NonPositiveIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NonPositiveIntegerOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.PositiveIntegerOWLDatatype" title="owlapy.owl_literal.PositiveIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PositiveIntegerOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.NegativeIntegerOWLDatatype" title="owlapy.owl_literal.NegativeIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NegativeIntegerOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.BooleanOWLDatatype" title="owlapy.owl_literal.BooleanOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BooleanOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.PositiveIntegerOWLDatatype" title="owlapy.owl_literal.PositiveIntegerOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PositiveIntegerOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.StringOWLDatatype" title="owlapy.owl_literal.StringOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StringOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.BooleanOWLDatatype" title="owlapy.owl_literal.BooleanOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BooleanOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.DateOWLDatatype" title="owlapy.owl_literal.DateOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DateOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.StringOWLDatatype" title="owlapy.owl_literal.StringOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StringOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.TimeOWLDatatype" title="owlapy.owl_literal.TimeOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.DateOWLDatatype" title="owlapy.owl_literal.DateOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DateOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.GYearMonthOWLDatatype" title="owlapy.owl_literal.GYearMonthOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GYearMonthOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.TimeOWLDatatype" title="owlapy.owl_literal.TimeOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.GMonthDayOWLDatatype" title="owlapy.owl_literal.GMonthDayOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMonthDayOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.GYearMonthOWLDatatype" title="owlapy.owl_literal.GYearMonthOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GYearMonthOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.GYearOWLDatatype" title="owlapy.owl_literal.GYearOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GYearOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.GMonthDayOWLDatatype" title="owlapy.owl_literal.GMonthDayOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMonthDayOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.GMonthOWLDatatype" title="owlapy.owl_literal.GMonthOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMonthOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.GYearOWLDatatype" title="owlapy.owl_literal.GYearOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GYearOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.GDayOWLDatatype" title="owlapy.owl_literal.GDayOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GDayOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.GMonthOWLDatatype" title="owlapy.owl_literal.GMonthOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMonthOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.DateTimeOWLDatatype" title="owlapy.owl_literal.DateTimeOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DateTimeOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.GDayOWLDatatype" title="owlapy.owl_literal.GDayOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GDayOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.DurationOWLDatatype" title="owlapy.owl_literal.DurationOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DurationOWLDatatype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.DateTimeOWLDatatype" title="owlapy.owl_literal.DateTimeOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DateTimeOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.TopOWLDatatype" title="owlapy.owl_literal.TopOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TopOWLDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.DurationOWLDatatype" title="owlapy.owl_literal.DurationOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DurationOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.NUMERIC_DATATYPES" title="owlapy.owl_literal.NUMERIC_DATATYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NUMERIC_DATATYPES</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.TopOWLDatatype" title="owlapy.owl_literal.TopOWLDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TopOWLDatatype</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.TIME_DATATYPES" title="owlapy.owl_literal.TIME_DATATYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TIME_DATATYPES</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.NUMERIC_DATATYPES" title="owlapy.owl_literal.NUMERIC_DATATYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NUMERIC_DATATYPES</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.Literals" title="owlapy.owl_literal.Literals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.TIME_DATATYPES" title="owlapy.owl_literal.TIME_DATATYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TIME_DATATYPES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.Literals" title="owlapy.owl_literal.Literals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literals</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -311,6 +319,16 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLiteral</span></code></a></p></td>
 <td><p>Literals represent data values such as particular strings or integers. They are analogous to typed RDF</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_literal.lexical_literal" title="owlapy.owl_literal.lexical_literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lexical_literal</span></code></a>(→ OWLLiteral)</p></td>
+<td><p>Create a literal that keeps <em>lexical</em> verbatim under <em>datatype</em>, bypassing the Python-value parsing that</p></td>
 </tr>
 </tbody>
 </table>
@@ -355,6 +373,11 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="owlapy.owl_literal.IntOWLDatatype">
 <span class="sig-prename descclassname"><span class="pre">owlapy.owl_literal.</span></span><span class="sig-name descname"><span class="pre">IntOWLDatatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Final</span></span><a class="headerlink" href="#owlapy.owl_literal.IntOWLDatatype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.owl_literal.LongOWLDatatype">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_literal.</span></span><span class="sig-name descname"><span class="pre">LongOWLDatatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Final</span></span><a class="headerlink" href="#owlapy.owl_literal.LongOWLDatatype" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -482,7 +505,7 @@
 <ul class="simple">
 <li><p>name lookup:</p></li>
 </ul>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Color</span><span class="p">[</span><span class="s1">&#39;RED&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Color</span><span class="p">[</span><span class="s1">'RED'</span><span class="p">]</span>
 <span class="go">&lt;Color.RED: 1&gt;</span>
 </pre></div>
 </div>
@@ -863,6 +886,14 @@ and enumeration class (not pure string value).</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.owl_literal.lexical_literal">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_literal.</span></span><span class="sig-name descname"><span class="pre">lexical_literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lexical</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_datatype/index.html#owlapy.owl_datatype.OWLDatatype" title="owlapy.owl_datatype.OWLDatatype"><span class="pre">owlapy.owl_datatype.OWLDatatype</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">OWLLiteral</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_literal.html#lexical_literal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_literal.lexical_literal" title="Link to this definition"></a></dt>
+<dd><p>Create a literal that keeps <em>lexical</em> verbatim under <em>datatype</em>, bypassing the Python-value parsing that
+<a class="reference internal" href="#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><code class="xref py py-class docutils literal notranslate"><span class="pre">OWLLiteral</span></code></a> applies for datatypes it knows (e.g. <code class="docutils literal notranslate"><span class="pre">xsd:duration</span></code>, <code class="docutils literal notranslate"><span class="pre">xsd:gYear</span></code>). Used when reading
+literals of datatypes that have no faithful Python representation, so that nothing is lost or degraded.</p>
 </dd></dl>
 
 </section>

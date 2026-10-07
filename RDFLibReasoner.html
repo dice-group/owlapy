@@ -111,13 +111,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
 
 <span class="c1"># Load ontology</span>
-<span class="n">onto</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">&quot;path/to/ontology.owl&quot;</span><span class="p">)</span>
+<span class="n">onto</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">"path/to/ontology.owl"</span><span class="p">)</span>
 
 <span class="c1"># Create reasoner (drop-in replacement for StructuralReasoner)</span>
 <span class="n">reasoner</span> <span class="o">=</span> <span class="n">RDFLibReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Use like StructuralReasoner</span>
-<span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://example.com#Male&quot;</span><span class="p">))</span>
+<span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">"http://example.com#Male"</span><span class="p">))</span>
 <span class="n">instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">male</span><span class="p">))</span>
 <span class="n">subclasses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="n">superclasses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
@@ -145,7 +145,7 @@
 <p>This creates circular dependency: <code class="docutils literal notranslate"><span class="pre">sub_classes</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">super_classes</span></code></p>
 <p><strong>Solution in RDFLibReasoner:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_all_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Non-recursive, iterative traversal - no circular dependencies.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Non-recursive, iterative traversal - no circular dependencies."""</span>
     <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">to_process</span> <span class="o">=</span> <span class="p">{</span><span class="bp">cls</span><span class="p">}</span>
     
@@ -180,16 +180,16 @@
 <li><p>Predictable performance characteristics</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_direct_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean SPARQL query - no surprises.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Clean SPARQL query - no surprises."""</span>
     <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
     
-    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">    SELECT DISTINCT ?sub</span>
 <span class="s2">    WHERE </span><span class="se">{{</span>
 <span class="s2">        ?sub rdfs:subClassOf &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; .</span>
 <span class="s2">        FILTER(isIRI(?sub))</span>
 <span class="s2">    </span><span class="se">}}</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
     
     <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">sub</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
@@ -205,14 +205,14 @@
 </ul>
 <p><strong>RDFLibReasoner:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_build_class_hierarchy_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;One-time SPARQL query to build complete hierarchy.&quot;&quot;&quot;</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""One-time SPARQL query to build complete hierarchy."""</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">    SELECT ?sub ?super</span>
 <span class="s2">    WHERE {</span>
 <span class="s2">        ?sub rdfs:subClassOf ?super .</span>
 <span class="s2">        FILTER(isIRI(?sub) &amp;&amp; isIRI(?super))</span>
 <span class="s2">    }</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
     <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
     
     <span class="c1"># Build bidirectional lookup tables</span>
@@ -266,7 +266,7 @@
 <section id="instances-ce-direct-false-timeout-1000">
 <h4><code class="docutils literal notranslate"><span class="pre">instances(ce,</span> <span class="pre">direct=False,</span> <span class="pre">timeout=1000)</span></code><a class="headerlink" href="#instances-ce-direct-false-timeout-1000" title="Link to this heading"></a></h4>
 <p>Get individuals that are instances of the class expression.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">males</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://ex.com#Male&quot;</span><span class="p">)))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">males</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">"http://ex.com#Male"</span><span class="p">)))</span>
 </pre></div>
 </div>
 </section>
@@ -309,7 +309,7 @@
 <section id="object-property-values-ind-pe-direct-true">
 <h4><code class="docutils literal notranslate"><span class="pre">object_property_values(ind,</span> <span class="pre">pe,</span> <span class="pre">direct=True)</span></code><a class="headerlink" href="#object-property-values-ind-pe-direct-true" title="Link to this heading"></a></h4>
 <p>Get object property values for an individual.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">has_child</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://ex.com#hasChild&quot;</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">has_child</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">"http://ex.com#hasChild"</span><span class="p">))</span>
 <span class="n">children</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">father_ind</span><span class="p">,</span> <span class="n">has_child</span><span class="p">)</span>
 </pre></div>
 </div>

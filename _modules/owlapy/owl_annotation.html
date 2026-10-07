@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.owl_annotation</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;OWL Annotations&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""OWL Annotations"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span>
@@ -90,17 +90,17 @@
 <div class="viewcode-block" id="OWLAnnotationObject">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationObject">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLAnnotationObject</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A marker interface for the values (objects) of annotations.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A marker interface for the values (objects) of annotations."""</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="c1"># noinspection PyMethodMayBeStatic</span>
 <div class="viewcode-block" id="OWLAnnotationObject.as_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationObject.as_iri">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            if the value is an IRI, return it. Return None otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -108,10 +108,10 @@
 <div class="viewcode-block" id="OWLAnnotationObject.as_anonymous_individual">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationObject.as_anonymous_individual">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_anonymous_individual</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            if the value is an anonymous, return it. Return None otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
@@ -120,7 +120,7 @@
 <div class="viewcode-block" id="OWLAnnotationSubject">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationSubject">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLAnnotationSubject</span><span class="p">(</span><span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A marker interface for annotation subjects, which can either be IRIs or anonymous individuals&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A marker interface for annotation subjects, which can either be IRIs or anonymous individuals"""</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">pass</span></div>
 
@@ -129,16 +129,16 @@
 <div class="viewcode-block" id="OWLAnnotationValue">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationValue">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLAnnotationValue</span><span class="p">(</span><span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual."""</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="OWLAnnotationValue.is_literal">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationValue.is_literal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            true if the annotation value is a literal</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -146,10 +146,10 @@
 <div class="viewcode-block" id="OWLAnnotationValue.as_literal">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationValue.as_literal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            if the value is a literal, returns it. Return None otherwise</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 

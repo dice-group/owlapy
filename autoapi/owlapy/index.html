@@ -68,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nir/index.html">owlapy.nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_annotation/index.html">owlapy.owl_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_axiom/index.html">owlapy.owl_axiom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
@@ -79,6 +80,7 @@
 <li class="toctree-l3"><a class="reference internal" href="owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="owl_reasoner_nir/index.html">owlapy.owl_reasoner_nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
@@ -99,6 +101,45 @@
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.owl_expression_to_sparql"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_sparql()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.owl_expression_to_sparql_with_confusion_matrix"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_sparql_with_confusion_matrix()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.get_dl_expressivity"><code class="docutils literal notranslate"><span class="pre">get_dl_expressivity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#owlapy.NIRReasoner"><code class="docutils literal notranslate"><span class="pre">NIRReasoner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.ontology"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.ontology</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.th"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.th</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.chunksize"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.chunksize</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.symbolic_max_length"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.symbolic_max_length</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.dls_renderer"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.dls_renderer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.device"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.device</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.model_name"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.model_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.all_individuals_arr"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.all_individuals_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.all_ind_embs"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.all_ind_embs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.reset_retrieval_stats"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.reset_retrieval_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.retrieval_stats"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.retrieval_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.membership_scores"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.membership_scores()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.instances"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.instances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.get_root_ontology()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.__str__"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.__str__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.data_property_domains"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.data_property_domains()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.object_property_domains"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.object_property_domains()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.object_property_ranges"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.object_property_ranges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.equivalent_classes"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.equivalent_classes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.disjoint_classes"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.disjoint_classes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.different_individuals"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.different_individuals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.same_individuals"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.same_individuals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.equivalent_object_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.equivalent_object_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.equivalent_data_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.equivalent_data_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.data_property_values"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.data_property_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.object_property_values"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.object_property_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.sub_classes"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.sub_classes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.super_classes"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.super_classes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.disjoint_object_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.disjoint_object_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.disjoint_data_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.disjoint_data_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.sub_data_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.sub_data_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.super_data_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.super_data_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.sub_object_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.sub_object_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.super_object_properties"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.super_object_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.types"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.types()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#owlapy.NIRReasoner.data_property_ranges"><code class="docutils literal notranslate"><span class="pre">NIRReasoner.data_property_ranges()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.RDFLibReasoner"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#owlapy.RDFLibReasoner.instances"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.instances()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#owlapy.RDFLibReasoner.sub_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.sub_classes()</span></code></a></li>
@@ -176,6 +217,7 @@
 <li class="toctree-l1"><a class="reference internal" href="marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nir/index.html">owlapy.nir</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_annotation/index.html">owlapy.owl_annotation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_axiom/index.html">owlapy.owl_axiom</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
@@ -187,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="owl_reasoner_nir/index.html">owlapy.owl_reasoner_nir</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
@@ -206,7 +249,10 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.RDFLibReasoner" title="owlapy.RDFLibReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.NIRReasoner" title="owlapy.NIRReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NIRReasoner</span></code></a></p></td>
+<td><p>Neural instance retriever as an <a class="reference internal" href="abstracts/index.html#owlapy.abstracts.AbstractOWLReasoner" title="owlapy.abstracts.AbstractOWLReasoner"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOWLReasoner</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.RDFLibReasoner" title="owlapy.RDFLibReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code></a></p></td>
 <td><p>A pure Python OWL reasoner based on RDFLib.</p></td>
 </tr>
 </tbody>
@@ -296,6 +342,537 @@ validate: if set to True, validates the generated SPARQL query using rdflib.pars
 it is the only ontology backend that exposes RBox axioms).</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.</span></span><span class="sig-name descname"><span class="pre">NIRReasoner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">embeddings_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbolic_max_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_reasoner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="abstracts/abstract_owl_reasoner/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner" title="owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner"><span class="pre">owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstracts/abstract_owl_reasoner/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner" title="owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner</span></code></a></p>
+<p>Neural instance retriever as an <a class="reference internal" href="abstracts/index.html#owlapy.abstracts.AbstractOWLReasoner" title="owlapy.abstracts.AbstractOWLReasoner"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOWLReasoner</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – Ontology whose named individuals are scored.</p></li>
+<li><p><strong>model_path</strong> – Directory of a pretrained NIR encoder (<code class="docutils literal notranslate"><span class="pre">config.json</span></code> + weights + tokenizer).</p></li>
+<li><p><strong>embeddings_path</strong> – Path to <code class="docutils literal notranslate"><span class="pre">*entity_embeddings.csv</span></code>, or a dataset / embeddings directory.
+Composite also loads a sibling <code class="docutils literal notranslate"><span class="pre">*relation_embeddings.csv</span></code> when present.</p></li>
+<li><p><strong>dataset_dir</strong> – Alternative to <code class="docutils literal notranslate"><span class="pre">embeddings_path</span></code>: a NIR dataset folder (<code class="docutils literal notranslate"><span class="pre">kb/</span></code>, <code class="docutils literal notranslate"><span class="pre">embeddings/</span></code>).</p></li>
+<li><p><strong>th</strong> – Membership threshold (paper default 0.5).</p></li>
+<li><p><strong>chunksize</strong> – Individuals scored per forward pass.</p></li>
+<li><p><strong>symbolic_max_length</strong> – Concepts of this length or shorter are answered by the fallback
+symbolic reasoner. Encoders were trained on longer expressions; named classes
+(length 1) should stay symbolic.</p></li>
+<li><p><strong>model</strong> – Optional architecture name (<code class="docutils literal notranslate"><span class="pre">transformer</span></code> / <code class="docutils literal notranslate"><span class="pre">lstm</span></code> / <code class="docutils literal notranslate"><span class="pre">gru</span></code> / <code class="docutils literal notranslate"><span class="pre">composite</span></code>).
+Inferred from <code class="docutils literal notranslate"><span class="pre">config.json</span></code> when omitted.</p></li>
+<li><p><strong>device</strong> – Torch device. Defaults to CUDA when available.</p></li>
+<li><p><strong>fallback_reasoner</strong> – Optional TBox reasoner. Defaults to StructuralReasoner / RDFLibReasoner.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.ontology">
+<span class="sig-name descname"><span class="pre">ontology</span></span><a class="headerlink" href="#owlapy.NIRReasoner.ontology" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.th">
+<span class="sig-name descname"><span class="pre">th</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></span><a class="headerlink" href="#owlapy.NIRReasoner.th" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.chunksize">
+<span class="sig-name descname"><span class="pre">chunksize</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1024</span></span><a class="headerlink" href="#owlapy.NIRReasoner.chunksize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.symbolic_max_length">
+<span class="sig-name descname"><span class="pre">symbolic_max_length</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#owlapy.NIRReasoner.symbolic_max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.dls_renderer">
+<span class="sig-name descname"><span class="pre">dls_renderer</span></span><a class="headerlink" href="#owlapy.NIRReasoner.dls_renderer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.device">
+<span class="sig-name descname"><span class="pre">device</span></span><a class="headerlink" href="#owlapy.NIRReasoner.device" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.model_name">
+<span class="sig-name descname"><span class="pre">model_name</span></span><a class="headerlink" href="#owlapy.NIRReasoner.model_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.all_individuals_arr">
+<span class="sig-name descname"><span class="pre">all_individuals_arr</span></span><a class="headerlink" href="#owlapy.NIRReasoner.all_individuals_arr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.all_ind_embs">
+<span class="sig-name descname"><span class="pre">all_ind_embs</span></span><a class="headerlink" href="#owlapy.NIRReasoner.all_ind_embs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.reset_retrieval_stats">
+<span class="sig-name descname"><span class="pre">reset_retrieval_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.reset_retrieval_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.reset_retrieval_stats" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.retrieval_stats">
+<span class="sig-name descname"><span class="pre">retrieval_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="converter/index.html#owlapy.converter.VariablesMapping.dict" title="owlapy.converter.VariablesMapping.dict"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.retrieval_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.retrieval_stats" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.membership_scores">
+<span class="sig-name descname"><span class="pre">membership_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.membership_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.membership_scores" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.instances">
+<span class="sig-name descname"><span class="pre">instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.instances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.instances" title="Link to this definition"></a></dt>
+<dd><p>Gets the individuals which are instances of the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose instances are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct instances should be retrieved (True), or if all instances should be
+retrieved (False).</p></li>
+<li><p><strong>timeout</strong> – Time limit in seconds until results must be returned, else empty set is returned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, each named individual j where the set of reasoner axioms entails
+DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
+entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then
+nothing returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.get_root_ontology">
+<span class="sig-name descname"><span class="pre">get_root_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.get_root_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.get_root_ontology" title="Link to this definition"></a></dt>
+<dd><p>Gets the “root” ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
+this ontology and its import’s closure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.data_property_domains">
+<span class="sig-name descname"><span class="pre">data_property_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.data_property_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.data_property_domains" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Gets the class expressions that are the direct or indirect domains of this property with respect to the</dt><dd><p>imports closure of the root ontology.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pe</strong> – The property expression whose domains are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Let N = equivalent_classes(DataSomeValuesFrom(pe rdfs:Literal)). If direct is True: then if N is not
+empty then the return value is N, else the return value is the result of
+super_classes(DataSomeValuesFrom(pe rdfs:Literal), true). If direct is False: then the result of
+super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.
+(Note, rdfs:Literal is the top datatype).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.object_property_domains">
+<span class="sig-name descname"><span class="pre">object_property_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.object_property_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.object_property_domains" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Gets the class expressions that are the direct or indirect domains of this property with respect to the</dt><dd><p>imports closure of the root ontology.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pe</strong> – The property expression whose domains are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Let N = equivalent_classes(ObjectSomeValuesFrom(pe owl:Thing)). If direct is True: then if N is not empty
+then the return value is N, else the return value is the result of
+super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of
+super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.object_property_ranges">
+<span class="sig-name descname"><span class="pre">object_property_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.object_property_ranges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.object_property_ranges" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Gets the class expressions that are the direct or indirect ranges of this property with respect to the</dt><dd><p>imports closure of the root ontology.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pe</strong> – The property expression whose ranges are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Let N = equivalent_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing)). If direct is True: then
+if N is not empty then the return value is N, else the return value is the result of
+super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), true). If direct is False: then
+the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N
+if N is non-empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.equivalent_classes">
+<span class="sig-name descname"><span class="pre">equivalent_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.equivalent_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.equivalent_classes" title="Link to this definition"></a></dt>
+<dd><p>Gets the class expressions that are equivalent to the specified class expression with respect to the set of
+reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ce</strong> – The class expression whose equivalent classes are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All class expressions C where the root ontology imports closure entails EquivalentClasses(ce C). If ce is
+not a class name (i.e. it is an anonymous class expression) and there are no such classes C then there will
+be no result. If ce is unsatisfiable with respect to the set of reasoner axioms then  owl:Nothing, i.e. the
+bottom node, will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.disjoint_classes">
+<span class="sig-name descname"><span class="pre">disjoint_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.disjoint_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.disjoint_classes" title="Link to this definition"></a></dt>
+<dd><p>Gets the class expressions that are disjoint with specified class expression with respect to the set of
+reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ce</strong> – The class expression whose disjoint classes are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All class expressions D where the set of reasoner axioms entails EquivalentClasses(D ObjectComplementOf(ce))
+or StrictSubClassOf(D ObjectComplementOf(ce)).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.different_individuals">
+<span class="sig-name descname"><span class="pre">different_individuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.different_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.different_individuals" title="Link to this definition"></a></dt>
+<dd><p>Gets the individuals that are different from the specified individual with respect to the set of
+reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ind</strong> – The individual whose different individuals are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.same_individuals">
+<span class="sig-name descname"><span class="pre">same_individuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.same_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.same_individuals" title="Link to this definition"></a></dt>
+<dd><p>Gets the individuals that are the same as the specified individual with respect to the set of
+reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ind</strong> – The individual whose same individuals are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All individuals x where the root ontology imports closure entails SameIndividual(ind x).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.equivalent_object_properties">
+<span class="sig-name descname"><span class="pre">equivalent_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.equivalent_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.equivalent_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the simplified object properties that are equivalent to the specified object property with respect
+to the set of reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>op</strong> – The object property whose equivalent object properties are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All simplified object properties e where the root ontology imports closure entails
+EquivalentObjectProperties(op e). If op is unsatisfiable with respect to the set of reasoner axioms
+then owl:bottomDataProperty will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.equivalent_data_properties">
+<span class="sig-name descname"><span class="pre">equivalent_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.equivalent_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.equivalent_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the data properties that are equivalent to the specified data property with respect to the set of
+reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dp</strong> – The data property whose equivalent data properties are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All data properties e where the root ontology imports closure entails EquivalentDataProperties(dp e).
+If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will
+be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.data_property_values">
+<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> – The owl entity (usually an individual) that is the subject of the data property values.</p></li>
+<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified entity.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Can be used to get values, for example, of ‘label’ property of owl entities such as classes and properties
+too (not only individuals).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+axioms entails DataPropertyAssertion(pe ind l).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.object_property_values">
+<span class="sig-name descname"><span class="pre">object_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.object_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.object_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the object property values for the specified individual and object property expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind</strong> – The individual that is the subject of the object property values.</p></li>
+<li><p><strong>pe</strong> – The object property expression whose values are to be retrieved for the specified individual.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The named individuals such that for each individual j, the set of reasoner axioms entails
+ObjectPropertyAssertion(pe ind j).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.sub_classes">
+<span class="sig-name descname"><span class="pre">sub_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.sub_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.sub_classes" title="Link to this definition"></a></dt>
+<dd><p>Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class
+expression with respect to the reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose strict (direct) subclasses are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct subclasses should be retrieved (True) or if the all subclasses
+(descendant) classes should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, each class C where reasoner axioms entails DirectSubClassOf(C, ce). If direct is False,
+each class C where reasoner axioms entails StrictSubClassOf(C, ce). If ce is equivalent to owl:Nothing then
+nothing will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.super_classes">
+<span class="sig-name descname"><span class="pre">super_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.super_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.super_classes" title="Link to this definition"></a></dt>
+<dd><p>Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
+class expression with respect to the imports closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose strict (direct) super classes are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct super classes should be retrieved (True) or if the all super classes
+(ancestors) classes should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, each class C where the set of reasoner axioms entails DirectSubClassOf(ce, C).
+If direct is False, each class C where  set of reasoner axioms entails StrictSubClassOf(ce, C).
+If ce is equivalent to owl:Thing then nothing will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.disjoint_object_properties">
+<span class="sig-name descname"><span class="pre">disjoint_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.disjoint_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.disjoint_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the simplified object properties that are disjoint with the specified object property with respect
+to the set of reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>op</strong> – The object property whose disjoint object properties are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All simplified object properties e where the root ontology imports closure entails
+EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or
+StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.disjoint_data_properties">
+<span class="sig-name descname"><span class="pre">disjoint_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.disjoint_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.disjoint_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the data properties that are disjoint with the specified data property with respect
+to the set of reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dp</strong> – The data property whose disjoint data properties are to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All data properties e where the root ontology imports closure entails
+EquivalentDataProperties(e DataPropertyComplementOf(dp)) or
+StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.sub_data_properties">
+<span class="sig-name descname"><span class="pre">sub_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.sub_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.sub_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the set of named data properties that are the strict (potentially direct) subproperties of the
+specified data property expression with respect to the imports closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dp</strong> – The data property whose strict (direct) subproperties are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+(descendants) should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).
+If direct is False, each property P where the set of reasoner axioms entails
+StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be
+returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.super_data_properties">
+<span class="sig-name descname"><span class="pre">super_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.super_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.super_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the stream of data properties that are the strict (potentially direct) super properties of the
+specified data property with respect to the imports closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dp</strong> (<a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><em>OWLDataProperty</em></a>) – The data property whose super properties are to be retrieved.</p></li>
+<li><p><strong>direct</strong> (<em>bool</em>) – Specifies if the direct super properties should be retrieved (True) or if the all
+super properties (ancestors) should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of super properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.sub_object_properties">
+<span class="sig-name descname"><span class="pre">sub_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.sub_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.sub_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the stream of simplified object property expressions that are the strict (potentially direct)
+subproperties of the specified object property expression with respect to the imports closure of the root
+ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op</strong> – The object property expression whose strict (direct) subproperties are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+(descendants) should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, simplified object property expressions, such that for each simplified object property
+expression, P, the set of reasoner axioms entails DirectSubObjectPropertyOf(P, pe).
+If direct is False, simplified object property expressions, such that for each simplified object property
+expression, P, the set of reasoner axioms entails StrictSubObjectPropertyOf(P, pe).
+If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.super_object_properties">
+<span class="sig-name descname"><span class="pre">super_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.super_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.super_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the stream of object properties that are the strict (potentially direct) super properties of the
+specified object property with respect to the imports closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op</strong> (<a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><em>OWLObjectPropertyExpression</em></a>) – The object property expression whose super properties are to be
+retrieved.</p></li>
+<li><p><strong>direct</strong> (<em>bool</em>) – Specifies if the direct super properties should be retrieved (True) or if the all
+super properties (ancestors) should be retrieved (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of super properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.types" title="Link to this definition"></a></dt>
+<dd><p>Gets the named classes which are (potentially direct) types of the specified named individual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind</strong> – The individual whose types are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct types should be retrieved (True), or if all types should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If direct is True, each named class C where the set of reasoner axioms entails
+DirectClassAssertion(C, ind). If direct is False, each named class C where the set of reasoner axioms
+entails ClassAssertion(C, ind).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.NIRReasoner.data_property_ranges">
+<span class="sig-name descname"><span class="pre">data_property_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/owlapy/owl_reasoner_nir.html#NIRReasoner.data_property_ranges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.NIRReasoner.data_property_ranges" title="Link to this definition"></a></dt>
+<dd><p>Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports
+closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pe</strong> – The property expression whose ranges are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

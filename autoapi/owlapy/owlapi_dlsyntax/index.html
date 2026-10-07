@@ -68,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../nir/index.html">owlapy.nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
@@ -79,6 +80,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_nir/index.html">owlapy.owl_reasoner_nir</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owlapi_dlsyntax</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
@@ -154,15 +156,15 @@ to convert between owlapi Java objects and owlapy Python objects.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_dlsyntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">,</span> <span class="n">OWLAPIDLSyntaxRenderer</span>
 
 <span class="n">renderer</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxRenderer</span><span class="p">()</span>
-<span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">)</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">"http://example.org/"</span><span class="p">)</span>
 
 <span class="c1"># Render an owlapy object to DL syntax string</span>
 <span class="n">dl_string</span> <span class="o">=</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">some_owlapy_class_expression</span><span class="p">)</span>
 <span class="n">dl_axiom_string</span> <span class="o">=</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">some_owlapy_axiom</span><span class="p">)</span>
 
 <span class="c1"># Parse a DL syntax string to an owlapy object</span>
-<span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">&quot;∃ r.A ⊓ B&quot;</span><span class="p">)</span>
-<span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">&quot;A ⊑ ∃ r.B&quot;</span><span class="p">)</span>
+<span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">"∃ r.A ⊓ B"</span><span class="p">)</span>
+<span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">"A ⊑ ∃ r.B"</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="classes">
@@ -193,11 +195,11 @@ objects, then delegating to the OWLAPI renderer.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">renderer</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxRenderer</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">"http://example.org/"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">"http://example.org/"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expr</span> <span class="o">=</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
-<span class="go">&#39;∃ r.A&#39;</span>
+<span class="go">'∃ r.A'</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -239,9 +241,9 @@ appends <code class="docutils literal notranslate"><span class="pre">#</span></c
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_dlsyntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIDLSyntaxParser</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">&quot;∃ r.A ⊓ B&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">&quot;A ⊑ ∃ r.B&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">"http://example.org/"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">"∃ r.A ⊓ B"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">"A ⊑ ∃ r.B"</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py property">

@@ -81,7 +81,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.utils.signature</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Signature extraction: the set of named entities referenced by an axiom or class expression/data range.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Signature extraction: the set of named entities referenced by an axiom or class expression/data range."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span>
 
@@ -122,11 +122,11 @@
 <div class="viewcode-block" id="SignatureExtractor">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/signature/index.html#owlapy.utils.SignatureExtractor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignatureExtractor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the signature of an axiom or class expression/data range: the set of named entities</span>
+<span class="w">    </span><span class="sd">"""Computes the signature of an axiom or class expression/data range: the set of named entities</span>
 <span class="sd">    (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,</span>
 <span class="sd">    :class:`OWLDatatype`) that it references, collected recursively.</span>
 
-<span class="sd">    Mirrors the ``signature()`` method of OWLAPI&#39;s ``OWLObject`` interface. :class:`OWLAnonymousIndividual`</span>
+<span class="sd">    Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`</span>
 <span class="sd">    is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification). Likewise, a</span>
 <span class="sd">    bare :class:`~owlapy.iri.IRI` (used as an annotation subject/value or as the domain/range of an</span>
 <span class="sd">    annotation property axiom) contributes nothing to the signature unless it has been resolved to a</span>
@@ -136,23 +136,23 @@
 <span class="sd">    including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,</span>
 <span class="sd">    datatype definition, (un)equal individuals and annotation axioms. See</span>
 <span class="sd">    https://github.com/dice-group/owlapy/issues/231.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="SignatureExtractor.get_signature">
 <a class="viewcode-back" href="../../../autoapi/owlapy/utils/signature/index.html#owlapy.utils.SignatureExtractor.get_signature">[docs]</a>
     <span class="nd">@singledispatchmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the signature of *o*.</span>
+<span class="w">        </span><span class="sd">"""Compute the signature of *o*.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            o: An axiom, class expression, data range, property expression, individual or literal.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The set of named entities referenced by *o*.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;signature() is not yet implemented for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. See &quot;</span>
-            <span class="s2">&quot;https://github.com/dice-group/owlapy/issues/231 to track extending coverage.&quot;</span>
+            <span class="sa">f</span><span class="s2">"signature() is not yet implemented for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. See "</span>
+            <span class="s2">"https://github.com/dice-group/owlapy/issues/231 to track extending coverage."</span>
         <span class="p">)</span></div>
 
 

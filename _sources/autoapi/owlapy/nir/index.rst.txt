@@ -1,0 +1,291 @@
+owlapy.nir
+==========
+
+.. py:module:: owlapy.nir
+
+.. autoapi-nested-parse::
+
+   Inference-only NIR encoders used by :class:`~owlapy.owl_reasoner.NIRReasoner`.
+
+   Architectures match the pretrained HuggingFace checkpoints from
+   https://github.com/fosterreproducibleresearch/NIR
+   (Transformer / LSTM / GRU / Composite).
+   ``torch`` and ``transformers`` are imported when the classes are loaded.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/owlapy/nir/composite/index
+   /autoapi/owlapy/nir/config/index
+   /autoapi/owlapy/nir/models/index
+   /autoapi/owlapy/nir/nandnet/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.nir.NIRComposite
+   owlapy.nir.NIRConfig
+   owlapy.nir.NIRGRU
+   owlapy.nir.NIRLSTM
+   owlapy.nir.NIRTransformer
+
+
+Package Contents
+----------------
+
+.. py:class:: NIRComposite(config)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: input_size
+
+
+   .. py:attribute:: individual_size
+
+
+   .. py:attribute:: NAND
+
+
+   .. py:attribute:: Le
+
+
+   .. py:attribute:: Self
+
+
+   .. py:attribute:: Inverse
+
+
+   .. py:attribute:: batch_training
+
+
+   .. py:attribute:: projection_layer
+
+
+   .. py:attribute:: head
+
+
+   .. py:attribute:: activation
+
+
+   .. py:method:: find_innermost_parentheses(expr)
+      :staticmethod:
+
+
+
+   .. py:method:: process_negation(C, component_embeddings_dict, encodings, encodings_mapping, individual=None, score=False)
+
+
+   .. py:method:: get_expression_embedding(innermost, component_embeddings_dict, encodings, encodings_mapping)
+
+
+   .. py:method:: parse_batch(expr_batch, component_embeddings_dict_batch, counter=0, encodings={}, encodings_mapping={})
+
+
+   .. py:method:: parse_single(expr, component_embeddings_dict, counter=0, encodings={}, encodings_mapping={})
+
+
+   .. py:method:: forward(expr, ind_emb, component_embeddings_dict, label=None)
+
+
+.. py:class:: NIRConfig(num_attention_heads=4, num_encoder_layers=3, num_rnn_layers=3, embedding_dim=256, pe_dropout=0.1, max_length=128, vocab_size=512, **kwargs)
+
+   Bases: :py:obj:`transformers.PretrainedConfig`
+
+
+   .. py:attribute:: model_type
+      :value: 'nir'
+
+
+
+   .. py:attribute:: num_attention_heads
+      :value: 4
+
+
+
+   .. py:attribute:: num_encoder_layers
+      :value: 3
+
+
+
+   .. py:attribute:: num_rnn_layers
+      :value: 3
+
+
+
+   .. py:attribute:: embedding_dim
+      :value: 256
+
+
+
+   .. py:attribute:: pe_dropout
+      :value: 0.1
+
+
+
+   .. py:attribute:: max_length
+      :value: 128
+
+
+
+   .. py:attribute:: vocab_size
+      :value: 512
+
+
+
+   .. py:attribute:: pad_token_id
+      :value: 0
+
+
+
+   .. py:attribute:: input_size
+      :value: 256
+
+
+
+   .. py:attribute:: individual_size
+      :value: 256
+
+
+
+   .. py:attribute:: device
+
+
+   .. py:attribute:: output_size
+      :value: 1
+
+
+
+   .. py:attribute:: batch_training
+      :value: True
+
+
+
+   .. py:attribute:: hidden_size
+      :value: 128
+
+
+
+.. py:class:: NIRGRU(config, batch_training=True)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: batch_training
+      :value: True
+
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: gru
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: sigmoid
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None, mask=None)
+
+
+.. py:class:: NIRLSTM(config, batch_training=True)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: batch_training
+      :value: True
+
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: lstm
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: sigmoid
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None, mask=None)
+
+
+.. py:class:: NIRTransformer(config)
+
+   Bases: :py:obj:`transformers.PreTrainedModel`
+
+
+   .. py:attribute:: config_class
+
+
+   .. py:attribute:: config
+
+
+   .. py:attribute:: loss_fn
+
+
+   .. py:attribute:: max_length
+
+
+   .. py:attribute:: embedding
+
+
+   .. py:attribute:: encoder
+
+
+   .. py:attribute:: fc
+
+
+   .. py:attribute:: activation
+
+
+   .. py:method:: forward(input_ids, attention_mask, label_features, labels=None)
+
+
