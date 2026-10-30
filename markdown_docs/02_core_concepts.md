@@ -272,6 +272,12 @@ reasoner = SyncReasoner(ontology, reasoner="HermiT")
 # ... use reasoner ...
 stopJVM()
 
+# Extra jars (e.g. for a package built on top of owlapy): JPype cannot extend the classpath once the JVM
+# runs, so register them before the first ontology/reasoner is created -- either
+#   export OWLAPY_EXTRA_CLASSPATH=/path/to/extra.jar:/path/to/jar_dir   (os.pathsep-separated)
+# or explicitly:
+startJVM(extra_jars=["/path/to/extra.jar", "/path/to/jar_dir"])
+
 # EBR - Embedding-based instance prediction over a NeuralOntology (requires `dicee`)
 from owlapy.owl_ontology import NeuralOntology
 from owlapy.owl_reasoner import EBR

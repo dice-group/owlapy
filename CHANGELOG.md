@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Extra jars can now be put on the JVM classpath, via the `OWLAPY_EXTRA_CLASSPATH` environment variable (`os.pathsep`-separated jar files/directories) or `startJVM(extra_jars=...)`, so packages building on `SyncOntology` can bring their own Java dependencies without restarting the JVM (#299)
+
 ## [1.6.7] - 2026-10-07
 
 ### Added

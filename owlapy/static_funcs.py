@@ -4,6 +4,7 @@ import os
 import platform
 import shutil
 import subprocess
+from typing import Iterable, Optional
 
 import jpype
 import jpype.imports
@@ -44,21 +45,51 @@ def download_external_files(ftp_link: str):
         shutil.move(current_dir, root_dir)
 
 
-def startJVM():
+EXTRA_CLASSPATH_ENV = "OWLAPY_EXTRA_CLASSPATH"
+
+
+def _collect_jars(entries) -> list:
+    """Expand classpath entries into jar paths: a directory contributes the ``.jar`` files directly inside it
+    (sorted, for a deterministic classpath), anything else is taken as a path to a single jar."""
+    jars = []
+    for entry in entries:
+        entry = os.path.expanduser(str(entry))
+        if os.path.isdir(entry):
+            jars.extend(sorted(os.path.join(entry, f) for f in os.listdir(entry) if f.endswith('.jar')))
+        else:
+            jars.append(entry)
+    return jars
+
+
+def startJVM(extra_jars: Optional[Iterable[str]] = None):
     """Start the JVM with jar dependencies. This method is called automatically on object initialization,
-    if the JVM is not started yet."""
+    if the JVM is not started yet.
+
+    JPype cannot extend the classpath once the JVM is running, so third-party packages building on owlapy
+    (e.g. ones needing an additional Java library) must register their jars before the first ontology or
+    reasoner is created. There are two ways to do so:
+
+    - the ``OWLAPY_EXTRA_CLASSPATH`` environment variable: ``os.pathsep``-separated jar files and/or
+      directories (every ``.jar`` directly inside a directory is added);
+    - the ``extra_jars`` argument, with the same kind of entries, by calling ``startJVM(extra_jars=...)``
+      explicitly before anything else starts the JVM.
+
+    Extra jars are appended after the bundled ones, so the bundled OWLAPI version takes precedence on
+    conflicting classes.
+
+    Args:
+        extra_jars: Additional jar files and/or directories containing jars to put on the classpath.
+    """
 
     # Access the jar_dependencies folder inside the 'owlapy' package
     with resources.path('owlapy', 'jar_dependencies') as jar_folder_path:
-        jar_folder = str(jar_folder_path)
-        jar_files = [
-            os.path.join(jar_folder, f)
-            for f in os.listdir(jar_folder)
-            if f.endswith('.jar')
-        ]
+        jar_files = _collect_jars([str(jar_folder_path)])
+
+    extra_entries = list(extra_jars or [])
+    extra_entries += [e for e in os.environ.get(EXTRA_CLASSPATH_ENV, "").split(os.pathsep) if e]
 
     # Start JVM with the found jar files
-    jpype.startJVM(classpath=jar_files)
+    jpype.startJVM(classpath=jar_files + _collect_jars(extra_entries))
 
 
 def stopJVM() -> None:
