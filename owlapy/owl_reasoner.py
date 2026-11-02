@@ -5,8 +5,9 @@ import operator
 import os
 import subprocess
 import sys
+import threading
 import warnings
-from collections import Counter, defaultdict
+from collections import Counter, OrderedDict, defaultdict
 from functools import cached_property, reduce, singledispatchmethod
 from itertools import chain, repeat
 from types import FunctionType, MappingProxyType
@@ -65,6 +66,27 @@ owlready2 = import_owlready2()
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
+class _MemoKey:
+    """Expression-memo key that hashes its class expression once.
+
+    Class expressions recompute their hash from the whole subtree on every call, and the memo would otherwise hash
+    each key twice per lookup (get + insert or move_to_end). Equality is still the expression's own `__eq__`.
+    """
+    __slots__ = ('ce', '_hash')
+
+    def __init__(self, ce: OWLClassExpression):
+        self.ce = ce
+        self._hash = hash(ce)
+
+    def __hash__(self) -> int:
+        return self._hash
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, _MemoKey):
+            return self._hash == other._hash and self.ce == other.ce
+        return self.ce == other
+
+
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete).
 
@@ -73,19 +95,42 @@ class StructuralReasoner(AbstractOWLReasoner):
         `RDFLibReasoner` (`owlapy.owl_reasoner_rdflib.RDFLibReasoner`), a pure-Python
         replacement with no owlready2/JVM dependency and no circular sub/super-class
         dependency issue (see issue #205). Prefer `RDFLibReasoner` for new code.
+
+    Caching:
+        While `class_cache` is enabled the reasoner keeps three retrieval caches: the instances of each named class,
+        the set of all named individuals (needed for every `¬C`, `∀r.C` and `≤n r.C`), and the instances of up to
+        `expression_cache_size` complex class expressions, including the nested sub-expressions visited during
+        retrieval (least recently used entries are evicted first). Concept learners evaluate many expressions that
+        share sub-expressions, so they benefit most.
+
+        - Memory: each memoised entry holds a frozenset of individuals, so the cost grows with ontology size
+          (roughly +60 to +100 MB at the default size on ontologies with 14k-22k individuals). Lower
+          `expression_cache_size`, set it to 0 to turn the expression memo off, or call `reset()` to free the caches.
+        - Invalidation: caches are keyed by structural equality of class expressions. When the ontology is modified
+          through `add_axiom`/`remove_axiom` (which set `is_modified`), the next retrieval clears all caches and
+          disables caching for the lifetime of this reasoner (`reset_and_disable_cache()`); `reset()` alone clears the
+          caches but keeps them enabled. Edits made directly through owlready2 objects do not set `is_modified` and
+          are not detected: call `reset()` after such edits.
     """
 
     def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
-                 property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
+                 property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False,
+                 expression_cache_size: int = 1024):
         """Fast instance checker.
 
         Args:
             ontology: Ontology to use.
+            class_cache: Whether to cache retrieval results (named classes, all individuals and complex class
+                expressions, see the class docstring).
             property_cache: Whether to cache property values.
             negation_default: Whether to assume a missing fact means it is false ("closed world view").
             sub_properties: Whether to take sub properties into account for the
                 :func:`StructuralReasoner.instances` retrieval.
+            expression_cache_size: Maximum number of complex class expressions whose instances are memoised while
+                `class_cache` is enabled; 0 turns the expression memo off.
             """
+        if expression_cache_size < 0:
+            raise ValueError(f"expression_cache_size must be >= 0, got {expression_cache_size}")
         warnings.warn(
             "StructuralReasoner is owlready2-backed and being phased out in favor of "
             "RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
@@ -106,12 +151,25 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._sub_properties: bool = sub_properties
         self.__warned: int = 0
         self._warned_malformed_props: Set[OWLObjectProperty] = set()
+        self.expression_cache_size: int = expression_cache_size
+        # Guards the expression memo: a retrieval that timed out keeps running in a worker thread and may still
+        # read or write it while the caller (or another thread) uses the same reasoner.
+        self._memo_lock = threading.Lock()
+        # Incremented by every reset; a result computed before a reset is not inserted into the new memo.
+        self._memo_generation: int = 0
         self._init()
 
     def _init(self):
         if self.class_cache:
             # Class => individuals
             self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {}
+        # Created even when class_cache is off, so that reset_and_disable_cache() releases them.
+        with self._memo_lock:
+            self._memo_generation += 1
+            # All named individuals, used by complement-based retrieval (¬C, ∀r.C, ≤n r.C)
+            self._all_inds: Optional[FrozenSet[OWLNamedIndividual]] = None
+            # Complex class expression => individuals, least recently used first (bounded by expression_cache_size)
+            self._ce_to_ind: OrderedDict[_MemoKey, FrozenSet[OWLNamedIndividual]] = OrderedDict()
 
         if self._property_cache:
             # ObjectProperty => { individual => individuals }
@@ -701,7 +759,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                         opc[s] = set()
                     opc[s] |= {o}
         else:
-            all_ = frozenset(self._ontology.individuals_in_signature())
+            all_ = self._all_individuals()
             for s in all_:
                 individuals = set(self.object_property_values(s, pe, not self._sub_properties))
                 if individuals:
@@ -742,7 +800,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                     func = self.data_property_values
                 else:
                     func = self.object_property_values
-                all_ = frozenset(self._ontology.individuals_in_signature())
+                all_ = self._all_individuals()
                 for s in all_:
                     try:
                         next(iter(func(s, pe, not self._sub_properties)))
@@ -824,11 +882,40 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._data_prop[pe] = MappingProxyType(opc)
 
     # single dispatch is still not implemented in mypy, see https://github.com/python/mypy/issues/2904
-    @singledispatchmethod
     def _find_instances(self, ce: OWLClassExpression) -> FrozenSet[OWLNamedIndividual]:
+        """Instances of `ce`, memoised per complex (sub-)expression while `class_cache` is enabled.
+
+        Retrieval is recursive, so the nested expressions of `ce` are looked up here too. Named classes are not
+        memoised here: they have their own unbounded cache (`_cls_to_ind`). Results are frozensets and therefore safe
+        to share between callers. Type-specific retrieval is registered on `_compute_instances`.
+        """
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
+            self.reset_and_disable_cache()
+        if not self.class_cache or self.expression_cache_size == 0 or isinstance(ce, OWLClass):
+            return self._compute_instances(ce)
+        key = _MemoKey(ce)
+        with self._memo_lock:
+            memo = self._ce_to_ind
+            generation = self._memo_generation
+            cached = memo.get(key)
+            if cached is not None:
+                memo.move_to_end(key)
+                return cached
+        result = self._compute_instances(ce)
+        with self._memo_lock:
+            # Skip the insert if the caches were reset (or disabled) while this result was being computed, e.g. by
+            # the caller after this retrieval timed out.
+            if self.class_cache and generation == self._memo_generation:
+                memo[key] = result
+                while len(memo) > self.expression_cache_size:
+                    memo.popitem(last=False)
+        return result
+
+    @singledispatchmethod
+    def _compute_instances(self, ce: OWLClassExpression) -> FrozenSet[OWLNamedIndividual]:
         raise NotImplementedError(ce)
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, c: OWLClass) -> FrozenSet[OWLNamedIndividual]:
         if self._ontology.is_modified and (self.class_cache or self._property_cache):
             self.reset_and_disable_cache()
@@ -838,15 +925,15 @@ class StructuralReasoner(AbstractOWLReasoner):
         else:
             return frozenset(self.get_instances_from_owl_class(c))
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectUnionOf) -> FrozenSet[OWLNamedIndividual]:
         return reduce(operator.or_, map(self._find_instances, ce.operands()))
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectIntersectionOf) -> FrozenSet[OWLNamedIndividual]:
         return reduce(operator.and_, map(self._find_instances, ce.operands()))
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
         p = ce.get_property()
         assert isinstance(p, OWLObjectPropertyExpression)
@@ -859,10 +946,10 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         return ind
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectComplementOf) -> FrozenSet[OWLNamedIndividual]:
         if self._negation_default:
-            all_ = frozenset(self._ontology.individuals_in_signature())
+            all_ = self._all_individuals()
             complement_ind = self._find_instances(ce.get_operand())
             return all_ ^ complement_ind
         else:
@@ -876,7 +963,7 @@ class StructuralReasoner(AbstractOWLReasoner):
             # else:
             #     self._lazy_cache_negation
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectAllValuesFrom) -> FrozenSet[OWLNamedIndividual]:
         return self._find_instances(
             OWLObjectSomeValuesFrom(
@@ -884,27 +971,27 @@ class StructuralReasoner(AbstractOWLReasoner):
                 filler=ce.get_filler().get_object_complement_of().get_nnf()
             ).get_object_complement_of())
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectOneOf) -> FrozenSet[OWLNamedIndividual]:
         return frozenset(ce.individuals())
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectHasValue) -> FrozenSet[OWLNamedIndividual]:
         return self._find_instances(ce.as_some_values_from())
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectMinCardinality) -> FrozenSet[OWLNamedIndividual]:
         return self._get_instances_object_card_restriction(ce)
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectMaxCardinality) -> FrozenSet[OWLNamedIndividual]:
-        all_ = frozenset(self._ontology.individuals_in_signature())
+        all_ = self._all_individuals()
         min_ind = self._find_instances(OWLObjectMinCardinality(cardinality=ce.get_cardinality() + 1,
                                                                property=ce.get_property(),
                                                                filler=ce.get_filler()))
         return all_ ^ min_ind
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLObjectExactCardinality) -> FrozenSet[OWLNamedIndividual]:
         return self._get_instances_object_card_restriction(ce)
 
@@ -932,7 +1019,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         return ind
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
         pe = ce.get_property()
         filler = ce.get_filler()
@@ -1024,7 +1111,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         r = frozenset(ind)
         return r
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataAllValuesFrom) -> FrozenSet[OWLNamedIndividual]:
         filler = ce.get_filler()
         if isinstance(filler, OWLDataComplementOf):
@@ -1037,7 +1124,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                 filler=filler
             ).get_object_complement_of())
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataHasValue) -> FrozenSet[OWLNamedIndividual]:
         return self._find_instances(ce.as_some_values_from())
 
@@ -1047,20 +1134,20 @@ class StructuralReasoner(AbstractOWLReasoner):
         temp = self.get_instances_from_owl_class(c)
         self._cls_to_ind[c] = frozenset(temp)
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataMinCardinality):
         return self._get_instances_data_card_restriction(ce)
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataMaxCardinality):
-        all_ = frozenset(self._ontology.individuals_in_signature())
+        all_ = self._all_individuals()
         min_ind = self._get_instances_data_card_restriction(
             OWLDataMinCardinality(cardinality=ce.get_cardinality() + 1,
                                   property=ce.get_property(),
                                   filler=ce.get_filler()))
         return all_ ^ min_ind
 
-    @_find_instances.register
+    @_compute_instances.register
     def _(self, ce: OWLDataExactCardinality):
         return self._get_instances_data_card_restriction(ce)
 
@@ -1071,7 +1158,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         assert isinstance(pe, OWLDataProperty)
 
         if ce.get_cardinality() == 0:
-            all_ = frozenset(self._ontology.individuals_in_signature())
+            all_ = self._all_individuals()
             if isinstance(ce, OWLDataMinCardinality):
                 return all_
             return all_ - self._get_instances_data_card_restriction(OWLDataMinCardinality(1, pe, filler))
@@ -1260,6 +1347,25 @@ class StructuralReasoner(AbstractOWLReasoner):
                 indirect_relations = ((r[1], r[0]) for r in indirect_relations)
             relations = chain(relations, indirect_relations)
         yield from relations
+
+    def _all_individuals(self) -> FrozenSet[OWLNamedIndividual]:
+        """All named individuals of the ontology, computed once while `class_cache` is enabled.
+
+        Retrieving ¬C, ∀r.C and ≤n r.C needs this set every time; building it from the ontology walks every
+        individual and creates a new IRI object for each.
+        """
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
+            self.reset_and_disable_cache()
+        if not self.class_cache:
+            return frozenset(self._ontology.individuals_in_signature())
+        with self._memo_lock:
+            all_inds, generation = self._all_inds, self._memo_generation
+        if all_inds is None:
+            all_inds = frozenset(self._ontology.individuals_in_signature())
+            with self._memo_lock:
+                if self.class_cache and generation == self._memo_generation:
+                    self._all_inds = all_inds
+        return all_inds
 
     def reset_and_disable_cache(self):
         self.class_cache = False
