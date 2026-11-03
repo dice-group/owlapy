@@ -92,6 +92,37 @@ reasoner = StructuralReasoner(onto)
 instances = list(reasoner.instances(male))
 ```
 
+### Caching
+
+With `class_cache=True` (the default) the reasoner caches retrieval results:
+
+| Cache | Holds | Bound |
+|-------|-------|-------|
+| Named classes | instances of each `OWLClass` | unbounded |
+| All individuals | the set of all named individuals, needed by every `¬C`, `∀r.C` and `≤n r.C` | one set |
+| Expression memo | instances of complex class expressions, including the nested sub-expressions visited during retrieval | `expression_cache_size` entries (default 1024), least recently used evicted first |
+
+The expression memo pays off when many related expressions are retrieved, as concept learners
+do (Ontolearn's EvoLearner fits about 4× faster on Mutagenesis and Carcinogenesis). Each entry holds a frozenset of individuals,
+so memory grows with ontology size: about +60 to +100 MB at the default size on ontologies with
+14k–22k individuals.
+
+```python
+StructuralReasoner(onto, expression_cache_size=256)  # smaller memo
+StructuralReasoner(onto, expression_cache_size=0)    # memo off (other caches stay on)
+StructuralReasoner(onto, class_cache=False)          # no retrieval caches at all
+reasoner.reset()                                     # free the caches; they stay enabled
+```
+
+**Lifecycle and invalidation.** Caches are keyed by structural equality of class expressions.
+
+- Modifying the ontology through `add_axiom()`/`remove_axiom()` sets `is_modified`. The next
+  retrieval then clears all caches and **disables caching for the lifetime of the reasoner**
+  (`reset_and_disable_cache()`). Create a new reasoner to cache again.
+- `reset()` clears the caches but keeps them enabled.
+- Edits made directly through owlready2 objects (e.g. `world[iri].is_a.append(...)`) do not set
+  `is_modified` and are **not detected**: cached results stay stale until you call `reset()`.
+
 ### Known Issues
 
 ⚠️ **Circular dependency:** `sub_classes()` calls `super_classes()` and vice versa  

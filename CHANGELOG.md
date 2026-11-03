@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `StructuralReasoner.instances()` is faster on repeated retrieval, e.g. during concept learning (Ontolearn's EvoLearner fits about 4× faster on Mutagenesis and Carcinogenesis and 1.3–1.7× on Family and Lymphography, with identical results), and on one-off queries containing `¬C`, `∀r.C` or `≤n r.C`:
+  - the set of all individuals, needed for every `¬C`, `∀r.C` and `≤n r.C`, is computed once instead of being rebuilt from the ontology on each retrieval;
+  - instances of complex class expressions, including nested sub-expressions, are memoised in a bounded LRU cache. Its size is set with the new constructor argument `StructuralReasoner(..., expression_cache_size=1024)`; `0` turns the memo off. Named classes keep their existing cache and are not memoised twice. Both new caches follow `class_cache`, are cleared by `reset()`, and are cleared and disabled (like the existing caches) once the ontology is modified through `add_axiom`/`remove_axiom`. Edits made directly through owlready2 objects are not detected; call `reset()` after them. Caching and its memory cost are documented in `markdown_docs/05_reasoning.md`;
+  - for subclasses and downstream code: type-specific retrieval is now registered on `StructuralReasoner._compute_instances` (a `singledispatchmethod`); `_find_instances` keeps its name and signature but is now the memoising wrapper, so register new expression types on `_compute_instances` (#301)
+
 ### Added
 - Extra jars can now be put on the JVM classpath, via the `OWLAPY_EXTRA_CLASSPATH` environment variable (`os.pathsep`-separated jar files/directories) or `startJVM(extra_jars=...)`, so packages building on `SyncOntology` can bring their own Java dependencies without restarting the JVM (#299)
 
