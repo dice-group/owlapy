@@ -310,7 +310,8 @@ owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --infer
 "InferredSubDataPropertyAxiomGenerator",
 "InferredSubObjectPropertyAxiomGenerator",
 "InferredDataPropertyCharacteristicAxiomGenerator",
-"InferredObjectPropertyCharacteristicAxiomGenerator"]
+"InferredObjectPropertyCharacteristicAxiomGenerator",
+"InferredPropertyAssertionGenerator"]
 ```
 
 </details>
