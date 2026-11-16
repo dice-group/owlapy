@@ -1883,7 +1883,8 @@ class SyncReasoner(AbstractOWLReasoner):
              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
-             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             "InferredObjectPropertyCharacteristicAxiomGenerator",
+             "InferredPropertyAssertionGenerator"
              ]
 
         Returns:
@@ -1925,7 +1926,8 @@ class SyncReasoner(AbstractOWLReasoner):
              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
-             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             "InferredObjectPropertyCharacteristicAxiomGenerator",
+             "InferredPropertyAssertionGenerator"
              ]
 
         Returns:
@@ -2730,6 +2732,7 @@ def import_and_include_axioms_generators():
         InferredEquivalentObjectPropertyAxiomGenerator,
         InferredInverseObjectPropertiesAxiomGenerator,
         InferredObjectPropertyCharacteristicAxiomGenerator,
+        InferredPropertyAssertionGenerator,
         InferredSubClassAxiomGenerator,
         InferredSubDataPropertyAxiomGenerator,
         InferredSubObjectPropertyAxiomGenerator,
@@ -2745,7 +2748,8 @@ def import_and_include_axioms_generators():
             "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
             "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
             "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
-            "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
+            "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
+            "InferredPropertyAssertionGenerator": InferredPropertyAssertionGenerator()}
 
 
 class EBR(AbstractOWLReasoner): # pragma: no cover
