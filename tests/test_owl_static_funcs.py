@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
@@ -691,7 +692,10 @@ class TestGenerateOntologyObjectProperties(unittest.TestCase):
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_response
 
-        with patch("openai.OpenAI", return_value=mock_client):
+        # Inject a fake `openai` module so the test doesn't require the optional dependency
+        fake_openai = MagicMock()
+        fake_openai.OpenAI.return_value = mock_client
+        with patch.dict(sys.modules, {"openai": fake_openai}):
             generate_ontology(
                 graph_as_json=json_path,
                 output_path=output_path,
