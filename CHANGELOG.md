@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Extra jars can now be put on the JVM classpath, via the `OWLAPY_EXTRA_CLASSPATH` environment variable (`os.pathsep`-separated jar files/directories) or `startJVM(extra_jars=...)`, so packages building on `SyncOntology` can bring their own Java dependencies without restarting the JVM (#299)
 - `InferredPropertyAssertionGenerator` is now an available inference type for `SyncReasoner.infer_axioms`/`infer_axioms_and_save`, enabling inferred object and data property assertions (#303)
+- `InferredPropertyAssertionGenerator` is now also accepted by the `owlapy-serve` `/infer_axioms` endpoint (and included in `"all"`) and the `owlapy` CLI inference types, with test coverage (#303)
 
 ## [1.6.7] - 2026-10-07
 

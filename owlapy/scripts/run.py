@@ -12,7 +12,8 @@ inference_types = ["InferredClassAssertionAxiomGenerator",
                    "InferredSubDataPropertyAxiomGenerator",
                    "InferredSubObjectPropertyAxiomGenerator",
                    "InferredDataPropertyCharacteristicAxiomGenerator",
-                   "InferredObjectPropertyCharacteristicAxiomGenerator"
+                   "InferredObjectPropertyCharacteristicAxiomGenerator",
+                   "InferredPropertyAssertionGenerator"
                    ]
 
 
