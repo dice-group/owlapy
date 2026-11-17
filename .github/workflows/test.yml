@@ -4,6 +4,8 @@ on: [push,pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A normal run takes ~10 min; fail fast instead of hitting GitHub's 6 h limit if something hangs.
+    timeout-minutes: 45
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -38,7 +40,8 @@ jobs:
       - name: Run tests with coverage
         run: |
           pip install coverage
-          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
+          # faulthandler_timeout: dump all thread stacks (Python side) if one test runs > 10 min, so a hang leaves a trace
+          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x -o faulthandler_timeout=600
       - name: Generate coverage report
         run: |
           coverage report -m
