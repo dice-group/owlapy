@@ -273,10 +273,18 @@ reasoner = SyncReasoner(ontology, reasoner="HermiT")
 stopJVM()
 
 # Extra jars (e.g. for a package built on top of owlapy): JPype cannot extend the classpath once the JVM
-# runs, so register them before the first ontology/reasoner is created -- either
+# runs, so they must be known before the first ontology/reasoner is created. An installable extension
+# should declare them in its pyproject.toml; owlapy then picks them up automatically, whichever code
+# starts the JVM, and several extensions can be installed side by side:
+#   [project.entry-points."owlapy.jars"]
+#   my_extension = "my_extension.jars:jar_paths"   # no-arg callable returning jar files and/or directories
+# Ad hoc, either
 #   export OWLAPY_EXTRA_CLASSPATH=/path/to/extra.jar:/path/to/jar_dir   (os.pathsep-separated)
 # or explicitly:
 startJVM(extra_jars=["/path/to/extra.jar", "/path/to/jar_dir"])
+# Classpath order: bundled jars, extra_jars, OWLAPY_EXTRA_CLASSPATH, entry-point jars (first one wins on
+# conflicting classes, so the bundled OWLAPI always takes precedence). A failing entry point is skipped
+# with a RuntimeWarning.
 
 # EBR - Embedding-based instance prediction over a NeuralOntology (requires `dicee`)
 from owlapy.owl_ontology import NeuralOntology
