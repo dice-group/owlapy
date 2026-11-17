@@ -72,7 +72,10 @@ setup(
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',
     classifiers=[
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering"],
     python_requires='>=3.11',

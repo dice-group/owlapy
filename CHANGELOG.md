@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InferredPropertyAssertionGenerator` is now an available inference type for `SyncReasoner.infer_axioms`/`infer_axioms_and_save`, enabling inferred object and data property assertions (#303)
 - `InferredPropertyAssertionGenerator` is now also accepted by the `owlapy-serve` `/infer_axioms` endpoint (and included in `"all"`) and the `owlapy` CLI inference types, with test coverage (#303)
 
+### Fixed
+- Package classifiers now match `python_requires='>=3.11'`: the stale `Python :: 3.10` classifier was replaced by `Python :: 3.11` and `Python :: 3.12` (the versions tested in CI)
+
 ## [1.6.7] - 2026-10-07
 
 ### Added
