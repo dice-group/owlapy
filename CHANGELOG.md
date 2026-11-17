@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InferredPropertyAssertionGenerator` is now an available inference type for `SyncReasoner.infer_axioms`/`infer_axioms_and_save`, enabling inferred object and data property assertions (#303)
 - `InferredPropertyAssertionGenerator` is now also accepted by the `owlapy-serve` `/infer_axioms` endpoint (and included in `"all"`) and the `owlapy` CLI inference types, with test coverage (#303)
 
+### Fixed
+- Loading an ontology of 8 MB or more through the owlready2-backed `Ontology`/`StructuralReasoner` (and the `util_owl_static_funcs` helpers) could hang forever: owlready2 0.50 parses such files in a `fork`ed child process and waits for it without a timeout, and forking a process that already runs the JVM and other threads can leave that child stuck. owlapy now always has owlready2 parse local files in-process. This was the cause of the intermittent CI hangs in `test_ce_simplifier.py` on both Python 3.11 and 3.12
+
 ## [1.6.7] - 2026-10-07
 
 ### Added

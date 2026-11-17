@@ -15,7 +15,7 @@ import rdflib
 from pandas import Timedelta
 
 from owlapy import namespaces
-from owlapy._lazy_owlready2 import import_owlready2
+from owlapy._lazy_owlready2 import import_owlready2, load_ontology
 from owlapy.abstracts.abstract_owl_ontology import _OI, AbstractOWLOntology
 from owlapy.class_expression import (
     OWLClass,
@@ -976,7 +976,7 @@ class Ontology(AbstractOWLOntology):
         else:
             onto = self._world.get_ontology(ontology_iri.as_str())
         if load:
-            onto = onto.load()
+            onto = load_ontology(onto)
         self._onto = onto
 
     def __len__(self) -> int:
