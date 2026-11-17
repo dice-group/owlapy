@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Extra jars can now be put on the JVM classpath, via the `OWLAPY_EXTRA_CLASSPATH` environment variable (`os.pathsep`-separated jar files/directories) or `startJVM(extra_jars=...)`, so packages building on `SyncOntology` can bring their own Java dependencies without restarting the JVM (#299)
+- Extension packages can now register their jars through the `owlapy.jars` entry-point group (a no-arg callable returning jar files/directories, declared in the extension's `pyproject.toml`). `startJVM()` discovers every installed extension automatically, regardless of which code starts the JVM, so extensions no longer need their own JVM-start helper and several of them can be used together. Entry-point jars come after `extra_jars` and `OWLAPY_EXTRA_CLASSPATH`, duplicate classpath entries are dropped, and a failing entry point is skipped with a `RuntimeWarning` (#299)
 - `InferredPropertyAssertionGenerator` is now an available inference type for `SyncReasoner.infer_axioms`/`infer_axioms_and_save`, enabling inferred object and data property assertions (#303)
 
 ## [1.6.7] - 2026-10-07

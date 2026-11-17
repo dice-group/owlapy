@@ -4,6 +4,8 @@ import os
 import platform
 import shutil
 import subprocess
+import warnings
+from importlib.metadata import entry_points
 from typing import Iterable, Optional
 
 import jpype
@@ -46,6 +48,7 @@ def download_external_files(ftp_link: str):
 
 
 EXTRA_CLASSPATH_ENV = "OWLAPY_EXTRA_CLASSPATH"
+JARS_ENTRY_POINT_GROUP = "owlapy.jars"
 
 
 def _collect_jars(entries) -> list:
@@ -61,21 +64,49 @@ def _collect_jars(entries) -> list:
     return jars
 
 
+def _entry_point_jars() -> list:
+    """Classpath entries contributed by installed extension packages through the ``owlapy.jars`` entry-point group.
+
+    Each entry point must reference a callable taking no arguments and returning an iterable of jar files and/or
+    directories. Entry points are processed in name order for a deterministic classpath. A failing entry point is
+    skipped with a warning instead of preventing the JVM from starting.
+    """
+    entries = []
+    for ep in sorted(entry_points(group=JARS_ENTRY_POINT_GROUP), key=lambda e: e.name):
+        try:
+            provided = ep.load()()
+            if isinstance(provided, (str, os.PathLike)):
+                provided = [provided]
+            entries.extend(os.fspath(p) for p in provided)
+        except Exception as exc:  # noqa: BLE001 - third-party code; one broken extension must not block the JVM
+            warnings.warn(f"Ignoring owlapy jar entry point '{ep.name}' ({ep.value}): {exc!r}", RuntimeWarning, stacklevel=2)
+    return entries
+
+
 def startJVM(extra_jars: Optional[Iterable[str]] = None):
     """Start the JVM with jar dependencies. This method is called automatically on object initialization,
     if the JVM is not started yet.
 
     JPype cannot extend the classpath once the JVM is running, so third-party packages building on owlapy
-    (e.g. ones needing an additional Java library) must register their jars before the first ontology or
-    reasoner is created. There are two ways to do so:
+    (e.g. ones needing an additional Java library) must make their jars known before the first ontology or
+    reasoner is created. There are three ways to do so:
 
+    - the ``owlapy.jars`` entry-point group (recommended for installable extensions): the extension declares
+      in its packaging metadata a callable returning its jar files and/or directories, e.g. in
+      ``pyproject.toml``::
+
+          [project.entry-points."owlapy.jars"]
+          my_extension = "my_extension.jars:jar_paths"
+
+      Every installed extension is then picked up automatically, whichever code starts the JVM;
     - the ``OWLAPY_EXTRA_CLASSPATH`` environment variable: ``os.pathsep``-separated jar files and/or
       directories (every ``.jar`` directly inside a directory is added);
     - the ``extra_jars`` argument, with the same kind of entries, by calling ``startJVM(extra_jars=...)``
       explicitly before anything else starts the JVM.
 
-    Extra jars are appended after the bundled ones, so the bundled OWLAPI version takes precedence on
-    conflicting classes.
+    The classpath order is: bundled jars, ``extra_jars``, ``OWLAPY_EXTRA_CLASSPATH``, entry-point jars, with
+    duplicates removed. On conflicting classes the earlier jar wins, so the bundled OWLAPI version takes
+    precedence, and explicitly given jars take precedence over automatically discovered ones.
 
     Args:
         extra_jars: Additional jar files and/or directories containing jars to put on the classpath.
@@ -87,9 +118,11 @@ def startJVM(extra_jars: Optional[Iterable[str]] = None):
 
     extra_entries = list(extra_jars or [])
     extra_entries += [e for e in os.environ.get(EXTRA_CLASSPATH_ENV, "").split(os.pathsep) if e]
+    extra_entries += _entry_point_jars()
 
-    # Start JVM with the found jar files
-    jpype.startJVM(classpath=jar_files + _collect_jars(extra_entries))
+    # Start JVM with the found jar files, keeping the first occurrence of each path
+    classpath = list(dict.fromkeys(jar_files + _collect_jars(extra_entries)))
+    jpype.startJVM(classpath=classpath)
 
 
 def stopJVM() -> None:
