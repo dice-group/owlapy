@@ -7,6 +7,7 @@ owlready2 backs the legacy, owlready2-specific parts of owlapy (the `Ontology` c
 dependency: `pip install owlapy` works without it, and only code paths that actually construct or
 call owlready2 functionality raise, at the point of use, with an actionable install hint.
 """
+import os
 from typing import Any
 
 
@@ -54,3 +55,51 @@ def import_owlready2():
         return owlready2
     except ImportError:
         return _MISSING_OWLREADY2
+
+
+class _UnnamedReader:
+    """Read-only file proxy that hides the wrapped file's ``name`` attribute (see `load_ontology`)."""
+
+    def __init__(self, f):
+        self._f = f
+
+    def __getattr__(self, item: str):
+        if item == "name":
+            raise AttributeError(item)
+        return getattr(self._f, item)
+
+    def __iter__(self):
+        return iter(self._f)
+
+
+def load_ontology(onto, **kwargs):
+    """Load an owlready2 ontology like ``onto.load(**kwargs)``, but always parse in this process.
+
+    owlready2 (0.4x/0.50) parses files of 8 MB or more in a ``multiprocessing`` child created with
+    ``fork`` and waits on a queue without a timeout for the result. Forking a process that already
+    runs other threads (owlapy starts the JVM on import of ``owlapy.owl_reasoner``) can leave the
+    child stuck on a lock held by a thread that does not exist in the child, so the parent hangs
+    forever. owlready2 decides on the forked parse from the file object's ``name``, so local files
+    are handed over as an unnamed file object, which makes owlready2 take its in-process path.
+
+    Anything that is not a plain local file on first load (predefined ontologies, http(s) IRIs, an
+    ontology already cached in a persistent ``World``, ``reload``/``fileobj`` arguments) is passed
+    to ``onto.load`` unchanged.
+    """
+    if kwargs or onto.loaded:
+        return onto.load(**kwargs)
+    from owlready2 import namespace as owlready2_namespace
+
+    base_iri = onto._orig_base_iri
+    if (owlready2_namespace.PREDEFINED_ONTOLOGIES.get(base_iri)
+            or owlready2_namespace.PREDEFINED_ONTOLOGIES.get(base_iri[:-1])
+            or onto.graph.get_last_update_time() != 0.0):
+        return onto.load()
+    try:
+        path = owlready2_namespace._get_onto_file(base_iri, onto.name, "r")
+    except FileNotFoundError:
+        return onto.load()
+    if path.startswith(("http:", "https:")) or not os.path.isfile(path):
+        return onto.load()
+    # onto.load(fileobj=...) closes the file object itself
+    return onto.load(fileobj=_UnnamedReader(open(path, "rb")))

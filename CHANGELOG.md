@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Package classifiers now match `python_requires='>=3.11'`: the stale `Python :: 3.10` classifier was replaced by `Python :: 3.11` and `Python :: 3.12` (the versions tested in CI)
+- Loading an ontology of 8 MB or more through the owlready2-backed `Ontology`/`StructuralReasoner` (and the `util_owl_static_funcs` helpers) could hang forever: owlready2 0.50 parses such files in a `fork`ed child process and waits for it without a timeout, and forking a process that already runs the JVM and other threads can leave that child stuck. owlapy now always has owlready2 parse local files in-process. This was the cause of the intermittent CI hangs in `test_ce_simplifier.py` on both Python 3.11 and 3.12
 
 ## [1.6.7] - 2026-10-07
 
