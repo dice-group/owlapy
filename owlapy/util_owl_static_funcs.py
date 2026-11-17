@@ -9,7 +9,7 @@ from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
 from tqdm import tqdm
 
-from ._lazy_owlready2 import import_owlready2
+from ._lazy_owlready2 import import_owlready2, load_ontology
 from .class_expression import OWLClass, OWLClassExpression
 from .iri import IRI
 from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
@@ -408,7 +408,7 @@ def make_kb_incomplete_ass(kb_path, output_path, rate, seed):
     random.seed(seed)
 
     # Load the ontology
-    kb = get_ontology(kb_path).load()
+    kb = load_ontology(get_ontology(kb_path))
 
     # Get all individuals in the ontology
     all_individuals = list(kb.individuals())
@@ -454,7 +454,7 @@ def make_kb_incomplete(kb_path, output_path, rate, seed) -> Set[str]:
     random.seed(seed)
 
     # Load the ontology
-    kb = get_ontology(kb_path).load()
+    kb = load_ontology(get_ontology(kb_path))
 
     # Get all individuals (instances) in the ABox
     all_individuals = list(kb.individuals())
@@ -489,7 +489,7 @@ def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
     random.seed(seed)
 
     # Load the ontology
-    onto = get_ontology(kb_path).load()
+    onto = load_ontology(get_ontology(kb_path))
 
     # Get all individuals, classes, and properties
     all_individuals = list(onto.individuals())
