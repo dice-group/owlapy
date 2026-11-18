@@ -4,6 +4,7 @@ value retrieval -- built on a small hand-crafted in-memory Ontology so every bra
 (top/bottom sentinels, equivalence workarounds, inverse properties) is reachable
 without depending on the shape of the Family benchmark ontology used elsewhere.
 """
+import pytest
 import time
 import unittest
 from unittest.mock import patch
@@ -34,6 +35,8 @@ from owlapy.owl_literal import (
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from owlapy.owl_reasoner import StructuralReasoner
+
+pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 NS = "http://example.com/structural_extra#"
 

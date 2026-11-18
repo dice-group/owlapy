@@ -1,3 +1,4 @@
+import pytest
 import unittest
 from owlapy import dl_to_owl_expression, owl_expression_to_dl
 from owlapy.class_expression import OWLObjectHasValue, OWLObjectSomeValuesFrom, OWLObjectOneOf, OWLObjectUnionOf, \
@@ -230,6 +231,7 @@ class TestSimplifier(unittest.TestCase):
         self.assertEqual('⊥',owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))))
 
 
+    @pytest.mark.requires_owlready2
     def test_simplifier_robustness(self):
         # use reasoner to check if instances of simplified(C) == instances of C
         family_reasoner = StructuralReasoner("KGs/Family/family-benchmark_rich_background.owl")

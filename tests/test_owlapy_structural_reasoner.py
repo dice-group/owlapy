@@ -1,3 +1,4 @@
+import pytest
 from datetime import date, datetime
 import unittest
 
@@ -12,12 +13,15 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
+pytest.importorskip("owlready2")  # skip the module before importing owlready2 below
 from owlready2.prop import DataProperty
 
 from owlapy.owl_reasoner import StructuralReasoner
 
 from owlapy.providers import owl_datatype_min_max_inclusive_restriction, owl_datatype_min_max_exclusive_restriction, \
                              owl_datatype_max_inclusive_restriction
+
+pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 
 class Owlapy_StructuralReasoner_Test(unittest.TestCase):

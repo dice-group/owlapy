@@ -25,10 +25,12 @@ equivalence `∃p.C ≡ ¬∀p.¬C`) on individuals with zero p-values, an inter
 OWLDataComplementOf and the existing (untouched) counting-based OWLDataAllValuesFrom
 implementation -- out of scope for this pass.
 """
+import pytest
 import unittest
 from datetime import date, datetime
 from pathlib import Path
 
+pytest.importorskip("owlready2")  # skip the module before importing owlready2 below
 from owlready2.prop import DataProperty
 
 from owlapy.class_expression import (
@@ -61,6 +63,8 @@ from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.providers import owl_datatype_max_inclusive_restriction, owl_datatype_min_max_exclusive_restriction
+
+pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 
 class TestRDFLibReasonerInstancesParity(unittest.TestCase):
