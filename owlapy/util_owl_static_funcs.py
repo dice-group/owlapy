@@ -9,23 +9,16 @@ from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
 from tqdm import tqdm
 
-from ._lazy_owlready2 import import_owlready2, load_ontology
 from .class_expression import OWLClass, OWLClassExpression
 from .iri import IRI
 from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
 from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
-from .owl_ontology import Ontology, SyncOntology
+from .owl_ontology import Ontology, RDFLibOntology, SyncOntology
 from .owl_property import OWLDataProperty
 
 logger = logging.getLogger(__name__)
 
-# owlready2 is an optional dependency, needed only by make_kb_incomplete(_ass)/make_kb_inconsistent
-# below (see owlapy._lazy_owlready2 / issue #205); create_ontology/csv_to_rdf_kg/
-# save_owl_class_expressions don't need it.
-_owlready2 = import_owlready2()
-destroy_entity = _owlready2.destroy_entity
-get_ontology = _owlready2.get_ontology
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
@@ -388,15 +381,28 @@ def generate_ontology(graph_as_json: str = None,
     g.serialize(destination=output_path, format=output_format)
 
 
+def _load_rdflib_kb(kb_path):
+    """Load ``kb_path`` with rdflib; returns the ontology wrapper and its graph."""
+    onto = RDFLibOntology(kb_path)
+    return onto, onto.rdflib_graph
+
+
+def _iri(entity) -> URIRef:
+    return URIRef(entity.str)
+
+
 def make_kb_incomplete_ass(kb_path, output_path, rate, seed):
     """
-    Makes the knowledge base incomplete by removing a certain percentage of statements (triples).
+    Makes the knowledge base incomplete by removing a certain percentage of property assertions.
+
+    The candidate statements are all object and data property assertions whose subject is an
+    individual of the knowledge base; ``rate`` percent of them are removed at random.
 
     Inputs:
     ---------------
 
     kb_path: Path to the input knowledge base.
-    output_path: Path to save the modified (incomplete) knowledge base.
+    output_path: Path to save the modified (incomplete) knowledge base (RDF/XML).
     rate: Percentage of statements to remove (0-100).
     seed: random seed for reproducibility.
 
@@ -405,171 +411,120 @@ def make_kb_incomplete_ass(kb_path, output_path, rate, seed):
 
     Incomplete KB at level rate %
     """
-    random.seed(seed)
+    rng = random.Random(seed)
+    onto, g = _load_rdflib_kb(kb_path)
 
-    # Load the ontology
-    kb = load_ontology(get_ontology(kb_path))
+    properties = {_iri(p) for p in onto.object_properties_in_signature()} | {_iri(p) for p in onto.data_properties_in_signature()}
+    all_triples = sorted(
+        {(s, p, o) for ind in onto.individuals_in_signature() for s, p, o in g.triples((_iri(ind), None, None)) if p in properties},
+        key=lambda t: (str(t[0]), str(t[1]), str(t[2])),
+    )
 
-    # Get all individuals in the ontology
-    all_individuals = list(kb.individuals())
-
-    # Collect all triples (subject-predicate-object) related to the individuals
-    all_triples = []
-    for individual in all_individuals:
-        for prop in individual.get_properties():
-            for value in prop[individual]:
-                all_triples.append((individual, prop, value))
-
-    # Calculate the number of triples to remove based on the rate
     num_to_remove = int(len(all_triples) * (rate / 100))
+    for triple in rng.sample(all_triples, num_to_remove):
+        g.remove(triple)
 
-    # Randomly select triples to remove
-    triples_to_remove = random.sample(all_triples, num_to_remove)
-
-    # Remove the selected triples
-    for subject, predicate, obj in triples_to_remove:
-        predicate[subject].remove(obj)
-
-    # Save the modified ontology to a new file
-    kb.save(file=output_path, format="rdfxml")
+    g.serialize(destination=output_path, format="xml")
 
 
 def make_kb_incomplete(kb_path, output_path, rate, seed) -> Set[str]:
     """
     Makes the knowledge base incomplete by removing a certain percentage of individuals.
 
+    A removed individual disappears completely: every triple that mentions it, as subject or as
+    object, is deleted.
+
     Inputs:
     ---------------
 
     kb_path: Path to the input knowledge base.
-    output_path: Path to save the modified (incomplete) knowledge base.
+    output_path: Path to save the modified (incomplete) knowledge base (RDF/XML).
     rate: Percentage of individuals to remove (0-100).
     seed: random seed for reproducibility.
 
     Output:
     ---------------
 
-    Incomplete KB at level rate %
+    The IRIs of the removed individuals.
     """
-    random.seed(seed)
+    rng = random.Random(seed)
+    onto, g = _load_rdflib_kb(kb_path)
 
-    # Load the ontology
-    kb = load_ontology(get_ontology(kb_path))
-
-    # Get all individuals (instances) in the ABox
-    all_individuals = list(kb.individuals())
-
-    # Calculate the number of individuals to remove based on the rate
+    all_individuals = sorted(_iri(i) for i in onto.individuals_in_signature())
     num_to_remove = int(len(all_individuals) * (rate / 100))
+    individuals_to_remove = rng.sample(all_individuals, num_to_remove)
 
-    # Randomly select individuals to remove
-    individuals_to_remove = random.sample(all_individuals, num_to_remove)
-
-    # Remove the selected individuals
     for individual in individuals_to_remove:
-        destroy_entity(individual)
+        g.remove((individual, None, None))
+        g.remove((None, None, individual))
 
-    # Save the modified ontology to a new file
-    kb.save(file=output_path, format="rdfxml")
+    g.serialize(destination=output_path, format="xml")
+    return {str(i) for i in individuals_to_remove}
 
 
 def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
     """
     This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.
 
+    ``rate`` percent of the number of triples in the KB are added as incorrect statements: either a
+    class assertion to a class the individual does not belong to, or an object property assertion
+    between two randomly chosen individuals that does not exist yet.
+
     Parameters:
     kb_path (str): Path to the original OWL ontology file.
-    output_path (str): Path to save the inconsistent ontology file.
+    output_path (str): Path to save the inconsistent ontology file (RDF/XML).
     rate (float): Percentage of incorrect statements to introduce (0-100).
     seed (int): Seed for reproducibility.
     max_attempts (int): Maximum attempts to find a valid incorrect statement.
+
+    Returns:
+    list[str]: A description of every incorrect statement that was added.
     """
+    rng = random.Random(seed)
+    onto, g = _load_rdflib_kb(kb_path)
 
-    # Set the random seed for reproducibility
-    random.seed(seed)
-
-    # Load the ontology
-    onto = load_ontology(get_ontology(kb_path))
-
-    # Get all individuals, classes, and properties
-    all_individuals = list(onto.individuals())
-    all_classes = list(onto.classes())
-    all_object_properties = list(onto.object_properties())
-    all_data_properties = list(onto.data_properties())
-
-    def count_triples():
-        """Count the number of triples (statements) in the ontology."""
-        return len(list(onto.world.sparql("""
-            SELECT ?s ?p ?o
-            WHERE {
-                ?s ?p ?o .
-            }
-        """)))
+    all_individuals = sorted(_iri(i) for i in onto.individuals_in_signature())
+    all_classes = sorted(_iri(c) for c in onto.classes_in_signature())
+    all_object_properties = sorted(_iri(p) for p in onto.object_properties_in_signature())
 
     def generate_incorrect_class_assertion(individual):
-        """Generate an incorrect class assertion by adding a disjoint or contradictory class."""
-        class_candidates = [cls for cls in all_classes if cls not in individual.is_a]
+        """Assert that the individual belongs to a class it does not belong to yet."""
+        types = set(g.objects(individual, RDF.type))
+        class_candidates = [cls for cls in all_classes if cls not in types]
         if not class_candidates:
             return None
-
-        selected_class = random.choice(class_candidates)
-        individual.is_a.append(selected_class)
-        logger.info(f"Added incorrect class assertion: {individual} rdf:type {selected_class}")
-        return f"Added incorrect class assertion: {individual} rdf:type {selected_class}"
+        selected_class = rng.choice(class_candidates)
+        g.add((individual, RDF.type, selected_class))
+        message = f"Added incorrect class assertion: {individual} rdf:type {selected_class}"
+        logger.info(message)
+        return message
 
     def generate_incorrect_object_property(individual):
-        """Generate an incorrect object property assertion."""
-        prop = random.choice(all_object_properties)
-        incorrect_object = random.choice(all_individuals)
+        """Assert an object property value the individual does not have yet."""
+        if not all_object_properties:
+            return None
+        prop = rng.choice(all_object_properties)
+        incorrect_object = rng.choice(all_individuals)
+        if (individual, prop, incorrect_object) in g:
+            return None
+        g.add((individual, prop, incorrect_object))
+        message = f"Added incorrect object property assertion: {individual} {prop} {incorrect_object}"
+        logger.info(message)
+        return message
 
-        if incorrect_object not in prop[individual]:
-            prop[individual].append(incorrect_object)
-            logger.info(f"Added incorrect object property assertion: {individual} {prop.name} {incorrect_object}")
-            return f"Added incorrect object property assertion: {individual} {prop.name} {incorrect_object}"
-
-    def generate_incorrect_data_property(individual):
-        """Generate an incorrect data property assertion (if exist in the KB)."""
-        if len(all_data_properties) != 0:
-            prop = random.choice(all_data_properties)
-            incorrect_value = "inconsistent_value"  # Example of an incorrect data value
-
-            if incorrect_value not in prop[individual]:
-                setattr(individual, prop.name, incorrect_value)
-                logger.info(f"Added incorrect data property assertion: {individual} {prop.name} {incorrect_value}")
-                return f"Added incorrect data property assertion: {individual} {prop.name} {incorrect_value}"
-
-    def insert_incorrect_statements():
-        """Insert incorrect statements based on the specified rate."""
-        num_triples = count_triples()  # Use the total number of triples in the KB
-        num_incorrect = int(num_triples * (rate / 100))
-
-        incorrect_statements = []
-
+    num_incorrect = int(len(g) * (rate / 100))
+    inconsistencies = []
+    if all_individuals:
         for _ in range(num_incorrect):
-            attempts = 0
-            while attempts < max_attempts:
-                individual = random.choice(all_individuals)
-                statement_type = random.choice(['class', 'object_property'])  # could also add data properties later on
-
-                if statement_type == 'class':
+            for _attempt in range(max_attempts):
+                individual = rng.choice(all_individuals)
+                if rng.choice(["class", "object_property"]) == "class":
                     result = generate_incorrect_class_assertion(individual)
-                elif statement_type == 'object_property':
+                else:
                     result = generate_incorrect_object_property(individual)
-
                 if result:
-                    incorrect_statements.append(result)
+                    inconsistencies.append(result)
                     break
 
-                attempts += 1
-
-        return incorrect_statements
-
-    # Insert incorrect statements
-    inconsistencies = insert_incorrect_statements()
-
-    # Save the modified ontology
-    onto.save(file=output_path, format="rdfxml")
-
-    # Return the list of inconsistencies added
+    g.serialize(destination=output_path, format="xml")
     return inconsistencies
-

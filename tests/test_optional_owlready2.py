@@ -195,15 +195,18 @@ class TestOwlready2BackedClassesRaiseClearErrorWithoutOwlready2:
         assert result.returncode == 0, result.stderr
         assert "OK" in result.stdout
 
-    def test_make_kb_incomplete_raises(self):
-        script = """
-            from owlapy.util_owl_static_funcs import make_kb_incomplete
-            try:
-                make_kb_incomplete("dummy.owl", "out.owl", 0.1, 1)
-                print("NOT_RAISED")
-            except ImportError as e:
-                assert "owlready2" in str(e)
-                print("OK")
+    def test_make_kb_helpers_work_without_owlready2(self, tmp_path):
+        # Ported to rdflib (#310): these helpers no longer need owlready2 at all.
+        import os
+        kb = os.path.abspath("KGs/Family/family-benchmark_rich_background.owl")
+        if not os.path.isfile(kb):
+            pytest.skip("KGs.zip not downloaded")
+        script = f"""
+            from owlapy.util_owl_static_funcs import make_kb_incomplete, make_kb_incomplete_ass, make_kb_inconsistent
+            make_kb_incomplete({kb!r}, {str(tmp_path / "a.owl")!r}, 10, 1)
+            make_kb_incomplete_ass({kb!r}, {str(tmp_path / "b.owl")!r}, 10, 1)
+            make_kb_inconsistent({kb!r}, {str(tmp_path / "c.owl")!r}, 1, 1)
+            print("OK")
         """
         result = _run_without_owlready2(script)
         assert result.returncode == 0, result.stderr
