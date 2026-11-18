@@ -211,3 +211,21 @@ class TestOwlready2BackedClassesRaiseClearErrorWithoutOwlready2:
         result = _run_without_owlready2(script)
         assert result.returncode == 0, result.stderr
         assert "OK" in result.stdout
+
+    def test_save_owl_class_expressions_works_without_owlready2(self, tmp_path):
+        # Ported to RDFLibOntology (#310, 1.2c).
+        out = str(tmp_path / "predictions.owl")
+        script = f"""
+            import rdflib
+            from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
+            from owlapy.owl_property import OWLObjectProperty
+            from owlapy.util_owl_static_funcs import save_owl_class_expressions
+            ce = OWLObjectSomeValuesFrom(OWLObjectProperty("http://ex.com/a#r"), OWLClass("http://ex.com/a#B"))
+            save_owl_class_expressions([OWLClass("http://ex.com/a#A"), ce], path={out!r})
+            g = rdflib.Graph().parse({out!r})
+            assert (rdflib.URIRef("https://dice-research.org/predictions#1"), rdflib.OWL.equivalentClass, None) in g
+            print("OK")
+        """
+        result = _run_without_owlready2(script)
+        assert result.returncode == 0, result.stderr
+        assert "OK" in result.stdout
