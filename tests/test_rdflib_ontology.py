@@ -2,13 +2,13 @@
 
 RDFLibOntology is a lightweight, pure-rdflib triple reader/writer: it only understands
 axioms expressed directly between *named* entities (classes, individuals,
-properties). Anything that would require reconstructing/emitting a complex class
-expression from blank-node RDF structures (owl:Restriction,
-owl:intersectionOf, ...) is out of scope and `general_class_axioms()` raises
-`NotImplementedError` to say so explicitly, matching `get_tbox_axioms()`,
-which likewise skips blank-node operands. `add_axiom()`/`remove_axiom()` raise
-`NotImplementedError` for the same reason on any axiom involving a complex
-expression, or an axiom type not yet supported by the write API.
+properties) when *reading*. Reconstructing a complex class expression from
+blank-node RDF structures (owl:Restriction, owl:intersectionOf, ...) is out of
+scope, so `general_class_axioms()` raises `NotImplementedError` and
+`get_tbox_axioms()` skips blank-node operands. `add_axiom()` *writes* complex
+class expressions and data ranges (#310, covered by
+test_rdflib_write_complex_ce.py); `remove_axiom()` still raises
+`NotImplementedError` for them, as both do for unsupported axiom types.
 """
 
 import os
@@ -510,9 +510,12 @@ class TestRDFLibOntologyAddAxiom:
         assert any(a.get_sub_class().str == self.Person.str and a.get_super_class().str == self.Agent.str
                    for a in subs)
 
-    def test_sub_class_of_rejects_complex_expression(self):
-        with pytest.raises(NotImplementedError):
-            self.onto.add_axiom(OWLSubClassOfAxiom(OWLObjectIntersectionOf([self.Agent, self.Robot]), self.Person))
+    def test_sub_class_of_accepts_complex_expression(self):
+        # Written as a blank-node structure (#310, 1.2b); the read API still only reports
+        # axioms between named classes. Full round trips are in test_rdflib_write_complex_ce.py.
+        self.onto.add_axiom(OWLSubClassOfAxiom(OWLObjectIntersectionOf([self.Agent, self.Robot]), self.Person))
+        assert {self.Agent.str, self.Robot.str, self.Person.str} <= {c.str for c in self.onto.classes_in_signature()}
+        assert (None, OWL.intersectionOf, None) in self.onto.rdflib_graph
 
     def test_equivalent_classes_three_operands_found_from_any_side(self):
         self.onto.add_axiom(OWLEquivalentClassesAxiom([self.Person, self.Human, self.Robot]))
@@ -550,9 +553,9 @@ class TestRDFLibOntologyAddAxiom:
     def test_data_property_range_rejects_non_datatype(self):
         with pytest.raises(TypeError):
             self.onto.add_axiom(OWLDataPropertyRangeAxiom(self.age, self.Person))
-        with pytest.raises(NotImplementedError):
-            complex_datatype = OWLDataUnionOf([OWLDatatype(XSD.integer), OWLDatatype(XSD.double)])
-            self.onto.add_axiom(OWLDataPropertyRangeAxiom(self.age, complex_datatype))
+        complex_datatype = OWLDataUnionOf([OWLDatatype(XSD.integer), OWLDatatype(XSD.double)])
+        self.onto.add_axiom(OWLDataPropertyRangeAxiom(self.age, complex_datatype))  # complex data ranges are writable (#310)
+        assert (URIRef(self.age.str), RDFS.range, None) in self.onto.rdflib_graph
 
     def test_sub_object_property_of(self):
         sub = OWLObjectProperty(NS + "hasCloseFriend")
