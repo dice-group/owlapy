@@ -11,7 +11,7 @@ from sklearn.datasets import load_iris
 
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectUnionOf
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom
+from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology, SyncOntology
@@ -34,7 +34,11 @@ class TestRunningExamples:
                                    path="owl_class_expressions.owl",
                                    document_format= 'rdfxml')
         g=rdflib.Graph().parse("owl_class_expressions.owl")
-        assert len(g)==22
+        assert (rdflib.URIRef("https://ontolearn.org/predictions"), rdflib.RDF.type, rdflib.OWL.Ontology) in g
+        # The OWL API reads back each expression as equivalent to <namespace><index>
+        axioms = set(SyncOntology("owl_class_expressions.owl").get_axioms())
+        for i, ce in enumerate(expressions):
+            assert OWLEquivalentClassesAxiom([OWLClass(f"https://ontolearn.org/predictions#{i}"), ce]) in axioms
 
     def test_csv_to_kg(self):
         data = load_iris()

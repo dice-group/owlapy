@@ -30,7 +30,10 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
 
     This function takes one or more OWL class expressions, creates an ontology,
     and saves the expressions as OWL equivalent class axioms in the specified format.
-    By default, it saves the file to the specified path using the 'rdfxml' format.
+    The i-th expression becomes equivalent to the class ``<namespace>i``. The ontology is
+    built and written with :class:`~owlapy.owl_ontology.RDFLibOntology`, so neither owlready2
+    nor a JVM is needed. By default, it saves the file to the specified path using the
+    'rdfxml' format.
 
     Args:
         expressions (OWLClassExpression | List[OWLClassExpression]): A single or a list of OWL class expressions
@@ -62,8 +65,9 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
     namespace = 'https://dice-research.org/predictions#' if namespace is None else namespace
     assert "#" == namespace[-1], "namespace must end with #"
 
-    # Create an ontology given the namespace.
-    ontology: Ontology = Ontology(namespace, load=False)
+    # Create a blank ontology whose IRI is the namespace without its trailing '#'. RDFLibOntology
+    # writes complex class expressions following the OWL 2 -> RDF mapping, so no owlready2 is needed (#310).
+    ontology = RDFLibOntology(namespace[:-1], load=False)
     # () Iterate over concepts
     for th, i in enumerate(expressions):
         cls_a = OWLClass(IRI.create(namespace, str(th)))
