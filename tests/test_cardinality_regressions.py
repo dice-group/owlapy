@@ -93,7 +93,9 @@ def test_object_cardinality_counts_distinct_targets(graph, tmp_path, backend, in
     assert retrieve(graph, expression, backend, tmp_path) & SUBJECTS == expected
 
 
-@pytest.mark.parametrize("backend", ["converter", "rdflib", "structural_cached", "structural_uncached"])
+@pytest.mark.parametrize("backend", ["converter", "rdflib",
+                                     pytest.param("structural_cached", marks=pytest.mark.requires_owlready2),
+                                     pytest.param("structural_uncached", marks=pytest.mark.requires_owlready2)])
 @pytest.mark.parametrize("filler", [
     StringOWLDatatype,
     OWLDataOneOf([OWLLiteral("yes"), OWLLiteral("also")]),

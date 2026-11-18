@@ -1,4 +1,5 @@
 """Tests for RDFLibReasoner - Pure Python RDFLib-based reasoner."""
+import pytest
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -306,6 +307,7 @@ class TestRDFLibReasonerConstruction(unittest.TestCase):
         reasoner = RDFLibReasoner(onto)
         self.assertIs(reasoner._graph, onto.rdflib_graph)
 
+    @pytest.mark.requires_owlready2
     def test_construction_from_plain_ontology(self):
         from owlapy.owl_ontology import Ontology
 
@@ -509,6 +511,7 @@ class TestRDFLibReasonerPropertyHierarchyAndDomainRange(unittest.TestCase):
         second = set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True))
         self.assertEqual(first, second)
 
+    @pytest.mark.requires_owlready2
     def test_parity_with_structural_reasoner(self):
         """RDFLibReasoner and StructuralReasoner must agree on the newly-implemented methods.
 

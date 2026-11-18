@@ -67,6 +67,7 @@ class TestMissingOwlready2Placeholder:
         with pytest.raises(ImportError):
             _MISSING_OWLREADY2.World(filename="x")
 
+    @pytest.mark.requires_owlready2
     def test_import_owlready2_returns_real_module_when_installed(self):
         # owlready2 is a `dev`-extra dependency of this test environment.
         import owlready2 as real_owlready2

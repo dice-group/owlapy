@@ -1,3 +1,4 @@
+import pytest
 import json
 import os
 import sys
@@ -257,6 +258,7 @@ class TestRdfKgToCsv(unittest.TestCase):
 class TestCreateOntology(unittest.TestCase):
     """Test create_ontology function."""
 
+    @pytest.mark.requires_owlready2
     def test_create_ontology_default(self):
         """Test creating ontology with default settings."""
         iri = "http://example.com/test"

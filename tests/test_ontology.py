@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import os
 from owlapy.owl_ontology import SyncOntology, Ontology, RDFLibOntology
@@ -19,6 +20,7 @@ from owlapy.owl_reasoner import SyncReasoner
 
 
 class TestOntology(unittest.TestCase):
+    @pytest.mark.requires_owlready2
     def test_counting(self):
         o_sync: SyncOntology
         o_sync = SyncOntology(path="KGs/Family/father.owl")
@@ -50,6 +52,7 @@ class TestOntologyCreation(unittest.TestCase):
 
         self.assertIsNotNone(onto)
 
+    @pytest.mark.requires_owlready2
     def test_create_empty_ontology_owlready(self):
         """Test creating empty Ontology."""
         onto = Ontology(self.ns, load=False)
@@ -393,6 +396,7 @@ if __name__ == '__main__':
 class TestLegacyOntologySaveTurtle(unittest.TestCase):
     """#293: Ontology.save documents "turtle"/"ttl" and must accept them."""
 
+    @pytest.mark.requires_owlready2
     def test_save_turtle_formats(self):
         import tempfile
         ns = "http://example.com/test#"

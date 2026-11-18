@@ -36,6 +36,7 @@ coverage report -m
 ```
 
 - Test KGs (one-time): `wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip`
+- Tests that use the legacy owlready2-backed classes (`Ontology`, `StructuralReasoner`, `ToOwlready2`, `FromOwlready2`) must be marked `@pytest.mark.requires_owlready2` (or a module-level `pytestmark`). CI runs the suite once with owlready2 uninstalled (#310): marked tests are skipped, and any unmarked test that needs owlready2 fails that job
 - `tests/test_z_do_last_ebr_retrieval.py` is slow and excluded from the default run by convention (runs last, retrains embeddings)
 - Test files: `tests/test_*.py`, functions `test_*` (pytest, `pythonpath = ["."]`, configured in `pyproject.toml`)
 - mypy config lives in `pyproject.toml` (`check_untyped_defs = true`, `disallow_untyped_defs = false` — gradual typing, tighten over time, don't relax)

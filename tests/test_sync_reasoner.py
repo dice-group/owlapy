@@ -1,3 +1,4 @@
+import pytest
 import os
 import unittest
 
@@ -105,6 +106,7 @@ class TestSyncReasoner(unittest.TestCase):
     def test_consistency_check(self):
         self.assertEqual(self.reasoner.has_consistent_ontology(), True)
 
+    @pytest.mark.requires_owlready2
     def test_named_concepts(self):
 
         ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
@@ -134,6 +136,7 @@ class TestSyncReasoner(unittest.TestCase):
         for i in onto.classes_in_signature():
             assert compute_agreements(i, True)
 
+    @pytest.mark.requires_owlready2
     def test_inconsistency_check(self):
         onto = Ontology(IRI.create(self.ontology_path))
 

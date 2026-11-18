@@ -55,6 +55,35 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
+  # owlready2 is an optional extra being removed in 2.0 (#310). Run the suite once without it to
+  # prove that nothing outside the legacy owlready2-backed classes needs it: tests marked
+  # `requires_owlready2` are skipped (tests/conftest.py), every other test must pass.
+  test-without-owlready2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies without owlready2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[all]'
+          pip install dicee[dev] "pyarrow<26"  # dicee pins numpy==1.26.4; pyarrow>=26 requires NumPy 2
+          pip uninstall -y owlready2
+          if python -c "import owlready2" 2>/dev/null; then
+            echo "owlready2 is still importable"; exit 1
+          fi
+      - name: Download test data
+        run: |
+          wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
+          unzip KGs.zip
+      - name: Run tests without owlready2
+        run: |
+          pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x -o faulthandler_timeout=600
+
 
 # Removed because of an error is generated when trying to create the report.
 # It happens because of some pytorch conflict. One of our tests namely test_z_do_last_ebr_retrieval.py uses pytorch
