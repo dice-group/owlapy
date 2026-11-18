@@ -1,13 +1,13 @@
 """
-Example: Using RDFLibReasoner as a drop-in replacement for StructuralReasoner.
+Example: ontology navigation and reasoning with RDFLibReasoner.
 
-This example demonstrates how RDFLibReasoner can be used as a pure-Python
-alternative to StructuralReasoner for ontology navigation and reasoning.
+RDFLibReasoner is owlapy's pure-Python, closed-world reasoner: no JVM and no owlready2.
+It replaces the deprecated StructuralReasoner (see markdown_docs/10_migrating_from_owlready2.md).
 """
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 
@@ -15,9 +15,9 @@ from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 def main():
     # Load ontology
     print("Loading Family ontology...")
-    onto = SyncOntology("KGs/Family/family-benchmark_rich_background.owl")
+    onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
 
-    # Initialize RDFLib-based reasoner (drop-in replacement for StructuralReasoner)
+    # Initialize the RDFLib-based reasoner
     print("Initializing RDFLibReasoner...")
     reasoner = RDFLibReasoner(onto, class_cache=True)
 
@@ -125,48 +125,9 @@ def main():
         else:
             print("  (none found)")
 
-    # Example 8: Comparison with StructuralReasoner
+    # Example 8: Performance - caching benefits
     print("\n" + "="*60)
-    print("Example 8: Comparison with StructuralReasoner")
-    print("="*60)
-
-    try:
-        from owlapy.owl_reasoner import StructuralReasoner
-
-        structural = StructuralReasoner(onto)
-
-        # Compare instance retrieval
-        rdflib_males = set(reasoner.instances(male))
-        structural_males = set(structural.instances(male))
-
-        print(f"RDFLibReasoner found {len(rdflib_males)} males")
-        print(f"StructuralReasoner found {len(structural_males)} males")
-
-        if rdflib_males == structural_males:
-            print("✓ Results are identical!")
-        else:
-            print("✗ Results differ")
-            diff = rdflib_males.symmetric_difference(structural_males)
-            print(f"  Difference: {len(diff)} individuals")
-
-        # Compare subclass retrieval
-        rdflib_subs = set(reasoner.sub_classes(person, direct=True))
-        structural_subs = set(structural.sub_classes(person, direct=True))
-
-        print(f"\nRDFLibReasoner found {len(rdflib_subs)} direct subclasses")
-        print(f"StructuralReasoner found {len(structural_subs)} direct subclasses")
-
-        if rdflib_subs == structural_subs:
-            print("✓ Subclass results are identical!")
-        else:
-            print("✗ Subclass results differ")
-
-    except Exception as e:
-        print(f"Could not compare with StructuralReasoner: {e}")
-
-    # Example 9: Performance - caching benefits
-    print("\n" + "="*60)
-    print("Example 9: Cache performance")
+    print("Example 8: Cache performance")
     print("="*60)
 
     import time
@@ -196,7 +157,6 @@ def main():
     print("✓ SPARQL-based querying")
     print("✓ Predictable RDF semantics")
     print("✓ Efficient caching")
-    print("✓ Drop-in replacement for StructuralReasoner")
     print("="*60)
 
 

@@ -212,7 +212,7 @@ pip install -e .
 **Problem:** `MemoryError` when loading large ontologies
 
 **Solution:** 
-- Use RDFLibReasoner instead of StructuralReasoner (more memory efficient)
+- Use `RDFLibOntology`/`RDFLibReasoner` (pure Python, no JVM)
 - Increase Python memory limit
 - Load only necessary parts of the ontology
 

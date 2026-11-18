@@ -142,17 +142,8 @@ onto.add_axiom(OWLClassAssertionAxiom(OWLNamedIndividual("family#john"), OWLClas
 onto.save("family_updated.owl")
 ```
 
-### `Ontology` (Legacy)
-
-owlready2-backed ontology implementation. Being phased out in favor of `RDFLibOntology` (#205);
-prefer `SyncOntology` or `RDFLibOntology` for new code. owlready2 is an optional install extra
-(`pip install owlapy[owlready2]`) -- constructing an `Ontology` without it installed raises a
-clear `ImportError` explaining how to install it.
-
-```python
-from owlapy.owl_ontology import Ontology
-onto = Ontology("family.owl")
-```
+The owlready2-backed `Ontology`, `StructuralReasoner`, `ToOwlready2` and `FromOwlready2` are
+deprecated and removed in owlapy 2.0. See [Migrating from owlready2](10_migrating_from_owlready2.md).
 
 ### `NeuralOntology`
 
@@ -193,15 +184,6 @@ RDFLibReasoner(ontology: AbstractOWLOntology | str)  # accepts a path directly, 
 reasoner = RDFLibReasoner(onto)
 males = list(reasoner.instances(OWLClass(NS + "Male")))
 subclasses = list(reasoner.sub_classes(person, direct=True))
-```
-
-### `StructuralReasoner`
-
-Fast Python reasoner using owlready2. **Warning:** Has circular dependency issue #205.
-
-```python
-from owlapy.owl_reasoner import StructuralReasoner
-reasoner = StructuralReasoner(onto)
 ```
 
 ### `SyncReasoner`
@@ -255,10 +237,10 @@ Named classes and TBox queries use a symbolic fallback. Requires `torch` and `tr
 Pretrained weights: https://files.dice-research.org/datasets/CNIR/trained_models.zip
 
 ```python
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner import NIRReasoner
 
-onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
 reasoner = NIRReasoner(
     onto,
     model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
@@ -596,18 +578,14 @@ from owlapy.owl_axiom import (
 
 ```python
 from owlapy.util_owl_static_funcs import (
-    create_ontology,
     csv_to_rdf_kg,
     save_owl_class_expressions
 )
 ```
 
-#### `create_ontology(iri: str) -> SyncOntology`
-Create empty ontology.
-
-```python
-onto = create_ontology("http://example.com/my-ontology")
-```
+To create an empty ontology, construct it directly: `RDFLibOntology(iri, load=False)` (pure
+Python) or `SyncOntology(iri, load=False)` (OWL API). `create_ontology(iri, with_owlapi=False)`
+returns the deprecated owlready2-backed `Ontology` until owlapy 2.0 and emits a `FutureWarning`.
 
 #### `csv_to_rdf_kg(path_csv, path_kg, namespace)`
 Convert CSV to RDF knowledge graph. Each row becomes an individual; each column becomes
@@ -622,7 +600,8 @@ csv_to_rdf_kg(
 ```
 
 #### `save_owl_class_expressions(expressions: List, path: str, namespace: str)`
-Save class expressions to OWL file.
+Save class expressions to an OWL file (RDF/XML), each as `EquivalentClasses(<namespace>i, expression_i)`.
+Pure Python (written with `RDFLibOntology`).
 
 ```python
 save_owl_class_expressions(
@@ -817,11 +796,11 @@ rule = Rule(
 
 ```python
 # Ontology
-from owlapy.owl_ontology import SyncOntology, Ontology, NeuralOntology
+from owlapy.owl_ontology import SyncOntology, RDFLibOntology, NeuralOntology
 
 # Reasoners
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
-from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
+from owlapy.owl_reasoner import SyncReasoner
 
 # Class Expressions
 from owlapy.class_expression import (
@@ -852,7 +831,7 @@ from owlapy import (
 )
 
 # Utilities
-from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg
+from owlapy.util_owl_static_funcs import csv_to_rdf_kg, save_owl_class_expressions
 from owlapy.static_funcs import startJVM, stopJVM
 from owlapy.utils import CESimplifier, NNF
 

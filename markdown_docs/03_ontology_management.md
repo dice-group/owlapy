@@ -5,16 +5,22 @@
 ### Create Empty Ontology
 
 ```python
-from owlapy.util_owl_static_funcs import create_ontology
+from owlapy.owl_ontology import RDFLibOntology, SyncOntology
 from owlapy.iri import IRI
 
-# Create with IRI string
-onto = create_ontology("http://example.com/my-ontology")
+# Pure Python (no JVM): pass the new ontology's IRI and load=False
+onto = RDFLibOntology("http://example.com/my-ontology", load=False)
 
-# Or create with IRI object
-iri = IRI.create("http://example.com/my-ontology")
-onto = create_ontology(iri)
+# Or with an IRI object
+onto = RDFLibOntology(IRI.create("http://example.com/my-ontology"), load=False)
+
+# OWL API-backed (starts the JVM)
+onto = SyncOntology("http://example.com/my-ontology", load=False)
 ```
+
+`create_ontology(iri)` from `owlapy.util_owl_static_funcs` still exists, but without
+`with_owlapi=True` it returns the deprecated owlready2-backed `Ontology` and emits a
+`FutureWarning`; in owlapy 2.0 it returns an `RDFLibOntology`.
 
 ### Create Ontology with Initial Content
 
@@ -26,7 +32,7 @@ from owlapy.owl_axiom import OWLSubClassOfAxiom
 
 # Create ontology
 iri = IRI.create("http://example.com/university")
-onto = SyncOntology(iri)
+onto = SyncOntology(iri, load=False)
 
 # Define namespace
 NS = "http://example.com/university#"
@@ -387,7 +393,7 @@ from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype, StringOWLDatatype
 NS = "http://example.com/university#"
 
 # Create ontology
-onto = SyncOntology(IRI.create(NS[:-1]))
+onto = SyncOntology(IRI.create(NS[:-1]), load=False)
 
 # Define classes and properties
 student_class = OWLClass(NS + "Student")

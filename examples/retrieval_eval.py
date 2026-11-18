@@ -41,8 +41,9 @@ OWLObjectUnionOf                        1.0  1.0         -0.002939
 
 """
 # Replace ontolearn dependencies with owlapy components
-from owlapy.owl_reasoner import StructuralReasoner, EBR
-from owlapy.owl_ontology import Ontology, NeuralOntology
+from owlapy.owl_reasoner import EBR
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
+from owlapy.owl_ontology import RDFLibOntology, NeuralOntology
 from owlapy.utils import jaccard_similarity, f1_set_similarity
 from owlapy.class_expression import (
     OWLObjectUnionOf,
@@ -103,9 +104,9 @@ def concept_reducer_properties(concepts, properties, cls, cardinality=None):
 def execute(args):
     # (1) Initialize symbolic reasoner
     assert os.path.isfile(args.path_kg)
-    # Use StructuralReasoner instead of KnowledgeBase
-    ontology = Ontology(ontology_iri=args.path_kg)
-    symbolic_kb = StructuralReasoner(ontology)
+    # Pure-Python, closed-world symbolic reasoner (no JVM)
+    ontology = RDFLibOntology(args.path_kg)
+    symbolic_kb = RDFLibReasoner(ontology)
     
     # (2) Initialize Neural OWL Reasoner
     # Use EBR instead of TripleStoreNeuralReasoner

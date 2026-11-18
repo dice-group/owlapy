@@ -1,10 +1,10 @@
 from owlapy.owl_reasoner import SyncReasoner
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.class_expression import OWLClassExpression
 from typing import Dict
 ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
 # () Load ontology
-onto = Ontology(ontology_path, load=True)
+onto = RDFLibOntology(ontology_path)
 
 # () Initialize Reasoners
 reasoners = dict()

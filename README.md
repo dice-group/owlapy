@@ -25,9 +25,9 @@ LLMs
 
 ### Production-Ready Reasoning
 
-- **Python-native Reasoners**: [RDFLibReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), an [Embedding-Based Reasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion, and [NIRReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#5-nirreasoner-neural-instance-retrieval) for neural instance retrieval of complex class expressions
+- **Python-native Reasoners**: [RDFLibReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (pure Python, no JVM or owlready2), an [Embedding-Based Reasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#3-ebr-embedding-based-reasoner) for neural knowledge graph completion, and [NIRReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#4-nirreasoner-neural-instance-retrieval) for neural instance retrieval of complex class expressions
 - **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
-- **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#3-syncreasoner-complete-owl-2-dl)
+- **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#2-syncreasoner-complete-owl-2-dl)
 
 ### Cutting-Edge Features
 
@@ -93,7 +93,7 @@ For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`]
 - **[Getting Started](https://github.com/dice-group/owlapy/blob/main/markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
 - **[Core Concepts](https://github.com/dice-group/owlapy/blob/main/markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
 - **[Ontology Management](https://github.com/dice-group/owlapy/blob/main/markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
-- **[Reasoning](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, the Embedding-Based Reasoner (EBR), and NIRReasoner
+- **[Reasoning](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, SyncReasoner, the Embedding-Based Reasoner (EBR), and NIRReasoner
 - **[Common Patterns](https://github.com/dice-group/owlapy/blob/main/markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
 - **[API Reference](https://github.com/dice-group/owlapy/blob/main/markdown_docs/09_api_reference.md)** - Complete API documentation
 
@@ -164,7 +164,7 @@ from owlapy.owl_property import OWLObjectProperty
 from owlapy import owl_expression_to_sparql, owl_expression_to_dl
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.util_owl_static_funcs import create_ontology
+from owlapy.owl_ontology import RDFLibOntology
 # Using owl classes to create a complex class expression
 male = OWLClass("http://example.com/society#male")
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
@@ -176,15 +176,15 @@ teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 print(owl_expression_to_dl(teacher_that_hasChild_male)) # (∃ hasChild.male) ⊓ teacher
 print(owl_expression_to_sparql(teacher_that_hasChild_male)) #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 
-# Create an ontology
-ontology = create_ontology("file:/example_ontology.owl",with_owlapi=False)
+# Create an ontology (pure Python; use SyncOntology(..., load=False) if you need the OWL API)
+ontology = RDFLibOntology("http://example.com/society", load=False)
 john = OWLNamedIndividual("http://example.com/society#john")
 male_declaration_axiom = OWLDeclarationAxiom(male)
 hasChild_declaration_axiom = OWLDeclarationAxiom(hasChild)
 john_declaration_axiom = OWLDeclarationAxiom(john)
 john_a_male_assertion_axiom = OWLClassAssertionAxiom(john, male)
 ontology.add_axiom([male_declaration_axiom, hasChild_declaration_axiom, john_declaration_axiom, john_a_male_assertion_axiom])
-ontology.save(inplace=True)
+ontology.save(path="example_ontology.owl")
 ```
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
@@ -323,12 +323,12 @@ owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --infer
 ```python
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.static_funcs import stopJVM
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet', 'ELK', 'Structural'
 sync_reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
-onto = Ontology(ontology_path)
+onto = RDFLibOntology(ontology_path)
 # Iterate over defined owl Classes in the signature
 for i in onto.classes_in_signature():
     # Performing type inference with Pellet
