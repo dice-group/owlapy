@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import types
+import warnings
 from datetime import date, datetime
 from functools import singledispatch, singledispatchmethod
 from itertools import chain, combinations, islice
@@ -963,6 +964,13 @@ class Ontology(AbstractOWLOntology):
             ontology_iri: IRI of the ontology.
             load: Whether to load the ontology or not.
         """
+        warnings.warn(
+            "Ontology is owlready2-backed, deprecated, and will be removed in owlapy 2.0. Use "
+            "RDFLibOntology (owlapy.owl_ontology.RDFLibOntology), a pure-Python replacement with no "
+            "owlready2/JVM dependency, or SyncOntology for OWL API features. See issue #310.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._iri = ontology_iri
         if world_store is None:
             self._world = owlready2.World()
@@ -2539,6 +2547,12 @@ class ToOwlready2:
         Args:
             world: Owlready2 World to use for mapping.
         """
+        warnings.warn(
+            "ToOwlready2 is deprecated and will be removed together with owlready2 support in owlapy 2.0. "
+            "See issue #310.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._world = world
 
     @singledispatchmethod
@@ -2734,6 +2748,14 @@ class ToOwlready2:
 class FromOwlready2:
     """Map owlready2 classes to owlapy model classes."""
     __slots__ = ()
+
+    def __init__(self):
+        warnings.warn(
+            "FromOwlready2 is deprecated and will be removed together with owlready2 support in owlapy 2.0. "
+            "See issue #310.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     @singledispatchmethod
     def map_concept(self, c: Union[owlready2.ClassConstruct, owlready2.ThingClass]) -> OWLClassExpression:

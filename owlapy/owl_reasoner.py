@@ -87,9 +87,10 @@ class StructuralReasoner(AbstractOWLReasoner):
                 :func:`StructuralReasoner.instances` retrieval.
             """
         warnings.warn(
-            "StructuralReasoner is owlready2-backed and being phased out in favor of "
-            "RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
-            "replacement with no owlready2/JVM dependency. See issue #205.",
+            "StructuralReasoner is owlready2-backed, deprecated, and will be removed in owlapy 2.0. "
+            "Use RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
+            "replacement with no owlready2/JVM dependency, or SyncReasoner for complete OWL 2 DL "
+            "reasoning. See issue #310.",
             DeprecationWarning,
             stacklevel=2,
         )

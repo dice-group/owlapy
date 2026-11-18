@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `make_kb_incomplete`, `make_kb_incomplete_ass` and `make_kb_inconsistent` (`owlapy.util_owl_static_funcs`) are now implemented with rdflib instead of owlready2, so they work without the `owlready2` extra (#310). The same `seed` now selects different statements than before. The helpers use their own random generator instead of reseeding Python's global `random` module. `make_kb_incomplete` now returns the IRIs of the removed individuals, as its `Set[str]` annotation always said; it used to return `None`. `make_kb_incomplete_ass` now removes only object and data property assertions of individuals, and `make_kb_inconsistent` skips object property assertions when the KB has no object properties instead of failing
+### Deprecated
+- `Ontology`, `ToOwlready2` and `FromOwlready2` now emit a `DeprecationWarning` (like `StructuralReasoner` already did), and all four owlready2-backed classes now state that they will be removed in owlapy 2.0. Use `RDFLibOntology`/`RDFLibReasoner` (pure Python) or `SyncOntology`/`SyncReasoner` (OWL API) instead. The full deprecation plan is tracked in #310
 
 ### Fixed
 - Package classifiers now match `python_requires='>=3.11'`: the stale `Python :: 3.10` classifier was replaced by `Python :: 3.11` and `Python :: 3.12` (the versions tested in CI)
