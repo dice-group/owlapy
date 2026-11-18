@@ -95,6 +95,13 @@ class StructuralReasoner(AbstractOWLReasoner):
             stacklevel=2,
         )
         if isinstance(ontology, str):
+            warnings.warn(
+                "StructuralReasoner(path) loads the file into an owlready2-backed Ontology. Both are "
+                "removed in owlapy 2.0. To switch now, use RDFLibReasoner(RDFLibOntology(path)), or "
+                "SyncReasoner(SyncOntology(path)) for complete OWL 2 DL reasoning. See issue #310.",
+                FutureWarning,
+                stacklevel=2,
+            )
             ontology = Ontology(ontology)
 
         super().__init__(ontology)

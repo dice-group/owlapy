@@ -262,7 +262,8 @@ class TestCreateOntology(unittest.TestCase):
     def test_create_ontology_default(self):
         """Test creating ontology with default settings."""
         iri = "http://example.com/test"
-        onto = create_ontology(iri, with_owlapi=False)
+        with self.assertWarns(FutureWarning):  # default switches to RDFLibOntology in 2.0 (#310)
+            onto = create_ontology(iri, with_owlapi=False)
 
         self.assertIsInstance(onto, Ontology)
 

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import random
+import warnings
 from typing import List, Set
 
 import pandas as pd
@@ -220,11 +221,28 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
 
 
 def create_ontology(iri, with_owlapi=False):
-    """ A convenient function"""
+    """Create a blank ontology with the given IRI.
+
+    Args:
+        iri: IRI of the new ontology.
+        with_owlapi: If True, return an OWL API-backed :class:`SyncOntology` (starts the JVM).
+            If False (default), return the owlready2-backed :class:`Ontology`.
+
+    .. note::
+        ``with_owlapi=False`` emits a ``FutureWarning``: in owlapy 2.0 it will return an
+        :class:`RDFLibOntology` instead, because ``Ontology`` is removed (see #310). To opt in
+        now, construct ``RDFLibOntology(iri, load=False)`` yourself.
+    """
     if with_owlapi:
         return SyncOntology(iri, load=False)
-    else:
-        return Ontology(iri, load=False)
+    warnings.warn(
+        "create_ontology(..., with_owlapi=False) returns the owlready2-backed Ontology, which is "
+        "deprecated. In owlapy 2.0 it will return an RDFLibOntology instead. To opt in now, use "
+        "RDFLibOntology(iri, load=False) directly (or with_owlapi=True for a SyncOntology). See issue #310.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    return Ontology(iri, load=False)
 
 
 def generate_ontology(graph_as_json: str = None,
