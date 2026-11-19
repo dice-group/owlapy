@@ -262,7 +262,10 @@ class TestCreateOntology(unittest.TestCase):
     def test_create_ontology_default(self):
         """Test creating ontology with default settings."""
         iri = "http://example.com/test"
-        with self.assertWarns(FutureWarning):  # default switches to RDFLibOntology in 2.0 (#310)
+        # default switches to RDFLibOntology in 2.0 (#310). pytest.warns, not assertWarns: the latter
+        # touches every module in sys.modules, which makes transformers' lazy module import optional
+        # dependencies (e.g. torchvision) once an earlier test has imported transformers.
+        with pytest.warns(FutureWarning):
             onto = create_ontology(iri, with_owlapi=False)
 
         self.assertIsInstance(onto, Ontology)
