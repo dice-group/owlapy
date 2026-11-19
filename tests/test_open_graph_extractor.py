@@ -5,10 +5,10 @@ checking, ontology assembly). Every dspy.Predict-backed attribute involved is
 stubbed with a deterministic MagicMock -- no real LLM calls.
 
 Results are verified by parsing the saved RDF/XML file with rdflib rather
-than via Ontology.get_abox_axioms()/get_tbox_axioms(), which also happens to
+than through the returned ontology (an owlready2 `Ontology` by default, an `RDFLibOntology` without
+owlready2, see test_agen_kg_ontology_backend.py), which also happens to
 exercise the real onto.save() path end-to-end.
 """
-import pytest
 import os
 import tempfile
 import unittest
@@ -17,8 +17,6 @@ from unittest.mock import MagicMock
 import rdflib
 
 from owlapy.agen_kg.graph_extracting_models.open_graph_extractor import OpenGraphExtractor
-
-pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 NS = "http://example.com/open_extractor_test#"
 
