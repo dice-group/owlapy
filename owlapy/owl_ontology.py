@@ -54,7 +54,10 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import (
     OWLAnnotation,
     OWLAnnotationAssertionAxiom,
+    OWLAnnotationAxiom,
     OWLAnnotationProperty,
+    OWLAnnotationPropertyDomainAxiom,
+    OWLAnnotationPropertyRangeAxiom,
     OWLAsymmetricObjectPropertyAxiom,
     OWLAxiom,
     OWLClassAssertionAxiom,
@@ -87,6 +90,7 @@ from owlapy.owl_axiom import (
     OWLPropertyRangeAxiom,
     OWLReflexiveObjectPropertyAxiom,
     OWLSameIndividualAxiom,
+    OWLSubAnnotationPropertyOfAxiom,
     OWLSubClassOfAxiom,
     OWLSubPropertyAxiom,
     OWLSubPropertyChainAxiom,
@@ -1892,6 +1896,50 @@ def _declare_data_property(ontology, pe: OWLDataProperty) -> None:
     _declare_entity(ontology, pe.str, rdflib.OWL.DatatypeProperty, ontology.str_owl_data_properties)
 
 
+def _declare_annotation_property(ontology, ap: OWLAnnotationProperty, implicit: bool = True) -> None:
+    # rdfs:label, rdfs:comment, ... are built in: implicit declarations leave them out, as the OWL API does
+    if implicit and rdflib.URIRef(ap.str) in _WELL_KNOWN_ANNOTATION_PREDICATES:
+        return
+    _declare_entity(ontology, ap.str, rdflib.OWL.AnnotationProperty, ontology.str_owl_annotation_properties)
+
+
+def _annotation_subject_to_rdf(subject) -> "rdflib.term.URIRef":
+    if isinstance(subject, IRI):
+        return rdflib.URIRef(subject.str)
+    raise NotImplementedError("RDFLibOntology only supports an IRI as an annotation subject; anonymous "
+                              "individuals aren't supported.")
+
+
+def _annotation_value_to_rdf(value) -> "rdflib.term.Node":
+    if isinstance(value, IRI):
+        return rdflib.URIRef(value.str)
+    if isinstance(value, OWLLiteral):
+        return _owl_literal_to_rdflib_literal(value)
+    raise NotImplementedError("RDFLibOntology only supports an IRI or a literal as an annotation value; anonymous "
+                              "individuals aren't supported.")
+
+
+def _annotation_axiom_triple(axiom: OWLAnnotationAxiom) -> Tuple["rdflib.term.Node", "rdflib.term.Node", "rdflib.term.Node"]:
+    """The single triple an annotation axiom maps to (W3C OWL 2 → RDF mapping, Table 2)."""
+    if isinstance(axiom, OWLAnnotationAssertionAxiom):
+        return (_annotation_subject_to_rdf(axiom.get_subject()), rdflib.URIRef(axiom.get_property().str),
+                _annotation_value_to_rdf(axiom.get_value()))
+    if isinstance(axiom, OWLSubAnnotationPropertyOfAxiom):
+        return (rdflib.URIRef(axiom.get_sub_property().str), rdflib.RDFS.subPropertyOf,
+                rdflib.URIRef(axiom.get_super_property().str))
+    if isinstance(axiom, OWLAnnotationPropertyDomainAxiom):
+        return rdflib.URIRef(axiom.get_property().str), rdflib.RDFS.domain, rdflib.URIRef(axiom.get_domain().str)
+    if isinstance(axiom, OWLAnnotationPropertyRangeAxiom):
+        return rdflib.URIRef(axiom.get_property().str), rdflib.RDFS.range, rdflib.URIRef(axiom.get_range().str)
+    raise NotImplementedError(f"RDFLibOntology does not support {type(axiom).__name__} yet.")
+
+
+def _annotation_axiom_properties(axiom: OWLAnnotationAxiom) -> List[OWLAnnotationProperty]:
+    if isinstance(axiom, OWLSubAnnotationPropertyOfAxiom):
+        return [axiom.get_sub_property(), axiom.get_super_property()]
+    return [axiom.get_property()]
+
+
 def _add_property_characteristic(axiom: OWLAxiom, ontology) -> None:
     term = _PROPERTY_CHARACTERISTIC_TERMS.get(type(axiom))
     if term is None:
@@ -2178,7 +2226,8 @@ def _rdflib_add_axiom(axiom: OWLAxiom, ontology) -> None:
         f"OWLDisjointClassesAxiom, OWLSubObjectPropertyOfAxiom, OWLSubDataPropertyOfAxiom, "
         f"OWL{{Object,Data}}PropertyDomainAxiom, OWL{{Object,Data}}PropertyRangeAxiom, and the "
         f"property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/"
-        f"Transitive/Reflexive/Irreflexive). Class expressions and data ranges may be complex; "
+        f"Transitive/Reflexive/Irreflexive), and the annotation axioms (OWLAnnotationAssertionAxiom, "
+        f"OWLSubAnnotationPropertyOfAxiom, OWLAnnotationProperty{{Domain,Range}}Axiom). Class expressions and data ranges may be complex; "
         f"properties must be named (or an inverse of a named object property inside a class expression).")
 
 
@@ -2193,10 +2242,12 @@ def _(axiom: OWLDeclarationAxiom, ontology) -> None:
         _declare_object_property(ontology, entity)
     elif isinstance(entity, OWLDataProperty):
         _declare_data_property(ontology, entity)
+    elif isinstance(entity, OWLAnnotationProperty):
+        _declare_annotation_property(ontology, entity, implicit=False)
     else:
         raise NotImplementedError(
             f"RDFLibOntology.add_axiom() cannot declare entities of type {type(entity).__name__}; "
-            f"supported: OWLClass, OWLNamedIndividual, OWLObjectProperty, OWLDataProperty.")
+            f"supported: OWLClass, OWLNamedIndividual, OWLObjectProperty, OWLDataProperty, OWLAnnotationProperty.")
 
 
 @_rdflib_add_axiom.register
@@ -2353,6 +2404,14 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
     _add_property_characteristic(axiom, ontology)
 
 
+@_rdflib_add_axiom.register
+def _(axiom: OWLAnnotationAxiom, ontology) -> None:
+    triple = _annotation_axiom_triple(axiom)  # validates before anything is declared
+    for ap in _annotation_axiom_properties(axiom):
+        _declare_annotation_property(ontology, ap)
+    ontology.rdflib_graph.add(triple)
+
+
 @singledispatch
 def _rdflib_remove_axiom(axiom: OWLAxiom, ontology) -> None:
     raise NotImplementedError(f"RDFLibOntology.remove_axiom() does not support {type(axiom).__name__} yet.")
@@ -2369,6 +2428,8 @@ def _(axiom: OWLDeclarationAxiom, ontology) -> None:
         _undeclare_entity(ontology, entity.str, rdflib.OWL.ObjectProperty, ontology.str_owl_object_properties)
     elif isinstance(entity, OWLDataProperty):
         _undeclare_entity(ontology, entity.str, rdflib.OWL.DatatypeProperty, ontology.str_owl_data_properties)
+    elif isinstance(entity, OWLAnnotationProperty):
+        _undeclare_entity(ontology, entity.str, rdflib.OWL.AnnotationProperty, ontology.str_owl_annotation_properties)
     else:
         raise NotImplementedError(
             f"RDFLibOntology.remove_axiom() cannot un-declare entities of type {type(entity).__name__}.")
@@ -2458,6 +2519,11 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology) -> None:
 @_rdflib_remove_axiom.register
 def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
     _remove_property_characteristic(axiom, ontology)
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLAnnotationAxiom, ontology) -> None:
+    ontology.rdflib_graph.remove(_annotation_axiom_triple(axiom))
 
 
 class _UnreadableRDF(ValueError):

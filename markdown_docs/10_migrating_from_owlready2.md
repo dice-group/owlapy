@@ -74,8 +74,9 @@ Neither version needs the JVM or `stopJVM()`.
   logged warning.
 - **Removing complex axioms.** `RDFLibOntology.remove_axiom()` raises `NotImplementedError` on an
   axiom with a complex operand.
-- **Writing annotations.** `RDFLibOntology.annotation_assertion_axioms()` reads annotations, but
-  `add_axiom(OWLAnnotationAssertionAxiom(...))` is not supported yet. Use `SyncOntology` for that.
+- **Annotations.** `RDFLibOntology` reads and writes annotation assertions (e.g. `rdfs:label`,
+  `rdfs:comment`) on IRIs, with IRI or literal values. Anonymous individuals as subject or value
+  aren't supported, and annotations *on axioms* are dropped. Use `SyncOntology` for those.
 - **Methods without a replacement.** `Ontology.get_original_iri()` and
   `StructuralReasoner.get_instances_from_owl_class()` have no counterpart.
 - **Ontology changes after construction.** `RDFLibReasoner` takes a snapshot of the ontology when

@@ -112,15 +112,16 @@ RDFLibOntology(iri: str | IRI, load=False)       # create a blank ontology with 
 
 **Key Methods (read):**
 - `classes_in_signature()` / `individuals_in_signature()` / `object_properties_in_signature()` / `data_properties_in_signature()` / `properties_in_signature()`
-- `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` between named classes
+- `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` (operands may be complex, see below)
 - `get_abox_axioms() -> Iterable[OWLAxiom]` - Class assertions, object- and data-property assertions
 - `get_abox_axioms_between_individuals()` / `get_abox_axioms_between_individuals_and_classes()` - Filtered subsets of the above
 - `equivalent_classes_axioms(c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]`
 - `data_property_domain_axioms(pe)` / `data_property_range_axioms(pe)` / `object_property_domain_axioms(pe)` / `object_property_range_axioms(pe)`
+- `annotation_assertion_axioms(entity_or_iri) -> Iterable[OWLAnnotationAssertionAxiom]` - `rdfs:label`, `rdfs:comment` and other annotations on an entity
 - `get_ontology_id() -> OWLOntologyID`
 
 **Key Methods (write):**
-- `add_axiom(axiom)` / `remove_axiom(axiom)` - Accepts a single `OWLAxiom` or an iterable. Supports declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, and the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive). `add_axiom()` also accepts *complex* class expressions and data ranges wherever OWL allows them (e.g. `A ⊑ ∃r.B`, `∃r.B ⊑ C`, class assertions to `∀r.(B ⊔ C)`, restriction-based domains/ranges, datatype restrictions) and writes them as blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API reads them back unchanged. Adding an axiom auto-declares any entity it references that isn't declared yet, so the axiom is immediately visible to the read API
+- `add_axiom(axiom)` / `remove_axiom(axiom)` - Accepts a single `OWLAxiom` or an iterable. Supports declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive), and the annotation axioms (`OWLAnnotationAssertionAxiom` with an IRI subject and an IRI or literal value, `OWLSubAnnotationPropertyOfAxiom`, `OWLAnnotationPropertyDomainAxiom`/`RangeAxiom`). A custom annotation property is declared `owl:AnnotationProperty` automatically; built-in ones such as `rdfs:label` are not. `add_axiom()` also accepts *complex* class expressions and data ranges wherever OWL allows them (e.g. `A ⊑ ∃r.B`, `∃r.B ⊑ C`, class assertions to `∀r.(B ⊔ C)`, restriction-based domains/ranges, datatype restrictions) and writes them as blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API reads them back unchanged. Adding an axiom auto-declares any entity it references that isn't declared yet, so the axiom is immediately visible to the read API
 - `save(path=None, inplace=False, document_format=None)` - Serializes via rdflib (`"rdfxml"` default; also accepts rdflib's own names and OWL-API-style aliases, same vocabulary as `Ontology`/`SyncOntology`)
 
 **Reading complex axioms:** the read API (`get_tbox_axioms()`, `equivalent_classes_axioms()`,
@@ -133,7 +134,8 @@ individual) is skipped, with one logged warning per call.
 **Limitation:** `remove_axiom()` cannot remove an axiom with a complex operand yet, and properties must be named
 (an `OWLObjectInverseOf` is accepted only inside a class expression).
 A handful of axiom types aren't supported by the write API yet either (e.g. `OWLSameIndividualAxiom`,
-`OWLAnnotationAssertionAxiom`, `OWLDisjointUnionAxiom`) -- the error message names what is.
+`OWLDisjointUnionAxiom`), nor are anonymous individuals -- the error message names what is.
+Annotations *on an axiom* (its `annotations=` argument) are silently dropped for every axiom type.
 
 **Example:**
 ```python
