@@ -20,6 +20,7 @@ def _future_warnings(record):
     return [w for w in record if issubclass(w.category, FutureWarning)]
 
 
+@pytest.mark.requires_owlready2
 def test_create_ontology_default_warns_and_points_to_rdflib():
     with pytest.warns(FutureWarning, match="RDFLibOntology") as record:
         onto = create_ontology("http://example.com/fw")
@@ -36,6 +37,7 @@ def test_create_ontology_with_owlapi_does_not_warn():
 
 
 @needs_family
+@pytest.mark.requires_owlready2
 def test_structural_reasoner_from_path_warns():
     from owlapy.owl_reasoner import StructuralReasoner
     with pytest.warns(FutureWarning, match="RDFLibReasoner") as record:
@@ -44,6 +46,7 @@ def test_structural_reasoner_from_path_warns():
 
 
 @needs_family
+@pytest.mark.requires_owlready2
 def test_structural_reasoner_from_ontology_has_no_future_warning():
     from owlapy.owl_reasoner import StructuralReasoner
     with warnings.catch_warnings(record=True) as record:
@@ -53,6 +56,7 @@ def test_structural_reasoner_from_ontology_has_no_future_warning():
 
 
 @needs_family
+@pytest.mark.requires_owlready2
 def test_nir_reasoner_from_path_warns(tmp_path):
     pytest.importorskip("torch")
     from owlapy.owl_reasoner_nir import NIRReasoner
