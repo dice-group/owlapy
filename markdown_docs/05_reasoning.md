@@ -9,20 +9,17 @@ Reasoning is the process of inferring implicit knowledge from explicit axioms. o
 | Reasoner | Implementation | Completeness | World Assumption | Speed | Dependencies | Use Case |
 |----------|---------------|--------------|-------------------|-------|--------------|----------|
 | **[RDFLibReasoner](#1-rdflibreasoner-recommended)** | Pure Python (SPARQL) | Structural | Closed-world by default (`negation_default` can opt into open-world handling of `OWLObjectComplementOf`) | Fast | rdflib only | Recommended: general purpose, no circular deps, no owlready2/JVM |
-| **[StructuralReasoner](#2-structuralreasoner-legacy) (Legacy)** | Python (owlready2) | Structural | Closed-world | Very fast | owlready2 (optional extra) | Existing owlready2-based code only; being phased out (#205) |
-| **[SyncReasoner](#3-syncreasoner-complete-owl-2-dl)** | Java (various) | Complete OWL 2 DL | Open-world (standard OWL DL semantics) | Slower | JPype1 + Java | Full reasoning, complex queries |
-| **[EBR](#4-ebr-embedding-based-reasoner)** | Pure Python (neural embeddings via `dicee`) | Probabilistic, not DL-complete | N/A (statistical plausibility, not classical entailment) | Fast (batched inference) | dicee + PyTorch | Large/noisy/incomplete KGs where symbolic reasoning misses implicit facts |
-| **[NIRReasoner](#5-nirreasoner-neural-instance-retrieval)** | Pure Python (pretrained NIR encoder) | Probabilistic instance retrieval | N/A (score-thresholded membership) | Fast (batched inference) | torch + transformers | Complex class expressions scored against entity embeddings; TBox stays symbolic |
+| **[SyncReasoner](#2-syncreasoner-complete-owl-2-dl)** | Java (various) | Complete OWL 2 DL | Open-world (standard OWL DL semantics) | Slower | JPype1 + Java | Full reasoning, complex queries |
+| **[EBR](#3-ebr-embedding-based-reasoner)** | Pure Python (neural embeddings via `dicee`) | Probabilistic, not DL-complete | N/A (statistical plausibility, not classical entailment) | Fast (batched inference) | dicee + PyTorch | Large/noisy/incomplete KGs where symbolic reasoning misses implicit facts |
+| **[NIRReasoner](#4-nirreasoner-neural-instance-retrieval)** | Pure Python (pretrained NIR encoder) | Probabilistic instance retrieval | N/A (score-thresholded membership) | Fast (batched inference) | torch + transformers | Complex class expressions scored against entity embeddings; TBox stays symbolic |
 
 ⚠️ **Choosing between closed- and open-world semantics matters, not just speed.** If your
 data is meant to be a complete description of the domain (e.g. a fixed test KG) and you want
 fast, predictable "not asserted = false" behavior, use **RDFLibReasoner**. If your data is
 known to be incomplete and you need sound entailment under the standard OWL 2 DL open-world
 assumption (e.g. "not asserted doesn't mean false, it means unknown"), use **SyncReasoner**
-with **HermiT**. `StructuralReasoner` is closed-world like `RDFLibReasoner` but is legacy,
-owlready2-backed, and has known correctness issues (circular `sub_classes()`/`super_classes()`
-dependency, punning-related crashes worked around in #236/#242) -- prefer `RDFLibReasoner` for
-new closed-world code instead.
+with **HermiT**. The owlready2-backed `StructuralReasoner` is deprecated and removed in owlapy
+2.0; see [Migrating from owlready2](10_migrating_from_owlready2.md).
 
 ## 1. RDFLibReasoner (Recommended)
 
@@ -31,12 +28,12 @@ Pure Python reasoner using RDFLib and SPARQL queries. No circular dependencies, 
 ### Basic Usage
 
 ```python
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import OWLClass
 
-# Load ontology
-onto = SyncOntology("family.owl")
+# Load ontology (pure Python; RDFLibReasoner also accepts a file path or a SyncOntology)
+onto = RDFLibOntology("family.owl")
 
 # Create reasoner
 reasoner = RDFLibReasoner(onto)
@@ -53,7 +50,7 @@ print(f"Found {len(males)} males")
 ✅ **Efficient SPARQL queries** instead of iterating all classes  
 ✅ **Built-in caching** for 400x+ speedup on repeated queries  
 ✅ **Pure Python** - no Java required  
-✅ **Drop-in replacement** for StructuralReasoner  
+✅ **Replaces the deprecated StructuralReasoner** (same constructor flags; see [Migrating from owlready2](10_migrating_from_owlready2.md))  
 
 ### Performance Tips
 
@@ -73,34 +70,7 @@ reasoner.instances(OWLClass("http://example.com/onto#Person"))
 - Does not compute property chains
 - Best for instance retrieval and hierarchy navigation
 
-## 2. StructuralReasoner (Legacy)
-
-Fast Python reasoner using owlready2. **Legacy:** owlapy is moving away from its owlready2
-dependency (#205); `RDFLibReasoner` is the actively-maintained pure-Python replacement and
-should be preferred for new code. `StructuralReasoner` also has a known circular dependency
-issue (#205) and is kept mainly for existing code that already depends on it. Constructing one
-now emits a `DeprecationWarning`. owlready2 itself is an optional install extra as of #205
-(`pip install owlapy[owlready2]`) -- constructing a `StructuralReasoner` without it installed
-raises a clear `ImportError` explaining how to install it.
-
-### Basic Usage
-
-```python
-from owlapy.owl_reasoner import StructuralReasoner
-
-reasoner = StructuralReasoner(onto)
-instances = list(reasoner.instances(male))
-```
-
-### Known Issues
-
-⚠️ **Circular dependency:** `sub_classes()` calls `super_classes()` and vice versa  
-⚠️ **Inefficient:** Iterates over all classes instead of using direct queries  
-⚠️ **Possible duplicates:** May return duplicates in hierarchy traversal  
-
-**Recommendation:** Use RDFLibReasoner instead for new code.
-
-## 3. SyncReasoner (Complete OWL 2 DL)
+## 2. SyncReasoner (Complete OWL 2 DL)
 
 Java-based reasoner with complete OWL 2 DL support. Requires JVM lifecycle management.
 
@@ -229,12 +199,12 @@ reasoner = SyncReasoner(onto, "Pellet")
 reasoner = SyncReasoner(onto, "ELK")
 ```
 
-## 4. EBR (Embedding-Based Reasoner)
+## 3. EBR (Embedding-Based Reasoner)
 
 Neural, embedding-based reasoner: instead of applying DL semantics to asserted axioms, it uses a
 pretrained knowledge graph embedding model (via [`dicee`](https://github.com/dice-group/dice-embeddings))
 to *predict* class membership and relations. Useful for large, noisy, or incomplete knowledge
-graphs where symbolic reasoners (RDFLibReasoner/StructuralReasoner/SyncReasoner) either miss
+graphs where symbolic reasoners (RDFLibReasoner/SyncReasoner) either miss
 implicit facts or are too slow.
 
 Requires the `dicee` package (`pip install dicee`; not installed by any `owlapy` extra except
@@ -274,12 +244,12 @@ predictions = reasoner.predict(h=["http://example.com/family#john"], r=None, t=N
 - No `stopJVM()`/JVM lifecycle to manage (pure Python + `dicee`/PyTorch), but GPU/CPU device
   selection matters for performance -- see `NeuralOntology`'s `device` parameter
 
-## 5. NIRReasoner (Neural Instance Retrieval)
+## 4. NIRReasoner (Neural Instance Retrieval)
 
 Neural instance retriever for complex OWL class expressions. A pretrained NIR encoder
 (Transformer, LSTM, GRU, or Composite, implemented in `owlapy.nir`) scores DL-syntax queries
 against DeCaL (or any CSV) entity embeddings. Named / length-1 concepts and all TBox / role
-queries go to a symbolic fallback (`StructuralReasoner` or `RDFLibReasoner`). Unlike `EBR`, it
+queries go to a symbolic fallback reasoner (`RDFLibReasoner` for an `RDFLibOntology` or `SyncOntology`, or one you pass as `fallback_reasoner=`). Unlike `EBR`, it
 does **not** use `NeuralOntology` / `dicee`.
 
 Requires `torch` and `transformers` (`pip install torch transformers`; imported lazily).
@@ -293,13 +263,13 @@ wget https://files.dice-research.org/datasets/CNIR/trained_models.zip -O ./train
 ### Basic Usage
 
 ```python
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner import NIRReasoner
 from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.iri import IRI
 
-onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
 reasoner = NIRReasoner(
     onto,
     model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
@@ -446,13 +416,13 @@ stopJVM()
 ### Example 1: Family Reasoning
 
 ```python
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import *
 from owlapy.owl_property import OWLObjectProperty
 
 # Load ontology
-onto = SyncOntology("KGs/Family/family-benchmark_rich_background.owl")
+onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
 reasoner = RDFLibReasoner(onto)
 
 NS = "http://www.benchmark.org/family#"
@@ -575,7 +545,7 @@ print(f"Individuals: {[i.str for i in all_individuals]}")
 ### Issue: Slow Performance
 
 **Solutions:**
-1. Use RDFLibReasoner instead of StructuralReasoner
+1. Use RDFLibReasoner (pure Python, cached) when closed-world results are enough
 2. Use `direct=True` when you only need direct results
 3. Pre-warm cache with common queries
 4. Consider NeuralOntology for very large ontologies

@@ -27,15 +27,15 @@ onto = load_ontology_safe("family.owl")
 ### Pattern: Create Ontology from Scratch
 
 ```python
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLClassAssertionAxiom
 from owlapy.class_expression import OWLClass
 from owlapy.owl_individual import OWLNamedIndividual
 
-# Create empty ontology
+# Create empty ontology (pure Python; SyncOntology(onto_iri, load=False) for the OWL API)
 onto_iri = IRI.create("http://example.com/my-ontology")
-onto = SyncOntology(onto_iri)
+onto = RDFLibOntology(onto_iri, load=False)
 
 # Define namespace
 NS = "http://example.com/my-ontology#"
@@ -52,7 +52,7 @@ john = OWLNamedIndividual(NS + "John")
 onto.add_axiom(OWLClassAssertionAxiom(john, student))
 
 # Save
-onto.save("my-ontology.owl")
+onto.save(path="my-ontology.owl")
 ```
 
 ### Pattern: Bulk Add Axioms
@@ -166,7 +166,7 @@ simplified = simplifier.simplify(complex_expr)
 
 ```python
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
-from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
+from owlapy.owl_reasoner import SyncReasoner
 from owlapy.static_funcs import startJVM, stopJVM
 
 class ReasonerFactory:
@@ -177,9 +177,6 @@ class ReasonerFactory:
         """Create reasoner of specified type."""
         if reasoner_type == "rdflib":
             return RDFLibReasoner(onto)
-        
-        elif reasoner_type == "structural":
-            return StructuralReasoner(onto)
         
         elif reasoner_type in ["hermit", "pellet", "jfact", "elk", "openllet"]:
             startJVM()
@@ -566,7 +563,7 @@ except Exception as e:
 - Leave JVM running after reasoning
 - Repeat expensive queries without caching
 - Ignore parse/reasoning errors
-- Use StructuralReasoner for new code (circular dependency issue #205)
+- Use the deprecated owlready2-backed `Ontology`/`StructuralReasoner` (removed in 2.0; see [Migrating from owlready2](10_migrating_from_owlready2.md))
 - Build complex expressions inline without helpers
 
 ## Next Steps

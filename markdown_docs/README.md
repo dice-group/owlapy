@@ -20,7 +20,7 @@ owlapy is a production-ready Python framework for OWL ontology engineering, know
   [09_api_reference.md](09_api_reference.md#class-expressions).
 
 ### Advanced Features
-- [05_reasoning.md](05_reasoning.md) - Semantic reasoning with StructuralReasoner, RDFLibReasoner, and SyncReasoner
+- [05_reasoning.md](05_reasoning.md) - Semantic reasoning with RDFLibReasoner, SyncReasoner, EBR and NIRReasoner
 
   Syntax conversion (DL / Manchester / SPARQL) and LLM-based KG generation (AGenKG) don't
   have dedicated deep-dive docs yet -- see "Syntax Conversion" and "AGenKG" in
@@ -29,11 +29,12 @@ owlapy is a production-ready Python framework for OWL ontology engineering, know
 ### Practical Guides
 - [08_common_patterns.md](08_common_patterns.md) - Common use cases, patterns, and anti-patterns
 - [09_api_reference.md](09_api_reference.md) - Quick reference for all key classes and functions
+- [10_migrating_from_owlready2.md](10_migrating_from_owlready2.md) - Replacing the deprecated owlready2-backed `Ontology`/`StructuralReasoner` (removed in owlapy 2.0)
 
 ## Key Features
 
 - **Pure Python OWL 2 implementation** - No Java dependencies for core functionality
-- **Multiple reasoners** - StructuralReasoner (fast), RDFLibReasoner (pure Python), SyncReasoner (complete)
+- **Multiple reasoners** - RDFLibReasoner (fast, pure Python), SyncReasoner (complete OWL 2 DL via HermiT/Pellet/...), EBR and NIRReasoner (neural)
 - **Syntax conversion** - DL ↔ Manchester ↔ SPARQL
 - **LLM integration** - Generate ontologies from text using AGenKG
 - **Rich class expressions** - Full OWL 2 DL support
@@ -41,12 +42,12 @@ owlapy is a production-ready Python framework for OWL ontology engineering, know
 ## Quick Example
 
 ```python
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import OWLClass
 
-# Load ontology
-onto = SyncOntology("family.owl")
+# Load ontology (pure Python, no JVM)
+onto = RDFLibOntology("family.owl")
 
 # Create reasoner
 reasoner = RDFLibReasoner(onto)
@@ -62,8 +63,8 @@ print(f"Found {len(males)} male individuals")
 ```
 owlapy/
 ├── class_expression/       # OWL class expression types
-├── owl_ontology.py         # SyncOntology, Ontology, NeuralOntology
-├── owl_reasoner.py         # StructuralReasoner, SyncReasoner
+├── owl_ontology.py         # SyncOntology, RDFLibOntology, NeuralOntology
+├── owl_reasoner.py         # SyncReasoner, EBR
 ├── owl_reasoner_rdflib.py  # RDFLibReasoner (pure Python)
 ├── converter.py            # OWL → SPARQL conversion
 ├── parser.py               # DL/Manchester → OWL parsing
@@ -77,9 +78,8 @@ owlapy/
 **Current Version:** 1.6.5  
 **Python Requirement:** 3.11+  
 **Main Dependencies:** rdflib (6.0.2+), jpype1 (for Java reasoners). owlready2 is an optional
-extra (`pip install owlapy[owlready2]`), needed only for the legacy `Ontology`/`StructuralReasoner`
-classes -- owlapy is migrating away from it in favor of the pure-Python `RDFLibOntology`/
-`RDFLibReasoner` (#205)
+extra, needed only by the deprecated owlready2-backed classes, which are removed in owlapy 2.0 --
+see [10_migrating_from_owlready2.md](10_migrating_from_owlready2.md) (#310)
 
 ## Additional Resources
 
