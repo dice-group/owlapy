@@ -88,8 +88,9 @@ Neither version needs the JVM or `stopJVM()`.
   `sub_classes()`/`super_classes()` dependency, and that test file documents the known remaining
   gap. Compare results on your own data when you switch.
 - **AGenKG.** `AGenKG.generate_ontology()` (via `DomainGraphExtractor`/`OpenGraphExtractor`)
-  still returns an owlready2-backed `Ontology` and needs the `owlready2` extra. It will be moved
-  to an owlready2-free ontology before 2.0.
+  still builds an owlready2-backed `Ontology` by default and emits a `FutureWarning`. Pass
+  `ontology=RDFLibOntology("http://example.com/ontogen", load=False)` to opt in to owlapy 2.0's
+  default now. Without owlready2 installed it already uses an `RDFLibOntology`.
 
 ## Related
 

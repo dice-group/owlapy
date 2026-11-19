@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 
 try:
     import dspy
@@ -9,6 +9,7 @@ except ImportError:
 import uuid
 from pathlib import Path
 
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.agen_kg.few_shot_examples import (
     EXAMPLES_FOR_ENTITY_EXTRACTION,
     EXAMPLES_FOR_LITERAL_EXTRACTION,
@@ -24,7 +25,6 @@ from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,8 @@ class OpenGraphExtractor(GraphExtractor):
         fact_reassurance=True,
         generate_rdfs_annotations: bool = False,
         save_path="generated_ontology.owl",
-    ) -> Ontology:
+        ontology: Optional[AbstractOWLOntology] = None,
+    ) -> AbstractOWLOntology:
         """
         Generate an ontology from the given text or file.
 
@@ -96,6 +97,9 @@ class OpenGraphExtractor(GraphExtractor):
             examples_for_spl_triples_extraction: Few-shot examples for s-p-l triples extraction.
             fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path: Path to save the ontology.
+            ontology: The ontology to add the generated axioms to, e.g. ``RDFLibOntology(iri, load=False)``.
+                Defaults to a new owlready2-backed ``Ontology``, with a FutureWarning (an ``RDFLibOntology`` if
+                owlready2 isn't installed); owlapy 2.0 will default to ``RDFLibOntology`` (#310).
 
         Returns:
             Generated Ontology object.
@@ -181,7 +185,7 @@ class OpenGraphExtractor(GraphExtractor):
                 logger.info(f"Skipped coherence check, using all {len(coherent_triples)} triples")
 
         # Step 5: Create an ontology and load it with extracted triples
-        onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
+        onto = self._start_ontology(ontology)
         for triple in coherent_triples:
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))

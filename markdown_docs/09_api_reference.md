@@ -685,6 +685,7 @@ Requires `dspy` (`pip install owlapy[agentic]`).
 
 ```python
 from owlapy.agen_kg import AGenKG
+from owlapy.owl_ontology import RDFLibOntology
 ```
 
 ### `AGenKG`
@@ -709,7 +710,7 @@ Any OpenAI-compatible endpoint works (OpenAI, Azure OpenAI, GitHub Models, Ollam
 
 **Methods:**
 
-- `generate_ontology(text, ontology_type: str = "domain", query=None, **kwargs) -> Ontology` -- `save_path` (must end in `.owl`) is a supported `**kwargs` entry
+- `generate_ontology(text, ontology_type: str = "domain", query=None, **kwargs) -> AbstractOWLOntology` -- supported `**kwargs` entries include `save_path` (must end in `.owl`) and `ontology`, the ontology to fill. Pass `ontology=RDFLibOntology("http://example.com/ontogen", load=False)` to get an owlready2-free result. Without it, an owlready2-backed `Ontology` is built with a `FutureWarning` (or an `RDFLibOntology` if owlready2 isn't installed); owlapy 2.0 defaults to `RDFLibOntology` (#310)
 
 **Example:**
 ```python
@@ -722,7 +723,8 @@ agent = AGenKG(
 ontology = agent.generate_ontology(
     text="path/to/document.txt",
     ontology_type="domain",
-    save_path="generated_ontology.owl"
+    save_path="generated_ontology.owl",
+    ontology=RDFLibOntology("http://example.com/ontogen", load=False),
 )
 ```
 
@@ -735,11 +737,13 @@ does for you), rather than taking their own `model`/`api_key`.
 
 ```python
 from owlapy.agen_kg.graph_extracting_models import DomainGraphExtractor, OpenGraphExtractor
+from owlapy.owl_ontology import RDFLibOntology
 
 AGenKG(model="gpt-4o", api_key="your-key")  # configures dspy's LM as a side effect
 
 extractor = DomainGraphExtractor(enable_logging=True)
-kg = extractor.generate_ontology(text="Medical records...", ontology_type="domain")
+kg = extractor.generate_ontology(text="Medical records...", domain="medicine",
+                                 ontology=RDFLibOntology("http://example.com/ontogen", load=False))
 ```
 
 ## IRI

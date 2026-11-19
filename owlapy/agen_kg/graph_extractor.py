@@ -1,5 +1,8 @@
 import logging
+import os
 import re
+import sys
+import warnings
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -7,6 +10,8 @@ from typing import List, Literal, Optional, Union
 
 import dspy
 
+from owlapy._lazy_owlready2 import owlready2_installed
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
 from owlapy.agen_kg.helper import RDFS_COMMENT_IRI, RDFS_LABEL_IRI
 from owlapy.agen_kg.logging_utils import enable_console_logging
@@ -34,12 +39,28 @@ from owlapy.owl_axiom import (
     OWLAnnotationProperty,
 )
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import Ontology, RDFLibOntology
 
 logger = logging.getLogger(__name__)
 
 
 # A compatible metaclass that combines dspy.Module's metaclass with ABCMeta
+_ONTOGEN_IRI = "http://example.com/ontogen"
+_AGEN_KG_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _stacklevel_outside_agen_kg() -> int:
+    """`warnings.warn` stacklevel, as seen from its caller, of the first frame outside owlapy.agen_kg.
+
+    The FutureWarning should point at user code whether it called an extractor directly or went
+    through AGenKG.generate_ontology().
+    """
+    frame, level = sys._getframe(2), 2  # 1 = the function calling warnings.warn
+    while frame is not None and os.path.abspath(frame.f_code.co_filename).startswith(_AGEN_KG_DIR):
+        frame, level = frame.f_back, level + 1
+    return level
+
+
 class GraphExtractorMeta(type(dspy.Module), type(ABC)):
     """Metaclass that resolves conflicts between dspy.Module and ABC."""
 
@@ -1434,7 +1455,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return literal
 
     @abstractmethod
-    def generate_ontology(self, text: Union[str, Path], ontology_type: str = "open", **kwargs) -> Ontology:
+    def generate_ontology(self, text: Union[str, Path], ontology_type: str = "open", **kwargs) -> AbstractOWLOntology:
         """
         Generate an ontology from the given text or file.
         Must be implemented by subclasses.
@@ -1453,6 +1474,27 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             Generated Ontology object.
         """
         pass
+
+    @staticmethod
+    def _start_ontology(ontology: Optional[AbstractOWLOntology]) -> AbstractOWLOntology:
+        """The ontology generate_ontology() fills: the caller's, or a new one at `_ONTOGEN_IRI`.
+
+        The default is still an owlready2-backed `Ontology` (with a FutureWarning) while owlready2 is
+        installed, and an `RDFLibOntology` once it isn't -- the `agentic` extra doesn't install it, and
+        failing here would throw away every LLM call made so far. owlapy 2.0 always uses `RDFLibOntology`.
+        """
+        if ontology is not None:
+            return ontology
+        if not owlready2_installed():
+            return RDFLibOntology(_ONTOGEN_IRI, load=False)
+        warnings.warn(
+            "generate_ontology() builds an owlready2-backed Ontology by default. In owlapy 2.0 it will "
+            "build an RDFLibOntology instead. To opt in now, pass "
+            f"ontology=RDFLibOntology({_ONTOGEN_IRI!r}, load=False) (or a SyncOntology). See issue #310.",
+            FutureWarning,
+            stacklevel=_stacklevel_outside_agen_kg(),
+        )
+        return Ontology(IRI.create(_ONTOGEN_IRI), load=False)
 
     def _get_annotation_assertion_axiom(self, entity_iri: IRI, annotation_iri: IRI, value: str) -> OWLAnnotationAssertionAxiom:
         """

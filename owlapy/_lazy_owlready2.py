@@ -57,6 +57,11 @@ def import_owlready2():
         return _MISSING_OWLREADY2
 
 
+def owlready2_installed() -> bool:
+    """Whether the optional owlready2 dependency can be imported."""
+    return import_owlready2() is not _MISSING_OWLREADY2
+
+
 class _UnnamedReader:
     """Read-only file proxy that hides the wrapped file's ``name`` attribute (see `load_ontology`)."""
 
