@@ -67,11 +67,11 @@ Neither version needs the JVM or `stopJVM()`.
 
 ## Differences to check
 
-- **Reading complex TBox axioms.** `RDFLibOntology` *writes* axioms with complex class
-  expressions (e.g. `A ⊑ ∃r.B`), but its read API (`get_tbox_axioms()`,
-  `equivalent_classes_axioms()`) still only reports axioms between named entities, and
-  `general_class_axioms()` raises `NotImplementedError`. If you read TBox axioms from an
-  `Ontology` today, use `SyncOntology` until this is added to `RDFLibOntology`.
+- **Complex TBox axioms.** `RDFLibOntology` reads and writes axioms with complex class
+  expressions (e.g. `A ⊑ ∃r.B`, `∃r.B ⊑ C`). `general_class_axioms()` follows the OWL API's
+  definition, so it also returns `EquivalentClasses`/`DisjointClasses` axioms without a named
+  operand, which `Ontology` never did. An axiom using an anonymous individual is skipped with a
+  logged warning.
 - **Removing complex axioms.** `RDFLibOntology.remove_axiom()` raises `NotImplementedError` on an
   axiom with a complex operand.
 - **Writing annotations.** `RDFLibOntology.annotation_assertion_axioms()` reads annotations, but

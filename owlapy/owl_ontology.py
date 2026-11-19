@@ -2460,6 +2460,211 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
     _remove_property_characteristic(axiom, ontology)
 
 
+class _UnreadableRDF(ValueError):
+    """An RDF structure that doesn't map back to an OWL class expression / data range we support."""
+
+
+# Datatypes that are data ranges without being declared `rdfs:Datatype` locally
+_BUILTIN_DATATYPE_IRIS: Final = frozenset((
+    str(rdflib.RDFS.Literal), str(rdflib.RDF.PlainLiteral), str(rdflib.RDF.langString), str(rdflib.RDF.XMLLiteral),
+    str(rdflib.OWL.real), str(rdflib.OWL.rational),
+))
+_FACETS_BY_IRI: Final = MappingProxyType({facet.iri.str: facet for facet in OWLFacet})
+# (unqualified predicate, qualified predicate) -> (object restriction, data restriction)
+_CARDINALITY_READERS: Final = (
+    (rdflib.OWL.minCardinality, rdflib.OWL.minQualifiedCardinality, OWLObjectMinCardinality, OWLDataMinCardinality),
+    (rdflib.OWL.maxCardinality, rdflib.OWL.maxQualifiedCardinality, OWLObjectMaxCardinality, OWLDataMaxCardinality),
+    (rdflib.OWL.cardinality, rdflib.OWL.qualifiedCardinality, OWLObjectExactCardinality, OWLDataExactCardinality),
+)
+
+
+class _RDFLibClassExpressionReader:
+    """Rebuild OWL class expressions and data ranges from their blank-node RDF structures.
+
+    The inverse of `_class_expression_to_rdf` / `_data_range_to_rdf`, following the W3C OWL 2 → RDF
+    mapping (section 3.2.4/3.2.5 of the OWL 2 Mapping to RDF Graphs). Whether a restriction is an
+    object or a data restriction is decided by the property's declaration, falling back to the shape
+    of its filler. Anything else (anonymous individuals, n-ary data restrictions via
+    `owl:onProperties`, malformed or cyclic structures) raises `_UnreadableRDF`.
+    """
+
+    def __init__(self, graph: "rdflib.Graph"):
+        self.graph = graph
+        self._data_properties = set(graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty))
+        self._object_properties = set(graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty))
+        self._datatypes = {s for s in graph.subjects(rdflib.RDF.type, rdflib.RDFS.Datatype) if isinstance(s, rdflib.URIRef)}
+        self._in_progress = set()
+
+    def _list(self, head) -> list:
+        if head is None:
+            raise _UnreadableRDF("missing rdf:List")
+        return list(rdflib.collection.Collection(self.graph, head))
+
+    def _enter(self, node):
+        if node in self._in_progress:
+            raise _UnreadableRDF(f"cyclic class expression at {node}")
+        self._in_progress.add(node)
+
+    def is_data_range(self, node) -> bool:
+        if isinstance(node, rdflib.URIRef):
+            iri = str(node)
+            return iri.startswith(str(rdflib.XSD)) or iri in _BUILTIN_DATATYPE_IRIS or node in self._datatypes
+        return isinstance(node, rdflib.BNode) and (node, rdflib.RDF.type, rdflib.RDFS.Datatype) in self.graph
+
+    @staticmethod
+    def _individual(node) -> OWLNamedIndividual:
+        if not isinstance(node, rdflib.URIRef):
+            raise _UnreadableRDF("anonymous individuals are not supported")
+        return OWLNamedIndividual(str(node))
+
+    @staticmethod
+    def _literal(node) -> OWLLiteral:
+        if not isinstance(node, rdflib.Literal):
+            raise _UnreadableRDF(f"expected a literal, got {node!r}")
+        return _rdflib_literal_to_owl_literal(node)
+
+    @staticmethod
+    def _cardinality(node) -> int:
+        try:
+            return int(str(node))
+        except ValueError:
+            raise _UnreadableRDF(f"invalid cardinality {node!r}") from None
+
+    def class_expression(self, node) -> OWLClassExpression:
+        if isinstance(node, rdflib.URIRef):
+            return OWLClass(str(node))
+        if not isinstance(node, rdflib.BNode) or self.is_data_range(node):
+            raise _UnreadableRDF(f"{node!r} is not a class expression")
+        self._enter(node)
+        try:
+            return self._anonymous_class_expression(node)
+        finally:
+            self._in_progress.discard(node)
+
+    def _anonymous_class_expression(self, node) -> OWLClassExpression:
+        value = self.graph.value
+        if (operands := value(node, rdflib.OWL.intersectionOf)) is not None:
+            return OWLObjectIntersectionOf([self.class_expression(op) for op in self._list(operands)])
+        if (operands := value(node, rdflib.OWL.unionOf)) is not None:
+            return OWLObjectUnionOf([self.class_expression(op) for op in self._list(operands)])
+        if (operand := value(node, rdflib.OWL.complementOf)) is not None:
+            return OWLObjectComplementOf(self.class_expression(operand))
+        if (members := value(node, rdflib.OWL.oneOf)) is not None:
+            return OWLObjectOneOf([self._individual(m) for m in self._list(members)])
+        if (prop := value(node, rdflib.OWL.onProperty)) is not None:
+            return self._restriction(node, prop)
+        raise _UnreadableRDF(f"unsupported class expression structure at {node}")
+
+    def _is_data_restriction(self, node, prop) -> bool:
+        if prop in self._data_properties:
+            return True
+        if prop in self._object_properties or isinstance(prop, rdflib.BNode):
+            return False
+        value = self.graph.value
+        if (node, rdflib.OWL.onDataRange, None) in self.graph or isinstance(value(node, rdflib.OWL.hasValue), rdflib.Literal):
+            return True
+        filler = value(node, rdflib.OWL.someValuesFrom)
+        if filler is None:
+            filler = value(node, rdflib.OWL.allValuesFrom)
+        return filler is not None and self.is_data_range(filler)
+
+    def _object_property(self, prop) -> OWLObjectPropertyExpression:
+        if isinstance(prop, rdflib.URIRef):
+            return OWLObjectProperty(str(prop))
+        named = self.graph.value(prop, rdflib.OWL.inverseOf)
+        if isinstance(named, rdflib.URIRef):
+            return OWLObjectInverseOf(OWLObjectProperty(str(named)))
+        raise _UnreadableRDF(f"unsupported property expression at {prop}")
+
+    def _restriction(self, node, prop) -> OWLClassExpression:
+        value = self.graph.value
+        is_data = self._is_data_restriction(node, prop)
+        if is_data:
+            if not isinstance(prop, rdflib.URIRef):
+                raise _UnreadableRDF(f"unsupported data property expression at {prop}")
+            pe = OWLDataProperty(str(prop))
+            filler_of = self.data_range
+        else:
+            pe = self._object_property(prop)
+            filler_of = self.class_expression
+        if (filler := value(node, rdflib.OWL.someValuesFrom)) is not None:
+            return (OWLDataSomeValuesFrom if is_data else OWLObjectSomeValuesFrom)(pe, filler_of(filler))
+        if (filler := value(node, rdflib.OWL.allValuesFrom)) is not None:
+            return (OWLDataAllValuesFrom if is_data else OWLObjectAllValuesFrom)(pe, filler_of(filler))
+        if (filler := value(node, rdflib.OWL.hasValue)) is not None:
+            return OWLDataHasValue(pe, self._literal(filler)) if is_data else OWLObjectHasValue(pe, self._individual(filler))
+        if not is_data and (node, rdflib.OWL.hasSelf, None) in self.graph:
+            return OWLObjectHasSelf(pe)
+        for unqualified, qualified, object_cls, data_cls in _CARDINALITY_READERS:
+            if (n := value(node, unqualified)) is not None:
+                return data_cls(self._cardinality(n), pe, TopOWLDatatype) if is_data else object_cls(self._cardinality(n), pe, OWLThing)
+            if (n := value(node, qualified)) is not None:
+                filler = value(node, rdflib.OWL.onDataRange if is_data else rdflib.OWL.onClass)
+                if filler is None:
+                    raise _UnreadableRDF(f"qualified cardinality without a filler at {node}")
+                return (data_cls if is_data else object_cls)(self._cardinality(n), pe, filler_of(filler))
+        raise _UnreadableRDF(f"unsupported restriction at {node}")
+
+    def data_range(self, node) -> OWLDataRange:
+        if isinstance(node, rdflib.URIRef):
+            return OWLDatatype(str(node))
+        if not isinstance(node, rdflib.BNode):
+            raise _UnreadableRDF(f"{node!r} is not a data range")
+        self._enter(node)
+        try:
+            return self._anonymous_data_range(node)
+        finally:
+            self._in_progress.discard(node)
+
+    def _anonymous_data_range(self, node) -> OWLDataRange:
+        value = self.graph.value
+        if (operands := value(node, rdflib.OWL.intersectionOf)) is not None:
+            return OWLDataIntersectionOf([self.data_range(op) for op in self._list(operands)])
+        if (operands := value(node, rdflib.OWL.unionOf)) is not None:
+            return OWLDataUnionOf([self.data_range(op) for op in self._list(operands)])
+        if (operand := value(node, rdflib.OWL.datatypeComplementOf)) is not None:
+            return OWLDataComplementOf(self.data_range(operand))
+        if (members := value(node, rdflib.OWL.oneOf)) is not None:
+            return OWLDataOneOf([self._literal(m) for m in self._list(members)])
+        if (datatype := value(node, rdflib.OWL.onDatatype)) is not None:
+            if not isinstance(datatype, rdflib.URIRef):
+                raise _UnreadableRDF(f"datatype restriction on an anonymous datatype at {node}")
+            facets = []
+            for facet_node in self._list(value(node, rdflib.OWL.withRestrictions)):
+                pairs = list(self.graph.predicate_objects(facet_node))
+                if len(pairs) != 1 or str(pairs[0][0]) not in _FACETS_BY_IRI:
+                    raise _UnreadableRDF(f"unsupported facet restriction at {facet_node}")
+                facets.append(OWLFacetRestriction(_FACETS_BY_IRI[str(pairs[0][0])], self._literal(pairs[0][1])))
+            return OWLDatatypeRestriction(OWLDatatype(str(datatype)), facets)
+        raise _UnreadableRDF(f"unsupported data range structure at {node}")
+
+
+_CLASS_AXIOM_PREDICATES: Final = (
+    (rdflib.RDFS.subClassOf, lambda sub, sup: OWLSubClassOfAxiom(sub, sup)),
+    (rdflib.OWL.equivalentClass, lambda left, right: OWLEquivalentClassesAxiom([left, right])),
+    (rdflib.OWL.disjointWith, lambda left, right: OWLDisjointClassesAxiom([left, right])),
+)
+
+
+class _SkippedAxioms:
+    """Collect axioms a read method had to skip, and log them once instead of once per axiom."""
+
+    def __init__(self, method: str):
+        self.method = method
+        self.count = 0
+        self.first_reason = None
+
+    def add(self, error: _UnreadableRDF):
+        self.count += 1
+        if self.first_reason is None:
+            self.first_reason = str(error)
+
+    def log(self):
+        if self.count:
+            logger.warning("RDFLibOntology.%s() skipped %d axiom(s) with a class expression or data range it can't read "
+                           "(first: %s)", self.method, self.count, self.first_reason)
+
+
 # Annotation properties every OWL ontology may use without declaring them locally as
 # `owl:AnnotationProperty` -- RDFLibOntology.annotation_assertion_axioms() also honours any
 # predicate explicitly declared as such in the loaded graph.
@@ -2539,28 +2744,58 @@ class RDFLibOntology(AbstractOWLOntology):
         return len(self.rdflib_graph)
 
     def get_tbox_axioms(self) -> Iterable[OWLAxiom]:
-        """Get all TBox (schema-level) axioms this loader can represent: class declarations,
-        SubClassOf, EquivalentClasses and DisjointClasses axioms between *named* classes.
+        """Get all TBox (schema-level) axioms this loader can represent: class declarations, and
+        SubClassOf, EquivalentClasses and DisjointClasses axioms (including `owl:AllDisjointClasses`).
+
+        Operands may be complex class expressions (restrictions, boolean combinations,
+        cardinalities, nominals, ...), rebuilt from their blank-node RDF structures following the
+        W3C OWL 2 → RDF mapping. An axiom whose class expression can't be read (e.g. one using an
+        anonymous individual) is skipped with a single logged warning per call.
 
         Predicates this loader doesn't understand as TBox structure (e.g. `rdfs:label`,
         `rdfs:comment`, or any other annotation on a class) are silently skipped rather than
         raising -- they aren't TBox axioms, and virtually every real-world ontology has them.
         """
+        graph = self.rdflib_graph
+        reader = _RDFLibClassExpressionReader(graph)
+        skipped = _SkippedAxioms("get_tbox_axioms")
         results = []
-        for owl_class in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class):
+        for owl_class in graph.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             if not isinstance(owl_class, rdflib.term.URIRef):
                 continue
             cls = OWLClass(owl_class.n3()[1:-1])
             results.append(OWLDeclarationAxiom(cls))
-            for super_cls in self.rdflib_graph.objects(owl_class, rdflib.RDFS.subClassOf):
-                if isinstance(super_cls, rdflib.term.URIRef):
-                    results.append(OWLSubClassOfAxiom(sub_class=cls, super_class=OWLClass(super_cls.n3()[1:-1])))
-            for equiv_cls in self.rdflib_graph.objects(owl_class, rdflib.OWL.equivalentClass):
-                if isinstance(equiv_cls, rdflib.term.URIRef):
-                    results.append(OWLEquivalentClassesAxiom([cls, OWLClass(equiv_cls.n3()[1:-1])]))
-            for disjoint_cls in self.rdflib_graph.objects(owl_class, rdflib.OWL.disjointWith):
-                if isinstance(disjoint_cls, rdflib.term.URIRef):
-                    results.append(OWLDisjointClassesAxiom([cls, OWLClass(disjoint_cls.n3()[1:-1])]))
+            for predicate, make in _CLASS_AXIOM_PREDICATES:
+                for other in graph.objects(owl_class, predicate):
+                    try:
+                        results.append(make(cls, reader.class_expression(other)))
+                    except _UnreadableRDF as e:
+                        skipped.add(e)
+        results.extend(self._class_axioms_with_anonymous_subject(reader, skipped))
+        for node in graph.subjects(rdflib.RDF.type, rdflib.OWL.AllDisjointClasses):
+            try:
+                members = [reader.class_expression(m) for m in reader._list(graph.value(node, rdflib.OWL.members))]
+            except _UnreadableRDF as e:
+                skipped.add(e)
+                continue
+            if len(members) >= 2:
+                results.append(OWLDisjointClassesAxiom(members))
+        skipped.log()
+        return results
+
+    def _class_axioms_with_anonymous_subject(self, reader: "_RDFLibClassExpressionReader",
+                                             skipped: "_SkippedAxioms") -> List[OWLClassAxiom]:
+        """SubClassOf/EquivalentClasses/DisjointClasses triples whose subject is a class expression."""
+        results = []
+        for predicate, make in _CLASS_AXIOM_PREDICATES:
+            for subject, obj in self.rdflib_graph.subject_objects(predicate):
+                # owl:equivalentClass between data ranges is a datatype definition, not a class axiom
+                if not isinstance(subject, rdflib.term.BNode) or reader.is_data_range(subject) or reader.is_data_range(obj):
+                    continue
+                try:
+                    results.append(make(reader.class_expression(subject), reader.class_expression(obj)))
+                except _UnreadableRDF as e:
+                    skipped.add(e)
         return results
 
     def get_abox_axioms(self) -> Iterable:
@@ -2574,11 +2809,22 @@ class RDFLibOntology(AbstractOWLOntology):
         """
         results = []
         annotations = self._annotation_predicates()
+        reader = None  # built lazily: most ABoxes have no class assertion with a complex class
+        skipped = _SkippedAxioms("get_abox_axioms")
         for str_iri in self.str_owl_individuals:
             owl_individual = rdflib.URIRef(str_iri)
             subject = OWLNamedIndividual(str_iri)
             for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual, None, None)):
-                if isinstance(o, rdflib.term.BNode) or p in annotations:
+                if isinstance(o, rdflib.term.BNode):
+                    if p == rdflib.RDF.type:
+                        if reader is None:
+                            reader = _RDFLibClassExpressionReader(self.rdflib_graph)
+                        try:
+                            results.append(OWLClassAssertionAxiom(subject, reader.class_expression(o)))
+                        except _UnreadableRDF as e:
+                            skipped.add(e)
+                    continue
+                if p in annotations:
                     continue
                 if p == rdflib.RDF.type:
                     if o == rdflib.OWL.NamedIndividual or o in _RDFLIB_SCHEMA_TYPES:
@@ -2591,6 +2837,7 @@ class RDFLibOntology(AbstractOWLOntology):
                 elif isinstance(o, rdflib.term.URIRef):
                     results.append(OWLObjectPropertyAssertionAxiom(subject, OWLObjectProperty(p.n3()[1:-1]),
                                                                      OWLNamedIndividual(o.n3()[1:-1])))
+        skipped.log()
         return results
 
     def classes_in_signature(self) -> Iterable[OWLClass]:
@@ -2652,58 +2899,63 @@ class RDFLibOntology(AbstractOWLOntology):
         return results
 
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
+        """EquivalentClasses axioms between `c` and another (named or complex) class expression,
+        whichever side of `owl:equivalentClass` `c` appears on."""
         c_uri = rdflib.URIRef(c.str)
+        reader = _RDFLibClassExpressionReader(self.rdflib_graph)
+        skipped = _SkippedAxioms("equivalent_classes_axioms")
         seen = set()
-        for o in self.rdflib_graph.objects(c_uri, rdflib.OWL.equivalentClass):
-            if isinstance(o, rdflib.term.URIRef) and o not in seen:
-                seen.add(o)
-                yield OWLEquivalentClassesAxiom([c, OWLClass(o.n3()[1:-1])])
-        for s in self.rdflib_graph.subjects(rdflib.OWL.equivalentClass, c_uri):
-            if isinstance(s, rdflib.term.URIRef) and s not in seen:
-                seen.add(s)
-                yield OWLEquivalentClassesAxiom([c, OWLClass(s.n3()[1:-1])])
+        others = chain(self.rdflib_graph.objects(c_uri, rdflib.OWL.equivalentClass),
+                       self.rdflib_graph.subjects(rdflib.OWL.equivalentClass, c_uri))
+        for other in others:
+            if other in seen or reader.is_data_range(other):
+                continue
+            seen.add(other)
+            try:
+                yield OWLEquivalentClassesAxiom([c, reader.class_expression(other)])
+            except _UnreadableRDF as e:
+                skipped.add(e)
+        skipped.log()
 
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
-        # General class axioms are SubClassOf/EquivalentClasses/DisjointClasses axioms with a
-        # complex (non-atomic) class expression as an operand. Recognizing them requires
-        # reconstructing an OWLClassExpression tree from blank-node RDF structures
-        # (owl:Restriction, owl:intersectionOf, owl:unionOf, ...), which this triple-based loader
-        # does not do -- see get_tbox_axioms(), which likewise skips every blank-node operand and
-        # only understands axioms between two named classes.
-        raise NotImplementedError("RDFLibOntology does not support parsing complex (blank-node) "
-                                   "class expressions, so general class axioms cannot be retrieved.")
+        """Class axioms without a named class to index them by, as the OWL API defines them:
+        SubClassOf axioms whose subclass is a complex class expression, and EquivalentClasses /
+        DisjointClasses axioms none of whose operands is a named class."""
+        skipped = _SkippedAxioms("general_class_axioms")
+        axioms = self._class_axioms_with_anonymous_subject(_RDFLibClassExpressionReader(self.rdflib_graph), skipped)
+        skipped.log()
+        for axiom in axioms:
+            if isinstance(axiom, OWLSubClassOfAxiom):
+                if not isinstance(axiom.get_sub_class(), OWLClass):
+                    yield axiom
+            elif not any(isinstance(ce, OWLClass) for ce in axiom.class_expressions()):
+                yield axiom
+
+    def _property_axioms(self, pe: OWLProperty, predicate, make, read: str, method: str):
+        reader = _RDFLibClassExpressionReader(self.rdflib_graph)
+        skipped = _SkippedAxioms(method)
+        for node in self.rdflib_graph.objects(rdflib.URIRef(pe.str), predicate):
+            try:
+                yield make(pe, getattr(reader, read)(node))
+            except _UnreadableRDF as e:
+                skipped.add(e)
+        skipped.log()
 
     def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
-        pe_uri = rdflib.URIRef(pe.str)
-        for dom in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.domain):
-            if isinstance(dom, rdflib.term.URIRef):
-                yield OWLDataPropertyDomainAxiom(pe, OWLClass(dom.n3()[1:-1]))
-            else:
-                logger.warning("Complex domain expression for %s is not supported by RDFLibOntology", pe)
+        yield from self._property_axioms(pe, rdflib.RDFS.domain, OWLDataPropertyDomainAxiom, "class_expression",
+                                         "data_property_domain_axioms")
 
     def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
-        pe_uri = rdflib.URIRef(pe.str)
-        for rng in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.range):
-            if isinstance(rng, rdflib.term.URIRef):
-                yield OWLDataPropertyRangeAxiom(pe, OWLDatatype(rng.n3()[1:-1]))
-            else:
-                logger.warning("Complex range expression for %s is not supported by RDFLibOntology", pe)
+        yield from self._property_axioms(pe, rdflib.RDFS.range, OWLDataPropertyRangeAxiom, "data_range",
+                                         "data_property_range_axioms")
 
     def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
-        pe_uri = rdflib.URIRef(pe.str)
-        for dom in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.domain):
-            if isinstance(dom, rdflib.term.URIRef):
-                yield OWLObjectPropertyDomainAxiom(pe, OWLClass(dom.n3()[1:-1]))
-            else:
-                logger.warning("Complex domain expression for %s is not supported by RDFLibOntology", pe)
+        yield from self._property_axioms(pe, rdflib.RDFS.domain, OWLObjectPropertyDomainAxiom, "class_expression",
+                                         "object_property_domain_axioms")
 
     def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
-        pe_uri = rdflib.URIRef(pe.str)
-        for rng in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.range):
-            if isinstance(rng, rdflib.term.URIRef):
-                yield OWLObjectPropertyRangeAxiom(pe, OWLClass(rng.n3()[1:-1]))
-            else:
-                logger.warning("Complex range expression for %s is not supported by RDFLibOntology", pe)
+        yield from self._property_axioms(pe, rdflib.RDFS.range, OWLObjectPropertyRangeAxiom, "class_expression",
+                                         "object_property_range_axioms")
 
     def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
         """Add the given axiom(s) to this ontology, translating them into rdflib triples.
@@ -2713,9 +2965,8 @@ class RDFLibOntology(AbstractOWLOntology):
         blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API (and
         `SyncOntology`) reads them back. Properties must be named, except an `OWLObjectInverseOf`
         inside a class expression; anonymous individuals and unsupported axiom types raise
-        `NotImplementedError`. Note that the read API (`get_tbox_axioms()` etc.) still only reports
-        axioms between named entities, and `remove_axiom()` cannot remove an axiom with a complex
-        operand yet. Adding an axiom that references an entity not yet
+        `NotImplementedError`. The read API (`get_tbox_axioms()` etc.) reads such axioms back, but
+        `remove_axiom()` cannot remove an axiom with a complex operand yet. Adding an axiom that references an entity not yet
         declared in this ontology (e.g. an `OWLSubClassOfAxiom` between two classes that were never
         independently declared `owl:Class`) implicitly declares those entities too, so the axiom
         stays visible to `get_tbox_axioms()`/`classes_in_signature()`/etc. immediately afterwards.
