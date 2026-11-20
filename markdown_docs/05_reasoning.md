@@ -8,7 +8,7 @@ Reasoning is the process of inferring implicit knowledge from explicit axioms. o
 
 | Reasoner | Implementation | Completeness | World Assumption | Speed | Dependencies | Use Case |
 |----------|---------------|--------------|-------------------|-------|--------------|----------|
-| **[RDFLibReasoner](#1-rdflibreasoner-recommended)** | Pure Python (SPARQL) | Structural | Closed-world by default (`negation_default` can opt into open-world handling of `OWLObjectComplementOf`) | Fast | rdflib only | Recommended: general purpose, no circular deps, no owlready2/JVM |
+| **[RDFLibReasoner](#1-rdflibreasoner-recommended)** | Pure Python (rdflib) | Structural | Closed-world by default (`negation_default` can opt into open-world handling of `OWLObjectComplementOf`) | Fast | rdflib only | Recommended: general purpose, no circular deps, no owlready2/JVM |
 | **[SyncReasoner](#2-syncreasoner-complete-owl-2-dl)** | Java (various) | Complete OWL 2 DL | Open-world (standard OWL DL semantics) | Slower | JPype1 + Java | Full reasoning, complex queries |
 | **[EBR](#3-ebr-embedding-based-reasoner)** | Pure Python (neural embeddings via `dicee`) | Probabilistic, not DL-complete | N/A (statistical plausibility, not classical entailment) | Fast (batched inference) | dicee + PyTorch | Large/noisy/incomplete KGs where symbolic reasoning misses implicit facts |
 | **[NIRReasoner](#4-nirreasoner-neural-instance-retrieval)** | Pure Python (pretrained NIR encoder) | Probabilistic instance retrieval | N/A (score-thresholded membership) | Fast (batched inference) | torch + transformers | Complex class expressions scored against entity embeddings; TBox stays symbolic |
@@ -23,7 +23,7 @@ with **HermiT**. The owlready2-backed `StructuralReasoner` is deprecated and rem
 
 ## 1. RDFLibReasoner (Recommended)
 
-Pure Python reasoner using RDFLib and SPARQL queries. No circular dependencies, efficient caching.
+Pure Python reasoner over an rdflib graph. No circular dependencies, no owlready2, no JVM.
 
 ### Basic Usage
 
@@ -47,7 +47,7 @@ print(f"Found {len(males)} males")
 ### Features
 
 ✅ **No circular dependencies** between sub_classes() and super_classes()  
-✅ **Efficient SPARQL queries** instead of iterating all classes  
+✅ **Fast instance retrieval**: `instances()` indexes the graph once and evaluates class expressions with set operations  
 ✅ **Built-in caching** for 400x+ speedup on repeated queries  
 ✅ **Pure Python** - no Java required  
 ✅ **Replaces the deprecated StructuralReasoner** (same constructor flags; see [Migrating from owlready2](10_migrating_from_owlready2.md))  
@@ -61,6 +61,21 @@ second_call = list(reasoner.instances(male))  # ~1ms (cached)
 
 # Pre-warm cache for better performance
 reasoner.instances(OWLClass("http://example.com/onto#Person"))
+```
+
+`instances()` has two engines that return the same individuals:
+
+- `engine="index"` (the default) indexes the graph on first use and evaluates the class
+  expression with set operations. It rebuilds the index after `flush()`, or when the graph's
+  number of triples changes.
+- `engine="sparql"` translates the expression with `owl_expression_to_sparql` and runs the query
+  with rdflib. rdflib evaluates joins as nested loops, so this is typically 10–1000× slower on
+  anything but small ontologies (for example, `Bond-7 ⊔ Bond-3` on Carcinogenesis takes about 50 s
+  instead of milliseconds). rdflib also mis-evaluates `¬(¬A ⊔ ¬B)`, returning every individual.
+
+```python
+reasoner = RDFLibReasoner(onto, engine="sparql")   # the reasoner's default
+reasoner.instances(ce, engine="index")              # per call
 ```
 
 ### Limitations

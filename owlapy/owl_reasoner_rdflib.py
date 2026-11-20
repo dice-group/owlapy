@@ -1,9 +1,10 @@
 """RDFLib-based OWL Reasoner - Pure Python implementation."""
 import logging
-from typing import Dict, FrozenSet, Iterable, Optional, Set, Union
+from typing import Dict, FrozenSet, Iterable, Literal, Optional, Set, Union
 
 from rdflib import OWL, RDF, Graph, URIRef
 
+from owlapy._rdflib_instance_index import InstanceIndex
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 from owlapy.class_expression import (
@@ -28,18 +29,23 @@ from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectPr
 
 logger = logging.getLogger(__name__)
 
+InstancesEngine = Literal["index", "sparql"]
+_INSTANCES_ENGINES = ("index", "sparql")
+
 
 class RDFLibReasoner(AbstractOWLReasoner):
     """
     A pure Python OWL reasoner based on RDFLib.
 
-    This reasoner uses SPARQL queries over an RDF graph to perform reasoning tasks.
+    This reasoner answers queries over an rdflib graph: instances() evaluates class expressions with
+    set operations over indexes of the graph (engine="index", the default) or with SPARQL
+    (engine="sparql"); the hierarchy and property queries use SPARQL.
     It's designed as a drop-in replacement for StructuralReasoner with better
     predictability and no owlready2/Java dependencies for basic operations.
 
     Features:
     - Pure Python implementation using RDFLib
-    - SPARQL-based reasoning
+    - Index-based instance retrieval, with SPARQL as a selectable alternative
     - Efficient graph traversal with caching
     - Support for basic OWL 2 class expressions
     - Direct and indirect hierarchy navigation for classes, object properties and data properties
@@ -64,6 +70,7 @@ class RDFLibReasoner(AbstractOWLReasoner):
         infer_data_property_values: bool = False,
         negation_default: bool = True,
         sub_properties: bool = False,
+        engine: "InstancesEngine" = "index",
     ):
         """
         Initialize the RDFLib-based reasoner.
@@ -83,7 +90,15 @@ class RDFLibReasoner(AbstractOWLReasoner):
             sub_properties: Whether instances() should also match individuals connected via a
                 sub-property of the property used in someValuesFrom/allValuesFrom/hasValue/
                 cardinality restrictions, mirroring StructuralReasoner's sub_properties flag.
+            engine: How instances() evaluates class expressions, unless a call passes its own
+                `engine`. "index" (the default) indexes the graph once and evaluates with set
+                operations; "sparql" translates each expression to a SPARQL query
+                (owl_expression_to_sparql) and runs it with rdflib. Both return the same
+                individuals, but rdflib evaluates joins as nested loops, so "sparql" is typically
+                10-1000x slower on anything but tiny ontologies (#310). The engine also selects how
+                object_property_values() is answered.
         """
+        _check_engine(engine)
         if isinstance(ontology, str):
             # Parse straight into rdflib -- no owlready2 objects, no JVM.
             ontology = RDFLibOntology(ontology)
@@ -97,6 +112,10 @@ class RDFLibReasoner(AbstractOWLReasoner):
         self._infer_data_property_values = infer_data_property_values
         self._negation_default = negation_default
         self._sub_properties = sub_properties
+        self._engine = engine
+        self._index: Optional[InstanceIndex] = None
+        self._inverse_cache: Dict[OWLObjectProperty, tuple] = {}
+        self._inverse_cache_size = -1
 
         # Cache structures
         self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {}
@@ -111,6 +130,9 @@ class RDFLibReasoner(AbstractOWLReasoner):
 
     def _init_graph(self):
         """Initialize or reload the RDF graph from the ontology."""
+        self._index = None
+        self._inverse_cache = {}
+        self._inverse_cache_size = -1
         if isinstance(self._ontology, RDFLibOntology):
             # Already backed by an rdflib graph -- reuse it directly. No owlready2/JVM involved.
             self._graph = self._ontology.rdflib_graph
@@ -191,7 +213,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
         self,
         ce: OWLClassExpression,
         direct: bool = False,
-        timeout: int = 1000
+        timeout: int = 1000,
+        engine: Optional["InstancesEngine"] = None,
     ) -> Iterable[OWLNamedIndividual]:
         """
         Get individuals that are instances of the specified class expression.
@@ -200,22 +223,39 @@ class RDFLibReasoner(AbstractOWLReasoner):
             ce: The class expression whose instances are to be retrieved.
             direct: If True, retrieve only direct instances (not implemented - returns all).
             timeout: Timeout in milliseconds (for compatibility, not enforced).
+            engine: "index" (set operations over indexes of the graph) or "sparql" (a SPARQL
+                query per expression); defaults to the reasoner's `engine`. Both return the same
+                individuals; see the constructor for the trade-off. The index reflects the graph
+                as of the last flush() (it is also rebuilt when the graph's size changes).
 
         Returns:
             Iterable of named individuals that are instances of ce.
         """
+        engine = self._engine if engine is None else engine
+        _check_engine(engine)
         if direct:
             logger.warning("direct=True not fully implemented, returning all instances")
 
         # Handle simple named classes efficiently
         if isinstance(ce, OWLClass):
+            if engine == "index" and not ce.is_owl_thing() and ce not in self._cls_to_ind:
+                individuals = self._instance_index().class_instances(ce)
+                if self._class_cache_enabled:
+                    self._cls_to_ind[ce] = individuals  # same set as the SPARQL path caches
+                return iter(individuals)
             return self._instances_of_class(ce)
 
         # Max-cardinality / cardinality==0 restrictions need special-casing: see
         # _at_most_cardinality_instances for why.
         if isinstance(ce, (OWLObjectCardinalityRestriction, OWLDataCardinalityRestriction)) and (
                 isinstance(ce, (OWLObjectMaxCardinality, OWLDataMaxCardinality)) or ce.get_cardinality() == 0):
-            return self._at_most_cardinality_instances(ce)
+            return self._at_most_cardinality_instances(ce, engine)
+
+        if engine == "index":
+            try:
+                return iter(self._instance_index().instances(ce))
+            except Exception as e:  # anything the index engine can't evaluate: same answer from SPARQL
+                logger.debug(f"Index engine fell back to SPARQL for {ce}: {e}")
 
         # For complex class expressions, use SPARQL conversion
         try:
@@ -243,8 +283,18 @@ class RDFLibReasoner(AbstractOWLReasoner):
             # Fallback to manual filtering (slower)
             return self._instances_manual(ce)
 
+    def _instance_index(self) -> InstanceIndex:
+        """The index engine's indexes, (re)built on first use and whenever the graph's size changed."""
+        if self._index is None or self._index.size != len(self._graph):
+            self._index = InstanceIndex(
+                self._graph, negation_default=self._negation_default,
+                sub_classes=lambda c: self.sub_classes(c, direct=False),
+                inverse_properties=self._inverse_properties,
+                sub_properties=self._sub_property_resolver if self._sub_properties else None)
+        return self._index
+
     def _at_most_cardinality_instances(
-        self, ce: Union[OWLObjectCardinalityRestriction, OWLDataCardinalityRestriction]
+        self, ce: Union[OWLObjectCardinalityRestriction, OWLDataCardinalityRestriction], engine: "InstancesEngine"
     ) -> Iterable[OWLNamedIndividual]:
         """Use minimum-cardinality queries and set differences to avoid costly
         per-individual OPTIONAL checks for zero matching values.
@@ -259,7 +309,7 @@ class RDFLibReasoner(AbstractOWLReasoner):
             return iter(set(self._ontology.individuals_in_signature()))
 
         at_least_one = min_restriction(cardinality=1, property=prop, filler=filler)
-        s_any = set(self.instances(at_least_one))
+        s_any = set(self.instances(at_least_one, engine=engine))
         s_zero = set(self._ontology.individuals_in_signature()) - s_any
 
         if n == 0:
@@ -267,7 +317,7 @@ class RDFLibReasoner(AbstractOWLReasoner):
             return iter(s_zero)
 
         at_least_n_plus_one = min_restriction(cardinality=n + 1, property=prop, filler=filler)
-        s_too_many = set(self.instances(at_least_n_plus_one))
+        s_too_many = set(self.instances(at_least_n_plus_one, engine=engine))
         s_in_range = s_any - s_too_many
 
         if isinstance(ce, (OWLObjectExactCardinality, OWLDataExactCardinality)):
@@ -327,6 +377,11 @@ class RDFLibReasoner(AbstractOWLReasoner):
         """Declared owl:inverseOf partner(s) of prop (bidirectional -- only one direction may be
         physically asserted). Always passed as inverse_property_resolver to owl_expression_to_sparql
         -- this fills in missing OWL entailment, it isn't an opt-in StructuralReasoner-parity flag."""
+        if self._inverse_cache_size != len(self._graph):  # the graph changed without flush()
+            self._inverse_cache, self._inverse_cache_size = {}, len(self._graph)
+        cached = self._inverse_cache.get(prop)
+        if cached is not None:
+            return cached
         prop_uri = URIRef(prop.str)
         query = f"""
         SELECT DISTINCT ?inv
@@ -338,7 +393,9 @@ class RDFLibReasoner(AbstractOWLReasoner):
         }}
         """
         results = self._graph.query(query)
-        return [OWLObjectProperty(IRI.create(str(row.inv))) for row in results]
+        inverses = tuple(OWLObjectProperty(IRI.create(str(row.inv))) for row in results)
+        self._inverse_cache[prop] = inverses
+        return inverses
 
     def _instances_manual(self, ce: OWLClassExpression) -> Iterable[OWLNamedIndividual]:
         """Manual instance checking for complex expressions (fallback)."""
@@ -618,11 +675,13 @@ class RDFLibReasoner(AbstractOWLReasoner):
         Returns:
             Iterable of individuals that are values of the property for ind.
         """
-        if isinstance(pe, OWLObjectInverseOf):
-            return self._object_property_values_query(ind, pe.get_named_property(), forward=False)
-        if not isinstance(pe, OWLObjectProperty):
+        if not isinstance(pe, (OWLObjectProperty, OWLObjectInverseOf)):
             logger.warning("Complex property expressions not fully supported")
             return iter([])
+        if self._engine == "index":
+            return iter(self._instance_index().property_values(ind, pe))
+        if isinstance(pe, OWLObjectInverseOf):
+            return self._object_property_values_query(ind, pe.get_named_property(), forward=False)
 
         return self._object_property_values_query(ind, pe, forward=True)
 
@@ -676,18 +735,10 @@ class RDFLibReasoner(AbstractOWLReasoner):
         Returns:
             Iterable of OWLClass representing the types of the individual.
         """
-        ind_uri = URIRef(ind.str)
-
-        query = f"""
-        SELECT DISTINCT ?type
-        WHERE {{
-            <{ind_uri}> a ?type .
-            FILTER(isIRI(?type))
-        }}
-        """
-
-        results = self._graph.query(query)
-        types_list = [OWLClass(IRI.create(str(row.type))) for row in results]
+        # A direct triple lookup rather than a one-pattern SPARQL query: parsing the query costs ~10 ms
+        # per call, which dominated Ontolearn's EvoLearner (#310). Same result: distinct IRI types.
+        types_list = [OWLClass(IRI.create(str(t)))
+                      for t in dict.fromkeys(self._graph.objects(URIRef(ind.str), RDF.type)) if isinstance(t, URIRef)]
 
         if direct:
             # For direct types, filter out those that have subclass relationships
@@ -989,3 +1040,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
 
     def __repr__(self):
         return f"RDFLibReasoner({self._ontology})"
+
+
+def _check_engine(engine) -> None:
+    if engine not in _INSTANCES_ENGINES:
+        raise ValueError(f"engine must be one of {_INSTANCES_ENGINES}, got {engine!r}")

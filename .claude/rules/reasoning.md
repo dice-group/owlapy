@@ -29,6 +29,9 @@ from owlapy.class_expression import OWLClass
 
 reasoner = RDFLibReasoner("KGs/Family/father.owl")  # accepts a path, RDFLibOntology, or Ontology/SyncOntology directly
 instances = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # generator -> materialize
+# engine="index" (default: set operations over indexes of the graph) or "sparql" (owl_expression_to_sparql
+# run by rdflib; 10-1000x slower, kept for comparison). Per reasoner: RDFLibReasoner(onto, engine="sparql")
+same = set(reasoner.instances(ce, engine="sparql"))
 sub_classes = set(reasoner.sub_classes(cls, direct=True))
 super_classes = set(reasoner.super_classes(cls, direct=False))
 equiv = set(reasoner.equivalent_classes(cls))

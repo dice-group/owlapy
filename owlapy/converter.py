@@ -684,7 +684,9 @@ class Owl2SparqlConverter:
         assert isinstance(property_expression, OWLDataProperty)
         filler = ce.get_filler()
 
-        if self.modal_depth == 1 and not self.named_individuals:
+        # With named_individuals the root pattern binds the subject -- but not inside a UNION branch, which is
+        # evaluated on its own; FILTER NOT EXISTS over an unbound subject would drop the whole branch (#310).
+        if self.modal_depth == 1 and (not self.named_individuals or len(self.parent) > 1):
             self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
         self.append("FILTER NOT EXISTS { ")
         self.append_triple(subject, property_expression, object_variable)
