@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `owl_expression_to_sparql(..., named_individuals=True)` dropped a whole `UNION` branch holding a top-level `OWLDataAllValuesFrom` (e.g. `A ⊔ ∀ age.xsd:integer` returned only `A`'s members): the branch has no binding for the subject, so its `FILTER NOT EXISTS` ran unbound (#310)
+- `RDFLibReasoner` now treats `owl:Thing` as the root of the class hierarchy and as the domain/range of a property that declares none, as `StructuralReasoner` and the OWL API reasoners do: `sub_classes(OWLThing)` returns the named classes (directly: those without a named superclass), `super_classes(C)` includes `owl:Thing`, and `object_property_domains`/`object_property_ranges`/`data_property_domains` yield `owl:Thing` instead of nothing. Ontolearn's `KnowledgeBase` crashed on the empty domains/ranges (#310)
 - `AGenKG.generate_ontology()` no longer fails when owlready2 isn't installed, as with `pip install owlapy[agentic]`. It used to make every LLM call and then raise an `ImportError` while building the ontology. It now builds an `RDFLibOntology` in that case (#310)
 - The `DomainGraphExtractor` example in `markdown_docs/09_api_reference.md` passed an `ontology_type` argument that `DomainGraphExtractor.generate_ontology()` doesn't accept
 - Package classifiers now match `python_requires='>=3.11'`: the stale `Python :: 3.10` classifier was replaced by `Python :: 3.11` and `Python :: 3.12` (the versions tested in CI)
