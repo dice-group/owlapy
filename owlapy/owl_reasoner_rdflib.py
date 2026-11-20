@@ -17,6 +17,7 @@ from owlapy.class_expression import (
     OWLObjectExactCardinality,
     OWLObjectMaxCardinality,
     OWLObjectMinCardinality,
+    OWLThing,
 )
 from owlapy.converter import owl_expression_to_sparql
 from owlapy.iri import IRI
@@ -378,10 +379,23 @@ class RDFLibReasoner(AbstractOWLReasoner):
             logger.warning("sub_classes for complex expressions not fully implemented")
             return iter([])
 
+        if ce.is_owl_thing():
+            # owl:Thing is the implicit root: every named class is below it, and those without an
+            # asserted named superclass are directly below it (as in StructuralReasoner/OWL API).
+            return iter(self._thing_subclasses(direct))
         if direct:
             return self._direct_subclasses(ce)
         else:
             return self._all_subclasses(ce)
+
+    def _named_classes(self) -> Set[OWLClass]:
+        return {c for c in self._ontology.classes_in_signature() if not (c.is_owl_thing() or c.is_owl_nothing())}
+
+    def _thing_subclasses(self, direct: bool) -> Set[OWLClass]:
+        named = self._named_classes()
+        if not direct:
+            return named
+        return {c for c in named if not any(not s.is_owl_thing() for s in self._direct_superclasses(c))}
 
     def _direct_subclasses(self, cls: OWLClass) -> Iterable[OWLClass]:
         """Get direct subclasses using cache or SPARQL."""
@@ -455,10 +469,14 @@ class RDFLibReasoner(AbstractOWLReasoner):
             logger.warning("super_classes for complex expressions not fully implemented")
             return iter([])
 
+        if ce.is_owl_thing():
+            return iter([])
+        # owl:Thing is a superclass of every class, and the direct one of a class without an asserted
+        # named superclass (as in StructuralReasoner/OWL API).
         if direct:
-            return self._direct_superclasses(ce)
-        else:
-            return self._all_superclasses(ce)
+            supers = {s for s in self._direct_superclasses(ce) if not s.is_owl_thing()}
+            return iter(supers or {OWLThing})
+        return iter({s for s in self._all_superclasses(ce) if not s.is_owl_thing()} | {OWLThing})
 
     def _direct_superclasses(self, cls: OWLClass) -> Iterable[OWLClass]:
         """Get direct superclasses using cache or SPARQL."""
@@ -691,18 +709,23 @@ class RDFLibReasoner(AbstractOWLReasoner):
 
         Mirrors StructuralReasoner's actual behavior (owl_reasoner.py): direct=True yields only the
         asserted domain/range classes that are not themselves a subclass of another asserted class;
-        direct=False additionally yields every subclass of each asserted class.
+        direct=False additionally yields every subclass of each asserted class. A property without
+        an asserted domain/range has owl:Thing (every domain/range is entailed to be a subclass of
+        it); StructuralReasoner yields it too, and Ontolearn's KnowledgeBase indexes [0] (#310).
         """
         prop_uri = URIRef(pe.str)
         query = f"""
         SELECT DISTINCT ?cls
         WHERE {{
             <{prop_uri}> {predicate} ?cls .
-            FILTER(isIRI(?cls))
         }}
         """
-        results = self._graph.query(query)
-        asserted = {OWLClass(IRI.create(str(row.cls))) for row in results}
+        values = [row.cls for row in self._graph.query(query)]
+        # Only named classes are returned; a complex domain/range (a blank node) is skipped, but still
+        # counts as declared, so it doesn't fall back to owl:Thing.
+        asserted = {OWLClass(IRI.create(str(v))) for v in values if isinstance(v, URIRef)}
+        if not values:
+            asserted = {OWLThing}
 
         sub_of_asserted = set()
         for c in asserted:
