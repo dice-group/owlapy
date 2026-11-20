@@ -252,7 +252,7 @@ Reasoners infer implicit knowledge from explicit axioms.
 #### Types of Reasoners in owlapy
 
 ```python
-# RDFLibReasoner (Recommended) - Pure Python, SPARQL-based, no circular deps, no owlready2/JVM
+# RDFLibReasoner (Recommended) - Pure Python (rdflib), no circular deps, no owlready2/JVM
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 reasoner = RDFLibReasoner(ontology)
 
