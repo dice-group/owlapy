@@ -62,7 +62,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.7",
+    version="1.7.0",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar', 'py.typed'],},
