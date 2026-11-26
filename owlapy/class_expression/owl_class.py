@@ -9,12 +9,13 @@ from .class_expression import OWLClassExpression, OWLObjectComplementOf
 class OWLClass(OWLClassExpression, OWLEntity):
     """An OWL 2 named Class. Classes can be understood as sets of individuals.
     (https://www.w3.org/TR/owl2-syntax/#Classes)"""
-    __slots__ = '_iri', '_is_nothing', '_is_thing'
+    __slots__ = '_iri', '_is_nothing', '_is_thing', '_hash'
     type_index: Final = 1001
 
     _iri: 'IRI'
     _is_nothing: bool
     _is_thing: bool
+    _hash: int
 
     def __init__(self, iri: Union[IRI, str]):
         """Gets an instance of OWLClass that has the specified IRI.
@@ -33,6 +34,15 @@ class OWLClass(OWLClassExpression, OWLEntity):
 
         self._is_nothing = self._iri.is_nothing()
         self._is_thing = self._iri.is_thing()
+        # Same value OWLNamedObject.__hash__ computes, cached because classes are immutable.
+        self._hash = hash((type(self).__name__, self._iri))
+
+    def __hash__(self):
+        return self._hash
+
+    def __reduce__(self):
+        # Rebuild through the constructor so the cached hash is recomputed in the unpickling process.
+        return type(self), (self._iri,)
 
     @property
     def iri(self) -> 'IRI':

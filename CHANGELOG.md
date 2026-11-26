@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `IRI`, `OWLClass` and `OWLNamedIndividual` compute their hash once, on construction, instead of on every set/dict use. Instance retrieval builds sets of thousands of individuals, so 3,000 random class expressions on Carcinogenesis now take 9.8 s instead of 13.9 s with `RDFLibReasoner`. The hash values are unchanged (#325)
+
+### Fixed
+- An `IRI` that went through `pickle` (e.g. when sent to a `multiprocessing` worker), and every entity or class expression containing one, no longer compared equal to the original: unpickling restored the namespace string without interning it, and `IRI.__eq__` compares namespaces by identity. Unpickling now goes through the constructor and returns the same interned `IRI` (#325)
+
 ## [1.7.0] - 2026-11-23
 
 ### Added

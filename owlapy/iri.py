@@ -34,11 +34,12 @@ class _meta_IRI(ABCMeta, _WeakCached):
 
 class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     """An IRI, consisting of a namespace and a remainder."""
-    __slots__ = '_namespace', '_remainder', '__weakref__'
+    __slots__ = '_namespace', '_remainder', '_hash', '__weakref__'
     type_index: Final = 0
 
     _namespace: str
     _remainder: str
+    _hash: int
 
     def __init__(self, namespace: Union[str, Namespaces], remainder: str="", is_file_path=False):
         if isinstance(namespace, Namespaces):
@@ -56,6 +57,14 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         # https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern
         self._namespace = sys.intern(namespace)
         self._remainder = remainder
+        # IRIs are immutable and hashed on every set/dict use of an entity, so hash once.
+        self._hash = hash(("IRI", self._namespace, self._remainder))
+
+    def __reduce__(self):
+        # Rebuild through the constructor: it re-interns the namespace, which __eq__ compares by
+        # identity, and recomputes the hash, which differs between processes (PYTHONHASHSEED).
+        # Unpickling the slots directly gave an IRI unequal to the original.
+        return IRI, (self._namespace, self._remainder, True)
 
     @staticmethod
     def create(iri:str | Namespaces, remainder:str=None, is_file_path=False) -> 'IRI':
@@ -88,7 +97,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         return False
 
     def __hash__(self):
-        return hash(("IRI", self._namespace, self._remainder))
+        return self._hash
 
     def is_nothing(self):
         """Determines if this IRI is equal to the IRI that owl:Nothing is named with.

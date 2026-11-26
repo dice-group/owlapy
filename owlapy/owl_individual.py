@@ -46,7 +46,7 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
 
         (https://www.w3.org/TR/owl2-syntax/#Named_Individuals)
         """
-    __slots__ = '_iri'
+    __slots__ = '_iri', '_hash'
     type_index: Final = 1005
 
     _iri: IRI
@@ -66,6 +66,17 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
             self._iri = IRI.create(iri)
         else:
             raise TypeError(f"Expected iri to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
+        # Same value OWLNamedObject.__hash__ computes, cached because individuals are immutable and
+        # hashed for every set/dict use (instance retrieval builds sets of thousands of them).
+        self._hash = hash((type(self).__name__, self._iri))
+
+    def __hash__(self):
+        return self._hash
+
+    def __reduce__(self):
+        # Rebuild through the constructor so the cached hash is recomputed in the unpickling process.
+        return type(self), (self._iri,)
+
     @property
     def iri(self) -> IRI:
         return self._iri
