@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+- `RDFLibReasoner`'s `infer_property_values` and `infer_data_property_values` arguments now emit a `DeprecationWarning` and will be removed in owlapy 2.0. They were stored but never read, so passing them never had an effect; `sub_properties=True` matches sub-property assertions in `instances()`. `docs/RDFLibReasoner.md` now lists the actual constructor arguments (#326)
+
 ## [1.7.0] - 2026-11-23
 
 ### Added

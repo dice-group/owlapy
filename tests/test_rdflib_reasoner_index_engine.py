@@ -230,3 +230,47 @@ def test_object_property_values_match_sparql(ontology, sub_properties):
             for pe in (prop, OWLObjectInverseOf(prop)):
                 assert set(index.object_property_values(individual, pe)) == set(sparql.object_property_values(individual, pe)), (individual, pe)
     assert set(index.object_property_values(a, r)) == {b, c, e}  # e via rInv; never d via the sub-property subR
+
+
+# IMPROVEMENTS.md 4.4 listed ∃p.C ≢ ¬∀p.¬C for individuals without p-values as an open gap. It no
+# longer reproduces on either engine; these pin the De Morgan equivalence with expected answers.
+@pytest.mark.parametrize("engine", ["index", "sparql"])
+@pytest.mark.parametrize("data_range, expected", [
+    (IntegerOWLDatatype, {a, e}),
+    (DoubleOWLDatatype, {b}),
+    (OWLDataComplementOf(IntegerOWLDatatype), {b}),
+    (OWLDataUnionOf([IntegerOWLDatatype, DoubleOWLDatatype]), {a, b, e}),
+    (owl_datatype_max_inclusive_restriction(3), {a}),
+], ids=["int", "double", "not-int", "int-or-double", "le-3"])
+def test_data_some_values_from_equals_not_all_values_from_not(ontology, engine, data_range, expected):
+    reasoner = RDFLibReasoner(ontology, engine=engine)
+    some = OWLDataSomeValuesFrom(age, data_range)
+    not_all_not = OWLObjectComplementOf(OWLDataAllValuesFrom(age, OWLDataComplementOf(data_range)))
+    assert set(reasoner.instances(some)) == expected
+    assert set(reasoner.instances(not_all_not)) == expected  # c, d, f have no age value at all
+
+
+# The SPARQL engine special-cases ≤n only at the top level (_at_most_cardinality_instances); nested
+# inside an intersection it goes through the generic query, the index engine through set operations.
+@pytest.mark.parametrize("engine", ["index", "sparql"])
+@pytest.mark.parametrize("expression, expected", [
+    (OWLObjectIntersectionOf([A, OWLObjectMaxCardinality(0, r, OWLThing)]), {f}),
+    (OWLObjectIntersectionOf([C, OWLObjectMaxCardinality(0, s, OWLThing)]), {b}),
+    (OWLObjectUnionOf([OWLObjectOneOf([a]), OWLObjectExactCardinality(0, r, OWLThing)]), {a, b, c, d, e, f}),
+    (OWLObjectIntersectionOf([OWLThing, OWLObjectMaxCardinality(1, s, OWLThing)]), {a, b, c, e, f}),
+], ids=["A-and-no-r", "C-and-no-s", "union-with-exactly-0", "at-most-1-s"])
+def test_nested_at_most_cardinality(ontology, engine, expression, expected):
+    assert set(RDFLibReasoner(ontology, engine=engine).instances(expression)) == expected
+
+
+@pytest.mark.parametrize("name", ["infer_property_values", "infer_data_property_values"])
+@pytest.mark.parametrize("value", [False, True])
+def test_unused_inference_flags_are_deprecated(ontology, name, value):
+    with pytest.warns(DeprecationWarning, match=name):
+        reasoner = RDFLibReasoner(ontology, **{name: value})
+    assert set(reasoner.instances(OWLObjectSomeValuesFrom(r, OWLThing))) == {a}  # the flag changes nothing
+
+
+def test_no_deprecation_warning_by_default(ontology, recwarn):
+    RDFLibReasoner(ontology)
+    assert not [w for w in recwarn if issubclass(w.category, DeprecationWarning) and "infer_" in str(w.message)]

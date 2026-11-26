@@ -242,33 +242,16 @@ effort estimates, and sequencing.
 - **Why:** See 2.3 — reduces the easy-to-forget `stopJVM()` footgun.
 - **Approach:** Add `__enter__`/`__exit__` to `SyncReasoner` / the OWLAPI adaptor.
 
-### 4.4 `RDFLibReasoner` / `owl_expression_to_sparql`: remaining gaps found during owlapy#242 parity work
-- **Where:** `owlapy/converter.py`, `owlapy/owl_reasoner_rdflib.py`,
-  `tests/test_rdflib_reasoner_structural_parity.py` (module docstring documents
-  these live, in-code — this entry is the durable backlog pointer to them).
-- **Known remaining gap (correctness):** `OWLObjectComplementOf(OWLDataAllValuesFrom(p,
-  OWLDataComplementOf(C)))` does not agree with `OWLDataSomeValuesFrom(p, C)` — the De
-  Morgan equivalence `∃p.C ≡ ¬∀p.¬C` — for individuals with *zero* `p`-values. Root
-  cause is an interaction between the new `OWLDataComplementOf` handler and the
-  existing, untouched counting-based `OWLDataAllValuesFrom` implementation (which
-  treats "no values" as vacuously satisfying ∀, but the complement-of-complement
-  chain doesn't currently unwind that correctly). Needs its own investigation into
-  `OWLDataAllValuesFrom`'s counting logic, not just `OWLDataComplementOf`.
-- **Known remaining gap (scope):** the `_at_most_cardinality_instances` performance
-  fix (Python set-arithmetic instead of a correlated SPARQL `FILTER NOT
-  EXISTS`/`OPTIONAL`) only triggers when `OWLObjectMaxCardinality`/`cardinality==0`
-  is the *top-level* expression passed to `instances()`. The same restriction
-  *nested* inside a larger expression (e.g. an intersection) still goes through the
-  slow, generic SPARQL path and could time out on a large enough ontology. Extending
-  the special-casing to nested occurrences would need it to live in the shared
-  `Owl2SparqlConverter` rather than only in `RDFLibReasoner.instances()`.
-- **Cleanup:** `RDFLibReasoner.__init__`'s `infer_property_values`/
-  `infer_data_property_values` parameters have been dead code (stored, never read)
-  since before this session; their stated intent ("infer property values from
-  sub-properties") now fully overlaps with the real, working `sub_properties`
-  parameter added this session. Worth removing the two dead parameters in a
-  follow-up (a public API change, however trivial, so do it deliberately rather than
-  bundled with unrelated work).
+### 4.4 `RDFLibReasoner` / `owl_expression_to_sparql`: what is left after owlapy#242 and #310
+- **Resolved, now pinned by tests in `tests/test_rdflib_reasoner_index_engine.py`:** the
+  `∃p.C ≡ ¬∀p.¬C` disagreement for individuals with no `p`-values, and nested
+  `OWLObjectMaxCardinality`/cardinality 0 (the index engine, the default since #323,
+  evaluates them with set operations; the SPARQL engine gives the same answers).
+- **Remaining (SPARQL engine only, opt-in):** rdflib mis-evaluates `¬(¬A ⊔ ¬B)` (an `xfail`
+  in the same test file; the generated query is correct), and a nested `≤n r.C` still goes
+  through the generic, correlated query, so it can be slow on large ontologies.
+- **2.0:** delete `RDFLibReasoner`'s `infer_property_values`/`infer_data_property_values`,
+  deprecated in 1.7.1 (they were never read; `sub_properties` covers their stated intent).
 - **Gotchas for future SPARQL work in `converter.py`** (both confirmed by direct
   testing against rdflib, not documented anywhere else): (1) a bare
   `FILTER(false)`/`FILTER(0)` is silently ineffective in rdflib's SPARQL engine —

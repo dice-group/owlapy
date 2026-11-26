@@ -1,5 +1,6 @@
 """RDFLib-based OWL Reasoner - Pure Python implementation."""
 import logging
+import warnings
 from typing import Dict, FrozenSet, Iterable, Literal, Optional, Set, Union
 
 from rdflib import OWL, RDF, Graph, URIRef
@@ -66,8 +67,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
         *,
         class_cache: bool = True,
         property_cache: bool = True,
-        infer_property_values: bool = False,
-        infer_data_property_values: bool = False,
+        infer_property_values: Optional[bool] = None,
+        infer_data_property_values: Optional[bool] = None,
         negation_default: bool = True,
         sub_properties: bool = False,
         engine: "InstancesEngine" = "index",
@@ -81,8 +82,10 @@ class RDFLibReasoner(AbstractOWLReasoner):
                 rdflib, without touching owlready2 or starting the JVM.
             class_cache: Whether to cache class-instance mappings for faster retrieval.
             property_cache: Whether to cache property assertions.
-            infer_property_values: Whether to infer property values from sub-properties.
-            infer_data_property_values: Whether to infer data property values.
+            infer_property_values: Deprecated and ignored; removed in owlapy 2.0. It never had
+                an effect. Use `sub_properties` to match sub-property assertions in instances().
+            infer_data_property_values: Deprecated and ignored; removed in owlapy 2.0. It never
+                had an effect.
             negation_default: Whether to assume a missing fact means it is false ("closed world
                 view", the default) when evaluating OWLObjectComplementOf in instances(). If
                 False (open world), a complement never contributes any results, since nothing can
@@ -99,6 +102,12 @@ class RDFLibReasoner(AbstractOWLReasoner):
                 object_property_values() is answered.
         """
         _check_engine(engine)
+        for name, value in (("infer_property_values", infer_property_values),
+                            ("infer_data_property_values", infer_data_property_values)):
+            if value is not None:
+                warnings.warn(f"RDFLibReasoner's {name} argument is deprecated, has never had an effect and "
+                              "will be removed in owlapy 2.0. Use sub_properties=True to match sub-property "
+                              "assertions in instances().", DeprecationWarning, stacklevel=2)
         if isinstance(ontology, str):
             # Parse straight into rdflib -- no owlready2 objects, no JVM.
             ontology = RDFLibOntology(ontology)
@@ -108,8 +117,6 @@ class RDFLibReasoner(AbstractOWLReasoner):
         self._graph: Optional[Graph] = None
         self._class_cache_enabled = class_cache
         self._property_cache_enabled = property_cache
-        self._infer_property_values = infer_property_values
-        self._infer_data_property_values = infer_data_property_values
         self._negation_default = negation_default
         self._sub_properties = sub_properties
         self._engine = engine
