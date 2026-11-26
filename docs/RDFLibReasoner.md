@@ -164,17 +164,22 @@ RDFLibReasoner(
     *,
     class_cache: bool = True,
     property_cache: bool = True,
-    infer_property_values: bool = False,
-    infer_data_property_values: bool = False
+    negation_default: bool = True,
+    sub_properties: bool = False,
+    engine: str = "index",
 )
 ```
 
 **Parameters:**
-- `ontology`: SyncOntology, Ontology, or path to OWL file
+- `ontology`: RDFLibOntology, SyncOntology, Ontology, or path to OWL file
 - `class_cache`: Enable instance/hierarchy caching (recommended)
 - `property_cache`: Enable property value caching
-- `infer_property_values`: Infer values from sub-properties
-- `infer_data_property_values`: Infer data property values
+- `negation_default`: Closed-world negation in `instances()` (default); `False` makes a complement match nothing
+- `sub_properties`: Also match assertions of sub-properties in restrictions
+- `engine`: `"index"` (set operations over indexes of the graph, default) or `"sparql"` (one SPARQL query per expression, much slower)
+
+`infer_property_values` and `infer_data_property_values` are deprecated: they never had an
+effect and are removed in owlapy 2.0. Use `sub_properties=True` instead.
 
 ### Core Methods
 

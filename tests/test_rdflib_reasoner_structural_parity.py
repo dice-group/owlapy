@@ -19,11 +19,9 @@ its "zero match" branch is fundamentally hard for rdflib's SPARQL engine to eval
 set-theoretically in Python (`_at_most_cardinality_instances`) using only the fast, uncorrelated
 OWLObjectMinCardinality path, rather than fighting the SPARQL engine's query planner.
 
-One deeper, narrower gap remains and is NOT covered: `OWLObjectComplementOf(OWLDataAllValuesFrom(p,
-OWLDataComplementOf(C)))` does not agree with `OWLDataSomeValuesFrom(p, C)` (the De Morgan
-equivalence `∃p.C ≡ ¬∀p.¬C`) on individuals with zero p-values, an interaction between
-OWLDataComplementOf and the existing (untouched) counting-based OWLDataAllValuesFrom
-implementation -- out of scope for this pass.
+A fifth gap noted here earlier -- `¬∀p.¬C` disagreeing with `∃p.C` on individuals with zero
+p-values -- no longer reproduces; tests/test_rdflib_reasoner_index_engine.py pins the equivalence
+on both engines.
 """
 import pytest
 import unittest
