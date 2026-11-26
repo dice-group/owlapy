@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-23
+
 ### Added
 - `RDFLibReasoner.instances()` has a new default engine, `engine="index"`, which indexes the graph once and evaluates class expressions with set operations, like `StructuralReasoner`. The previous behaviour, translating each expression to SPARQL and running it with rdflib, stays available as `engine="sparql"`, per call or as `RDFLibReasoner(..., engine="sparql")`. rdflib evaluates joins as nested loops, so the SPARQL engine is 10–1000× slower on the #310 benchmarks. The two engines return the same individuals, except that rdflib mis-evaluates `¬(¬A ⊔ ¬B)` and returns every individual. With the index engine, `object_property_values()` is answered from the same indexes, and `types()` no longer runs a SPARQL query for each individual (parsing it alone took ~10 ms). On Family, Ontolearn's CELOE and EvoLearner now run 2–3× faster on `RDFLibReasoner` than on `StructuralReasoner`, down from 140–200× slower for CELOE and more than an hour per problem for EvoLearner (#310)
 - Extra jars can now be put on the JVM classpath, via the `OWLAPY_EXTRA_CLASSPATH` environment variable (`os.pathsep`-separated jar files/directories) or `startJVM(extra_jars=...)`, so packages building on `SyncOntology` can bring their own Java dependencies without restarting the JVM (#299)
