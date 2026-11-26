@@ -15,11 +15,11 @@ paths:
 | Reasoner | Class | Backend | Notes |
 |---|---|---|---|
 | `RDFLibReasoner` | `owlapy.owl_reasoner_rdflib.RDFLibReasoner` | rdflib (pure Python) | No JVM, no owlready2. **Preferred over `StructuralReasoner`** (#205) |
-| `StructuralReasoner` | `owlapy.owl_reasoner.StructuralReasoner` | owlready2 (pure Python) | **Legacy**, being phased out (#205). Fast, incomplete, no JVM. Constructing one emits `DeprecationWarning` |
+| `StructuralReasoner` | `owlapy.owl_reasoner.StructuralReasoner` | owlready2 (pure Python) | **Deprecated, removed in 2.0** (#310). Never use in new code/docs/examples; `RDFLibReasoner` takes the same flags. See `markdown_docs/10_migrating_from_owlready2.md` |
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
 | `EBR` | `owlapy.owl_reasoner.EBR` | `dicee`/PyTorch (pure Python) | Neural embedding-based instance prediction, not DL-complete; needs a `NeuralOntology` (pretrained KGE model) |
-| `NIRReasoner` | `owlapy.owl_reasoner.NIRReasoner` | NIR encoder in `owlapy.nir` + entity embeddings (pure Python) | Neural instance retrieval for complex class expressions; TBox delegated to StructuralReasoner/RDFLibReasoner. Needs `torch` + `transformers`, a pretrained encoder directory, and an embeddings CSV |
+| `NIRReasoner` | `owlapy.owl_reasoner.NIRReasoner` | NIR encoder in `owlapy.nir` + entity embeddings (pure Python) | Neural instance retrieval for complex class expressions; TBox delegated to a symbolic fallback (RDFLibReasoner for an RDFLibOntology/SyncOntology). Needs `torch` + `transformers`, a pretrained encoder directory, and an embeddings CSV |
 
 ## RDFLibReasoner (no JVM, no owlready2 — preferred)
 
@@ -29,23 +29,9 @@ from owlapy.class_expression import OWLClass
 
 reasoner = RDFLibReasoner("KGs/Family/father.owl")  # accepts a path, RDFLibOntology, or Ontology/SyncOntology directly
 instances = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # generator -> materialize
-sub_classes = set(reasoner.sub_classes(cls, direct=True))
-super_classes = set(reasoner.super_classes(cls, direct=False))
-equiv = set(reasoner.equivalent_classes(cls))
-disjoint = set(reasoner.disjoint_classes(cls))
-children = set(reasoner.object_property_values(individual, prop))
-values = set(reasoner.data_property_values(individual, data_prop))
-```
-
-## StructuralReasoner (no JVM, legacy — see #205)
-
-```python
-from owlapy.owl_reasoner import StructuralReasoner
-from owlapy.owl_ontology import Ontology
-from owlapy.class_expression import OWLClass
-
-reasoner = StructuralReasoner(Ontology("KGs/Family/father.owl"))  # or pass a path directly
-instances = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # generator -> materialize
+# engine="index" (default: set operations over indexes of the graph) or "sparql" (owl_expression_to_sparql
+# run by rdflib; 10-1000x slower, kept for comparison). Per reasoner: RDFLibReasoner(onto, engine="sparql")
+same = set(reasoner.instances(ce, engine="sparql"))
 sub_classes = set(reasoner.sub_classes(cls, direct=True))
 super_classes = set(reasoner.super_classes(cls, direct=False))
 equiv = set(reasoner.equivalent_classes(cls))
@@ -82,11 +68,11 @@ predictions = reasoner.predict(h=["http://example.com/father#john"], r=None, t=N
 ## NIRReasoner (neural instance retrieval, no JVM)
 
 ```python
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner import NIRReasoner
 from owlapy.class_expression import OWLClass
 
-onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")  # NIRReasoner("path") builds a deprecated Ontology
 reasoner = NIRReasoner(
     onto,
     model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",

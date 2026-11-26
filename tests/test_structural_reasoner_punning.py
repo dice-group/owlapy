@@ -1,12 +1,15 @@
 """Regression tests for issue #242: StructuralReasoner must not crash on ontologies
 with illegally punned properties (e.g. KGs/Biopax/biopax.owl, where glycolysis#DELTA-G
 is declared as both an ObjectProperty and an AnnotationProperty)."""
+import pytest
 import logging
 
 from owlapy.class_expression import OWLThing
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner import StructuralReasoner
+
+pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 NS = "http://www.biopax.org/examples/glycolysis#"
 

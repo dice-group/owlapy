@@ -67,6 +67,7 @@ class TestMissingOwlready2Placeholder:
         with pytest.raises(ImportError):
             _MISSING_OWLREADY2.World(filename="x")
 
+    @pytest.mark.requires_owlready2
     def test_import_owlready2_returns_real_module_when_installed(self):
         # owlready2 is a `dev`-extra dependency of this test environment.
         import owlready2 as real_owlready2
@@ -195,15 +196,36 @@ class TestOwlready2BackedClassesRaiseClearErrorWithoutOwlready2:
         assert result.returncode == 0, result.stderr
         assert "OK" in result.stdout
 
-    def test_make_kb_incomplete_raises(self):
-        script = """
-            from owlapy.util_owl_static_funcs import make_kb_incomplete
-            try:
-                make_kb_incomplete("dummy.owl", "out.owl", 0.1, 1)
-                print("NOT_RAISED")
-            except ImportError as e:
-                assert "owlready2" in str(e)
-                print("OK")
+    def test_make_kb_helpers_work_without_owlready2(self, tmp_path):
+        # Ported to rdflib (#310): these helpers no longer need owlready2 at all.
+        import os
+        kb = os.path.abspath("KGs/Family/family-benchmark_rich_background.owl")
+        if not os.path.isfile(kb):
+            pytest.skip("KGs.zip not downloaded")
+        script = f"""
+            from owlapy.util_owl_static_funcs import make_kb_incomplete, make_kb_incomplete_ass, make_kb_inconsistent
+            make_kb_incomplete({kb!r}, {str(tmp_path / "a.owl")!r}, 10, 1)
+            make_kb_incomplete_ass({kb!r}, {str(tmp_path / "b.owl")!r}, 10, 1)
+            make_kb_inconsistent({kb!r}, {str(tmp_path / "c.owl")!r}, 1, 1)
+            print("OK")
+        """
+        result = _run_without_owlready2(script)
+        assert result.returncode == 0, result.stderr
+        assert "OK" in result.stdout
+
+    def test_save_owl_class_expressions_works_without_owlready2(self, tmp_path):
+        # Ported to RDFLibOntology (#310, 1.2c).
+        out = str(tmp_path / "predictions.owl")
+        script = f"""
+            import rdflib
+            from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
+            from owlapy.owl_property import OWLObjectProperty
+            from owlapy.util_owl_static_funcs import save_owl_class_expressions
+            ce = OWLObjectSomeValuesFrom(OWLObjectProperty("http://ex.com/a#r"), OWLClass("http://ex.com/a#B"))
+            save_owl_class_expressions([OWLClass("http://ex.com/a#A"), ce], path={out!r})
+            g = rdflib.Graph().parse({out!r})
+            assert (rdflib.URIRef("https://dice-research.org/predictions#1"), rdflib.OWL.equivalentClass, None) in g
+            print("OK")
         """
         result = _run_without_owlready2(script)
         assert result.returncode == 0, result.stderr

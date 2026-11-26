@@ -87,13 +87,21 @@ class StructuralReasoner(AbstractOWLReasoner):
                 :func:`StructuralReasoner.instances` retrieval.
             """
         warnings.warn(
-            "StructuralReasoner is owlready2-backed and being phased out in favor of "
-            "RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
-            "replacement with no owlready2/JVM dependency. See issue #205.",
+            "StructuralReasoner is owlready2-backed, deprecated, and will be removed in owlapy 2.0. "
+            "Use RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
+            "replacement with no owlready2/JVM dependency, or SyncReasoner for complete OWL 2 DL "
+            "reasoning. See issue #310.",
             DeprecationWarning,
             stacklevel=2,
         )
         if isinstance(ontology, str):
+            warnings.warn(
+                "StructuralReasoner(path) loads the file into an owlready2-backed Ontology. Both are "
+                "removed in owlapy 2.0. To switch now, use RDFLibReasoner(RDFLibOntology(path)), or "
+                "SyncReasoner(SyncOntology(path)) for complete OWL 2 DL reasoning. See issue #310.",
+                FutureWarning,
+                stacklevel=2,
+            )
             ontology = Ontology(ontology)
 
         super().__init__(ontology)
@@ -1883,7 +1891,8 @@ class SyncReasoner(AbstractOWLReasoner):
              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
-             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             "InferredObjectPropertyCharacteristicAxiomGenerator",
+             "InferredPropertyAssertionGenerator"
              ]
 
         Returns:
@@ -1925,7 +1934,8 @@ class SyncReasoner(AbstractOWLReasoner):
              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
-             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             "InferredObjectPropertyCharacteristicAxiomGenerator",
+             "InferredPropertyAssertionGenerator"
              ]
 
         Returns:
@@ -2730,6 +2740,7 @@ def import_and_include_axioms_generators():
         InferredEquivalentObjectPropertyAxiomGenerator,
         InferredInverseObjectPropertiesAxiomGenerator,
         InferredObjectPropertyCharacteristicAxiomGenerator,
+        InferredPropertyAssertionGenerator,
         InferredSubClassAxiomGenerator,
         InferredSubDataPropertyAxiomGenerator,
         InferredSubObjectPropertyAxiomGenerator,
@@ -2745,7 +2756,8 @@ def import_and_include_axioms_generators():
             "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
             "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
             "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
-            "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
+            "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
+            "InferredPropertyAssertionGenerator": InferredPropertyAssertionGenerator()}
 
 
 class EBR(AbstractOWLReasoner): # pragma: no cover

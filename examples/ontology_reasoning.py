@@ -2,9 +2,10 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLObjectIntersecti
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, OWLEquivalentObjectPropertiesAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
-from owlapy.owl_reasoner import StructuralReasoner
+from owlapy.owl_reasoner import SyncReasoner
+from owlapy.static_funcs import stopJVM
 
 data_file = '../KGs/Test/test_ontology.owl'
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
@@ -116,7 +117,7 @@ r7EB = OWLObjectIntersectionOf([r7E, B])
 JK = OWLObjectIntersectionOf([J, K])
 r1T = OWLObjectSomeValuesFrom(property=r1, filler=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')))
 
-onto = Ontology(IRI.create('file://' + data_file))
+onto = SyncOntology(data_file)
 
 onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r6, r5]))
 onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r5, r6]))
@@ -128,7 +129,8 @@ onto.add_axiom(OWLSubClassOfAxiom(ST, U))
 
 # ---------------------------------------- Reasoning ----------------------------------------
 
-reasoner = StructuralReasoner(onto)
+# Complete OWL 2 DL reasoning with HermiT. The OWL API reasoners return named classes only.
+reasoner = SyncReasoner(onto, reasoner="HermiT")
 
 # Instances
 t1 = list(reasoner.instances(N))
@@ -155,13 +157,13 @@ t20 = list(reasoner.instances(r2G))
 # Equivalent classes
 t21 = list(reasoner.equivalent_classes(A))
 t22 = list(reasoner.equivalent_classes(L))
-t23 = list(reasoner.equivalent_classes(AB, only_named=False))
+t23 = list(reasoner.equivalent_classes(AB))
 t24 = list(reasoner.equivalent_classes(ABint))
-t25 = list(reasoner.equivalent_classes(F, only_named=False))
+t25 = list(reasoner.equivalent_classes(F))
 t26 = list(reasoner.equivalent_classes(r2G))
 t27 = list(reasoner.equivalent_classes(O))
-t28 = list(reasoner.equivalent_classes(P, only_named=False))
-t29 = list(reasoner.equivalent_classes(N, only_named=False))
+t28 = list(reasoner.equivalent_classes(P))
+t29 = list(reasoner.equivalent_classes(N))
 t30 = list(reasoner.equivalent_classes(Q))
 
 # Equivalent Object Properties
@@ -175,18 +177,18 @@ t36 = list(reasoner.equivalent_object_properties(r4))
 # Sup Classes
 t37 = list(reasoner.sub_classes(r7E))
 t38 = list(reasoner.sub_classes(r7EB))
-t39 = list(reasoner.sub_classes(H, only_named=False))
+t39 = list(reasoner.sub_classes(H))
 t40 = list(reasoner.sub_classes(JK))
-t41 = list(reasoner.sub_classes(C, only_named=False))
-t42 = list(reasoner.sub_classes(A, only_named=False))
+t41 = list(reasoner.sub_classes(C))
+t42 = list(reasoner.sub_classes(A))
 t43 = list(reasoner.sub_classes(P))
 t44 = list(reasoner.sub_classes(O))
-t45 = list(reasoner.sub_classes(N, only_named=False))
-t46 = list(reasoner.sub_classes(Q, only_named=False))
-t47 = list(reasoner.sub_classes(r5Q, only_named=False))
-t48 = list(reasoner.sub_classes(R, only_named=False))
-t49 = list(reasoner.sub_classes(U, only_named=False))
-t50 = list(reasoner.sub_classes(r1T, only_named=False))
+t45 = list(reasoner.sub_classes(N))
+t46 = list(reasoner.sub_classes(Q))
+t47 = list(reasoner.sub_classes(r5Q))
+t48 = list(reasoner.sub_classes(R))
+t49 = list(reasoner.sub_classes(U))
+t50 = list(reasoner.sub_classes(r1T))
 
 # Sub Object Properties
 t51 = list(reasoner.sub_object_properties(r1))
@@ -197,18 +199,18 @@ t85 = list(reasoner.sub_object_properties(r5))
 t86 = list(reasoner.sub_object_properties(r6))
 
 # Super Classes
-t87 = list(reasoner.super_classes(D, only_named=False))
+t87 = list(reasoner.super_classes(D))
 t88 = list(reasoner.super_classes(r2G))
-t89 = list(reasoner.super_classes(I, only_named=False))
+t89 = list(reasoner.super_classes(I))
 t90 = list(reasoner.super_classes(AB))
 t91 = list(reasoner.super_classes(ABint))
 t92 = list(reasoner.super_classes(P))
 t93 = list(reasoner.super_classes(O))
-t94 = list(reasoner.super_classes(N, only_named=False))
-t95 = list(reasoner.super_classes(Q, only_named=False))
-t96 = list(reasoner.super_classes(r5Q, only_named=False))
-t97 = list(reasoner.super_classes(R, only_named=False))
-t98 = list(reasoner.super_classes(ST, only_named=False))
+t94 = list(reasoner.super_classes(N))
+t95 = list(reasoner.super_classes(Q))
+t96 = list(reasoner.super_classes(r5Q))
+t97 = list(reasoner.super_classes(R))
+t98 = list(reasoner.super_classes(ST))
 t99 = list(reasoner.super_classes(F))
 
 # Types
@@ -239,12 +241,12 @@ t119 = list(reasoner.same_individuals(q))
 t120 = list(reasoner.same_individuals(s))
 
 # Disjoint Classes
-t121 = list(reasoner.disjoint_classes(M, only_named=False))
-t122 = list(reasoner.disjoint_classes(N, only_named=False))
-t123 = list(reasoner.disjoint_classes(L, only_named=False))
-t124 = list(reasoner.disjoint_classes(O, only_named=False))
-t125 = list(reasoner.disjoint_classes(P, only_named=False))
-t126 = list(reasoner.disjoint_classes(Q, only_named=False))
+t121 = list(reasoner.disjoint_classes(M))
+t122 = list(reasoner.disjoint_classes(N))
+t123 = list(reasoner.disjoint_classes(L))
+t124 = list(reasoner.disjoint_classes(O))
+t125 = list(reasoner.disjoint_classes(P))
+t126 = list(reasoner.disjoint_classes(Q))
 
 # Disjoint Object Properties
 t127 = list(reasoner.disjoint_object_properties(r3))
@@ -266,8 +268,8 @@ t138 = list(reasoner.object_property_ranges(r1))
 t139 = list(reasoner.object_property_ranges(r2))
 
 # Object Properties Values
-t140 = list(reasoner.object_property_values(n, r3, direct=False))
-t141 = list(reasoner.object_property_values(n, r4, direct=False))
+t140 = list(reasoner.object_property_values(n, r3))
+t141 = list(reasoner.object_property_values(n, r4))
 t142 = list(reasoner.object_property_values(n, r5))
 t143 = list(reasoner.object_property_values(n, r6))
 t144 = list(reasoner.object_property_values(ind1, r6))
@@ -300,3 +302,5 @@ for x in range(1, 157):
         print(f" {var_name} = {globals()[var_name]}")
     except KeyError:
         continue
+
+stopJVM()

@@ -9,6 +9,7 @@ Key dataset facts (Mutagenesis):
   - Individuals with 'act'    (xsd:double, exactly 1 per individual): 230
   - No individual has more than 1 value for any single data property
 """
+import pytest
 import unittest
 
 from owlapy.class_expression import (
@@ -30,6 +31,8 @@ from owlapy.providers import (
     owl_datatype_max_inclusive_restriction,
 )
 from owlapy.vocab import XSDVocabulary
+
+pytestmark = pytest.mark.requires_owlready2  # legacy owlready2-backed classes (#310)
 
 
 NS = "http://dl-learner.org/mutagenesis#"

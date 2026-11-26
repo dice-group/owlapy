@@ -3,7 +3,7 @@ import time
 
 from owlapy.class_expression import (OWLClass, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom,
                                      OWLObjectIntersectionOf, OWLObjectUnionOf)
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.utils import concept_reducer_properties, concept_reducer
 from owlapy import owl_expression_to_dl
@@ -86,7 +86,7 @@ owl_reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT"
 owl_reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
 owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
 owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
-onto = Ontology(ontology_path)
+onto = RDFLibOntology(ontology_path)
 c: OWLClass
 # () C: OWL Class.
 c = {i for i in onto.classes_in_signature()}

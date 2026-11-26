@@ -1,3 +1,4 @@
+import pytest
 import os
 import unittest
 
@@ -105,6 +106,7 @@ class TestSyncReasoner(unittest.TestCase):
     def test_consistency_check(self):
         self.assertEqual(self.reasoner.has_consistent_ontology(), True)
 
+    @pytest.mark.requires_owlready2
     def test_named_concepts(self):
 
         ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
@@ -134,6 +136,7 @@ class TestSyncReasoner(unittest.TestCase):
         for i in onto.classes_in_signature():
             assert compute_agreements(i, True)
 
+    @pytest.mark.requires_owlready2
     def test_inconsistency_check(self):
         onto = Ontology(IRI.create(self.ontology_path))
 
@@ -222,6 +225,17 @@ class TestSyncReasoner(unittest.TestCase):
 
     def test_types(self):
         self.assertCountEqual(list(reasoner2.types(c)), [I, J, K, OWLThing])
+
+    def test_infer_property_assertions(self):
+        from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom
+        inferred = list(reasoner2.infer_axioms(["InferredPropertyAssertionGenerator"]))
+        self.assertEqual(len(inferred), 10)
+        self.assertTrue(all(isinstance(a, OWLObjectPropertyAssertionAxiom) for a in inferred))
+        ind1 = OWLNamedIndividual(IRI(NS, 'ind1'))
+        g = OWLNamedIndividual(IRI(NS, 'g'))
+        # r2 is a sub-property of r1, so ind1 r2 g entails ind1 r1 g
+        self.assertIn(OWLObjectPropertyAssertionAxiom(ind1, OWLObjectProperty(IRI(NS, 'r2')), g), inferred)
+        self.assertIn(OWLObjectPropertyAssertionAxiom(ind1, OWLObjectProperty(IRI(NS, 'r1')), g), inferred)
 
     def test_infer_axiom(self):
         self.assertCountEqual(list(reasoner2.infer_axioms(["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",

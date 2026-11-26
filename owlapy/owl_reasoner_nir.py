@@ -347,8 +347,19 @@ class NIRReasoner(AbstractOWLReasoner):
         import torch
 
         if isinstance(ontology, str):
+            import warnings
+
             from owlapy.iri import IRI
             from owlapy.owl_ontology import Ontology
+
+            warnings.warn(
+                "NIRReasoner(path) loads the file into an owlready2-backed Ontology (with a "
+                "StructuralReasoner fallback). In owlapy 2.0 it will load an RDFLibOntology (with an "
+                "RDFLibReasoner fallback) instead. To opt in now, pass RDFLibOntology(path) or "
+                "SyncOntology(path) yourself. See issue #310.",
+                FutureWarning,
+                stacklevel=2,
+            )
 
             if os.path.exists(ontology):
                 ontology = Ontology(IRI.create("file://" + os.path.abspath(ontology)))

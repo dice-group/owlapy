@@ -1,5 +1,7 @@
+import pytest
 import json
 import os
+import sys
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
@@ -10,7 +12,7 @@ from sklearn.datasets import load_iris
 
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectUnionOf
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom
+from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology, SyncOntology
@@ -33,7 +35,11 @@ class TestRunningExamples:
                                    path="owl_class_expressions.owl",
                                    document_format= 'rdfxml')
         g=rdflib.Graph().parse("owl_class_expressions.owl")
-        assert len(g)==22
+        assert (rdflib.URIRef("https://ontolearn.org/predictions"), rdflib.RDF.type, rdflib.OWL.Ontology) in g
+        # The OWL API reads back each expression as equivalent to <namespace><index>
+        axioms = set(SyncOntology("owl_class_expressions.owl").get_axioms())
+        for i, ce in enumerate(expressions):
+            assert OWLEquivalentClassesAxiom([OWLClass(f"https://ontolearn.org/predictions#{i}"), ce]) in axioms
 
     def test_csv_to_kg(self):
         data = load_iris()
@@ -252,10 +258,15 @@ class TestRdfKgToCsv(unittest.TestCase):
 class TestCreateOntology(unittest.TestCase):
     """Test create_ontology function."""
 
+    @pytest.mark.requires_owlready2
     def test_create_ontology_default(self):
         """Test creating ontology with default settings."""
         iri = "http://example.com/test"
-        onto = create_ontology(iri, with_owlapi=False)
+        # default switches to RDFLibOntology in 2.0 (#310). pytest.warns, not assertWarns: the latter
+        # touches every module in sys.modules, which makes transformers' lazy module import optional
+        # dependencies (e.g. torchvision) once an earlier test has imported transformers.
+        with pytest.warns(FutureWarning):
+            onto = create_ontology(iri, with_owlapi=False)
 
         self.assertIsInstance(onto, Ontology)
 
@@ -691,7 +702,10 @@ class TestGenerateOntologyObjectProperties(unittest.TestCase):
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_response
 
-        with patch("openai.OpenAI", return_value=mock_client):
+        # Inject a fake `openai` module so the test doesn't require the optional dependency
+        fake_openai = MagicMock()
+        fake_openai.OpenAI.return_value = mock_client
+        with patch.dict(sys.modules, {"openai": fake_openai}):
             generate_ontology(
                 graph_as_json=json_path,
                 output_path=output_path,

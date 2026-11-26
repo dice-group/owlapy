@@ -5,7 +5,8 @@ checking, ontology assembly). Every dspy.Predict-backed attribute involved is
 stubbed with a deterministic MagicMock -- no real LLM calls.
 
 Results are verified by parsing the saved RDF/XML file with rdflib rather
-than via Ontology.get_abox_axioms()/get_tbox_axioms(), which also happens to
+than through the returned ontology (an owlready2 `Ontology` by default, an `RDFLibOntology` without
+owlready2, see test_agen_kg_ontology_backend.py), which also happens to
 exercise the real onto.save() path end-to-end.
 """
 import os

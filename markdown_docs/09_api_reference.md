@@ -112,23 +112,30 @@ RDFLibOntology(iri: str | IRI, load=False)       # create a blank ontology with 
 
 **Key Methods (read):**
 - `classes_in_signature()` / `individuals_in_signature()` / `object_properties_in_signature()` / `data_properties_in_signature()` / `properties_in_signature()`
-- `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` between named classes
+- `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` (operands may be complex, see below)
 - `get_abox_axioms() -> Iterable[OWLAxiom]` - Class assertions, object- and data-property assertions
 - `get_abox_axioms_between_individuals()` / `get_abox_axioms_between_individuals_and_classes()` - Filtered subsets of the above
 - `equivalent_classes_axioms(c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]`
 - `data_property_domain_axioms(pe)` / `data_property_range_axioms(pe)` / `object_property_domain_axioms(pe)` / `object_property_range_axioms(pe)`
+- `annotation_assertion_axioms(entity_or_iri) -> Iterable[OWLAnnotationAssertionAxiom]` - `rdfs:label`, `rdfs:comment` and other annotations on an entity
 - `get_ontology_id() -> OWLOntologyID`
 
 **Key Methods (write):**
-- `add_axiom(axiom)` / `remove_axiom(axiom)` - Accepts a single `OWLAxiom` or an iterable. Supports declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, and the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive) -- all between/on *named* entities. Adding an axiom auto-declares any entity it references that isn't declared yet, so the axiom is immediately visible to the read API
+- `add_axiom(axiom)` / `remove_axiom(axiom)` - Accepts a single `OWLAxiom` or an iterable. Supports declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive), and the annotation axioms (`OWLAnnotationAssertionAxiom` with an IRI subject and an IRI or literal value, `OWLSubAnnotationPropertyOfAxiom`, `OWLAnnotationPropertyDomainAxiom`/`RangeAxiom`). A custom annotation property is declared `owl:AnnotationProperty` automatically; built-in ones such as `rdfs:label` are not. `add_axiom()` also accepts *complex* class expressions and data ranges wherever OWL allows them (e.g. `A ⊑ ∃r.B`, `∃r.B ⊑ C`, class assertions to `∀r.(B ⊔ C)`, restriction-based domains/ranges, datatype restrictions) and writes them as blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API reads them back unchanged. Adding an axiom auto-declares any entity it references that isn't declared yet, so the axiom is immediately visible to the read API
 - `save(path=None, inplace=False, document_format=None)` - Serializes via rdflib (`"rdfxml"` default; also accepts rdflib's own names and OWL-API-style aliases, same vocabulary as `Ontology`/`SyncOntology`)
 
-**Limitation:** axioms involving complex (blank-node) class/property expressions -- e.g. general
-class axioms, restriction-based domains/ranges -- aren't representable, on either the read or
-write side; only axioms between named entities are. `general_class_axioms()` and
-`add_axiom()`/`remove_axiom()` on such an axiom raise `NotImplementedError` to say so explicitly.
+**Reading complex axioms:** the read API (`get_tbox_axioms()`, `equivalent_classes_axioms()`,
+`general_class_axioms()`, the property domain/range methods and `get_abox_axioms()`'s class
+assertions) rebuilds complex class expressions and data ranges from their blank-node RDF structures,
+so it reports the same class axioms as the OWL API. `get_tbox_axioms()` also reads
+`owl:AllDisjointClasses`. An axiom whose expression can't be read (e.g. one using an anonymous
+individual) is skipped, with one logged warning per call.
+
+**Limitation:** `remove_axiom()` cannot remove an axiom with a complex operand yet, and properties must be named
+(an `OWLObjectInverseOf` is accepted only inside a class expression).
 A handful of axiom types aren't supported by the write API yet either (e.g. `OWLSameIndividualAxiom`,
-`OWLAnnotationAssertionAxiom`, `OWLDisjointUnionAxiom`) -- the error message names what is.
+`OWLDisjointUnionAxiom`), nor are anonymous individuals -- the error message names what is.
+Annotations *on an axiom* (its `annotations=` argument) are silently dropped for every axiom type.
 
 **Example:**
 ```python
@@ -141,17 +148,8 @@ onto.add_axiom(OWLClassAssertionAxiom(OWLNamedIndividual("family#john"), OWLClas
 onto.save("family_updated.owl")
 ```
 
-### `Ontology` (Legacy)
-
-owlready2-backed ontology implementation. Being phased out in favor of `RDFLibOntology` (#205);
-prefer `SyncOntology` or `RDFLibOntology` for new code. owlready2 is an optional install extra
-(`pip install owlapy[owlready2]`) -- constructing an `Ontology` without it installed raises a
-clear `ImportError` explaining how to install it.
-
-```python
-from owlapy.owl_ontology import Ontology
-onto = Ontology("family.owl")
-```
+The owlready2-backed `Ontology`, `StructuralReasoner`, `ToOwlready2` and `FromOwlready2` are
+deprecated and removed in owlapy 2.0. See [Migrating from owlready2](10_migrating_from_owlready2.md).
 
 ### `NeuralOntology`
 
@@ -192,15 +190,6 @@ RDFLibReasoner(ontology: AbstractOWLOntology | str)  # accepts a path directly, 
 reasoner = RDFLibReasoner(onto)
 males = list(reasoner.instances(OWLClass(NS + "Male")))
 subclasses = list(reasoner.sub_classes(person, direct=True))
-```
-
-### `StructuralReasoner`
-
-Fast Python reasoner using owlready2. **Warning:** Has circular dependency issue #205.
-
-```python
-from owlapy.owl_reasoner import StructuralReasoner
-reasoner = StructuralReasoner(onto)
 ```
 
 ### `SyncReasoner`
@@ -254,10 +243,10 @@ Named classes and TBox queries use a symbolic fallback. Requires `torch` and `tr
 Pretrained weights: https://files.dice-research.org/datasets/CNIR/trained_models.zip
 
 ```python
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.owl_reasoner import NIRReasoner
 
-onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
 reasoner = NIRReasoner(
     onto,
     model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
@@ -595,18 +584,14 @@ from owlapy.owl_axiom import (
 
 ```python
 from owlapy.util_owl_static_funcs import (
-    create_ontology,
     csv_to_rdf_kg,
     save_owl_class_expressions
 )
 ```
 
-#### `create_ontology(iri: str) -> SyncOntology`
-Create empty ontology.
-
-```python
-onto = create_ontology("http://example.com/my-ontology")
-```
+To create an empty ontology, construct it directly: `RDFLibOntology(iri, load=False)` (pure
+Python) or `SyncOntology(iri, load=False)` (OWL API). `create_ontology(iri, with_owlapi=False)`
+returns the deprecated owlready2-backed `Ontology` until owlapy 2.0 and emits a `FutureWarning`.
 
 #### `csv_to_rdf_kg(path_csv, path_kg, namespace)`
 Convert CSV to RDF knowledge graph. Each row becomes an individual; each column becomes
@@ -621,7 +606,8 @@ csv_to_rdf_kg(
 ```
 
 #### `save_owl_class_expressions(expressions: List, path: str, namespace: str)`
-Save class expressions to OWL file.
+Save class expressions to an OWL file (RDF/XML), each as `EquivalentClasses(<namespace>i, expression_i)`.
+Pure Python (written with `RDFLibOntology`).
 
 ```python
 save_owl_class_expressions(
@@ -699,6 +685,7 @@ Requires `dspy` (`pip install owlapy[agentic]`).
 
 ```python
 from owlapy.agen_kg import AGenKG
+from owlapy.owl_ontology import RDFLibOntology
 ```
 
 ### `AGenKG`
@@ -723,7 +710,7 @@ Any OpenAI-compatible endpoint works (OpenAI, Azure OpenAI, GitHub Models, Ollam
 
 **Methods:**
 
-- `generate_ontology(text, ontology_type: str = "domain", query=None, **kwargs) -> Ontology` -- `save_path` (must end in `.owl`) is a supported `**kwargs` entry
+- `generate_ontology(text, ontology_type: str = "domain", query=None, **kwargs) -> AbstractOWLOntology` -- supported `**kwargs` entries include `save_path` (must end in `.owl`) and `ontology`, the ontology to fill. Pass `ontology=RDFLibOntology("http://example.com/ontogen", load=False)` to get an owlready2-free result. Without it, an owlready2-backed `Ontology` is built with a `FutureWarning` (or an `RDFLibOntology` if owlready2 isn't installed); owlapy 2.0 defaults to `RDFLibOntology` (#310)
 
 **Example:**
 ```python
@@ -736,7 +723,8 @@ agent = AGenKG(
 ontology = agent.generate_ontology(
     text="path/to/document.txt",
     ontology_type="domain",
-    save_path="generated_ontology.owl"
+    save_path="generated_ontology.owl",
+    ontology=RDFLibOntology("http://example.com/ontogen", load=False),
 )
 ```
 
@@ -749,11 +737,13 @@ does for you), rather than taking their own `model`/`api_key`.
 
 ```python
 from owlapy.agen_kg.graph_extracting_models import DomainGraphExtractor, OpenGraphExtractor
+from owlapy.owl_ontology import RDFLibOntology
 
 AGenKG(model="gpt-4o", api_key="your-key")  # configures dspy's LM as a side effect
 
 extractor = DomainGraphExtractor(enable_logging=True)
-kg = extractor.generate_ontology(text="Medical records...", ontology_type="domain")
+kg = extractor.generate_ontology(text="Medical records...", domain="medicine",
+                                 ontology=RDFLibOntology("http://example.com/ontogen", load=False))
 ```
 
 ## IRI
@@ -816,11 +806,11 @@ rule = Rule(
 
 ```python
 # Ontology
-from owlapy.owl_ontology import SyncOntology, Ontology, NeuralOntology
+from owlapy.owl_ontology import SyncOntology, RDFLibOntology, NeuralOntology
 
 # Reasoners
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
-from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
+from owlapy.owl_reasoner import SyncReasoner
 
 # Class Expressions
 from owlapy.class_expression import (
@@ -851,7 +841,7 @@ from owlapy import (
 )
 
 # Utilities
-from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg
+from owlapy.util_owl_static_funcs import csv_to_rdf_kg, save_owl_class_expressions
 from owlapy.static_funcs import startJVM, stopJVM
 from owlapy.utils import CESimplifier, NNF
 

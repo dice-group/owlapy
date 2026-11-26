@@ -62,7 +62,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.7",
+    version="1.7.0",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar', 'py.typed'],},
@@ -72,7 +72,10 @@ setup(
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',
     classifiers=[
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering"],
     python_requires='>=3.11',

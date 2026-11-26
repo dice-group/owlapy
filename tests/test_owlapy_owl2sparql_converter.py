@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import rdflib.plugins.sparql.sparql
 from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLThing, \
@@ -92,6 +93,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
 #  )"""
         self.assertEqual(query, query_t)  # add assertion here
 
+    @pytest.mark.requires_owlready2
     def test_Single(self):
         # rdf graph - using rdflib
         family_rdf_graph = Graph()
@@ -134,6 +136,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
         self.assertEqual(len(sparql_results_actual), len(reasoner_results))
         self.assertTrue(check_reasoner_instances_in_sparql_results(sparql_results_actual, reasoner_results))
 
+    @pytest.mark.requires_owlready2
     def test_Intersection(self):
         # rdf graph - using rdflib
         family_rdf_graph = Graph()
@@ -160,6 +163,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
         self.assertEqual(len(sparql_results_actual), len(reasoner_results))
         self.assertTrue(check_reasoner_instances_in_sparql_results(sparql_results_actual, reasoner_results))
 
+    @pytest.mark.requires_owlready2
     def test_Union(self):
         # rdf graph - using rdflib
         family_rdf_graph = Graph()
@@ -187,6 +191,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
         self.assertEqual(len(sparql_results_actual), len(reasoner_results))
         self.assertTrue(check_reasoner_instances_in_sparql_results(sparql_results_actual, reasoner_results))
 
+    @pytest.mark.requires_owlready2
     def test_Complement(self):
         # rdf graph - using rdflib
         family_rdf_graph = Graph()
@@ -214,6 +219,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
         self.assertEqual(len(sparql_results_actual), len(reasoner_results))
         self.assertTrue(check_reasoner_instances_in_sparql_results(sparql_results_actual, reasoner_results))
 
+    @pytest.mark.requires_owlready2
     def test_Exists(self):
         # rdf graph - using rdflib
         family_rdf_graph = Graph()

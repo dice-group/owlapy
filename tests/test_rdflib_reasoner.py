@@ -1,9 +1,10 @@
 """Tests for RDFLibReasoner - Pure Python RDFLib-based reasoner."""
+import pytest
 import unittest
 from pathlib import Path
 from unittest import mock
 
-from owlapy.class_expression import OWLClass
+from owlapy.class_expression import OWLClass, OWLThing
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
@@ -306,6 +307,7 @@ class TestRDFLibReasonerConstruction(unittest.TestCase):
         reasoner = RDFLibReasoner(onto)
         self.assertIs(reasoner._graph, onto.rdflib_graph)
 
+    @pytest.mark.requires_owlready2
     def test_construction_from_plain_ontology(self):
         from owlapy.owl_ontology import Ontology
 
@@ -425,14 +427,15 @@ class TestRDFLibReasonerComplexExpressionsAndStubs(unittest.TestCase):
         """`hasChild` in the Family benchmark ontology has no domain/range/subPropertyOf/
         equivalentProperty/propertyDisjointWith axioms, and this ontology has no data
         properties at all -- these methods should return empty results, not crash, when
-        given real (but axiom-free) property objects."""
+        given real (but axiom-free) property objects. The exception is domain/range: without
+        an asserted one it is owl:Thing, as in StructuralReasoner and the OWL API (#310)."""
         males = list(self.reasoner.instances(self.male))
         ind = males[0]
         dummy_dp = OWLDataProperty(IRI(self.NS, "doesNotExist"))
 
-        self.assertEqual(list(self.reasoner.data_property_domains(dummy_dp)), [])
-        self.assertEqual(list(self.reasoner.object_property_domains(self.has_child)), [])
-        self.assertEqual(list(self.reasoner.object_property_ranges(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.data_property_domains(dummy_dp, direct=True)), [OWLThing])
+        self.assertEqual(list(self.reasoner.object_property_domains(self.has_child, direct=True)), [OWLThing])
+        self.assertEqual(list(self.reasoner.object_property_ranges(self.has_child, direct=True)), [OWLThing])
         self.assertEqual(list(self.reasoner.data_property_values(ind, dummy_dp)), [])
         self.assertEqual(list(self.reasoner.different_individuals(ind)), [])
         self.assertEqual(list(self.reasoner.equivalent_object_properties(self.has_child)), [])
@@ -509,6 +512,7 @@ class TestRDFLibReasonerPropertyHierarchyAndDomainRange(unittest.TestCase):
         second = set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True))
         self.assertEqual(first, second)
 
+    @pytest.mark.requires_owlready2
     def test_parity_with_structural_reasoner(self):
         """RDFLibReasoner and StructuralReasoner must agree on the newly-implemented methods.
 

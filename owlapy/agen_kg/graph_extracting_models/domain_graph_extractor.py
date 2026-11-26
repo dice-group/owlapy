@@ -9,6 +9,7 @@ except ImportError:
 import uuid
 from pathlib import Path
 
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.agen_kg.domain_examples_cache import DomainExamplesCache
 from owlapy.agen_kg.graph_extractor import GraphExtractor
 from owlapy.agen_kg.helper import chunked_iterator, extract_hierarchy_from_dbpedia, task_example_mapping
@@ -22,7 +23,6 @@ from owlapy.owl_axiom import (
     OWLSubClassOfAxiom,
 )
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 logger = logging.getLogger(__name__)
@@ -173,7 +173,8 @@ class DomainGraphExtractor(GraphExtractor):
         fact_reassurance: bool = True,
         generate_rdfs_annotations: bool = False,
         save_path="generated_ontology.owl",
-    ) -> Ontology:
+        ontology: Optional[AbstractOWLOntology] = None,
+    ) -> AbstractOWLOntology:
         """
         Generate a domain-specific ontology from text.
 
@@ -196,6 +197,9 @@ class DomainGraphExtractor(GraphExtractor):
             use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
             fact_reassurance: Whether to perform the coherence check on triples (default: True).
             save_path: Path to save the ontology.
+            ontology: The ontology to add the generated axioms to, e.g. ``RDFLibOntology(iri, load=False)``.
+                Defaults to a new owlready2-backed ``Ontology``, with a FutureWarning (an ``RDFLibOntology`` if
+                owlready2 isn't installed); owlapy 2.0 will default to ``RDFLibOntology`` (#310).
 
 
         Returns:
@@ -306,7 +310,7 @@ class DomainGraphExtractor(GraphExtractor):
                 logger.info(f"Skipped coherence check, using all {len(coherent_triples)} triples")
 
         # Step 7: Create ontology and add triples
-        onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
+        onto = self._start_ontology(ontology)
         for triple in coherent_triples:
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))

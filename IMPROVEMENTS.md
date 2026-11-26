@@ -1,7 +1,7 @@
 # owlapy — Improvement Plan
 
 A prioritized catalogue of concrete, actionable improvements for the owlapy
-library (v1.6.5), grouped by **code readability**, **performance**,
+library (v1.6.7), grouped by **code readability**, **performance**,
 **documentation**, **missing features**, and **project housekeeping**.
 
 Each item lists *what*, *where* (file references), *why it matters*, and a
@@ -162,31 +162,18 @@ effort estimates, and sequencing.
 
 ## 3. Documentation
 
-### 3.1 Fix corrupted README headers — *quick win*
-- **Where:** `README.md:84` `## � Documentation` and `README.md:104`
-  `## �📋 Examples` contain a U+FFFD replacement character (mojibake) where an
-  emoji was intended.
-- **Why:** Renders as a broken glyph on PyPI and GitHub — the project's first
-  impression.
-- **Approach:** Replace with the intended emoji (e.g. `📚`, `📋`) and re-check
-  the file is valid UTF-8.
-
-### 3.2 Version-badge / metadata drift — *quick win*
-- **Where:** `README.md` badges show **1.6.4** (`pypi-1.6.4`,
-  `documentation-1.6.4`) while `owlapy/__init__.py` and `setup.py` are **1.6.5**.
-- **Why:** Stale badges mislead users about the current release.
-- **Approach:** Update badges as part of the release checklist. Better: derive
-  the badge version dynamically (shields.io PyPI endpoint) so it never drifts,
-  and add a CI check asserting `__version__ == setup.py version` (CLAUDE.md
-  already flags that these two must stay in sync — enforce it).
-
 ### 3.3 Document the `TODO`-flagged decimal limitation
 - **Where:** `parser.py:411,756` "Just use float for now, decimal not supported
-  in owlapy yet."
-- **Why:** A silent precision downgrade (`xsd:decimal` → float) is a correctness
+  in owlapy yet." (`visit_decimal_literal` in both parsers).
+- **Status:** The OWLAPI read/write path no longer has this problem -- since
+  #292/#294 an `xsd:decimal` literal keeps its datatype and is held as a
+  `decimal.Decimal`. Only the DL/Manchester parser still coerces an unsuffixed
+  decimal (`1.5`) to `xsd:double`.
+- **Why:** A silent `xsd:decimal` -> `xsd:double` downgrade is a correctness
   surprise users should know about.
-- **Approach:** Note the limitation in `markdown_docs/` and the parser docstring;
-  file a tracking issue for real `Decimal` support.
+- **Approach:** Either document the limitation in `markdown_docs/` and the
+  parser docstrings, or fix it (see 4.1). Fixing changes the datatype an
+  unsuffixed literal parses to, so decide that deliberately.
 
 ### 3.4 Docstring coverage for public API
 - **Where:** Several public methods carry `@TODO` notes asking for docstrings
@@ -233,10 +220,16 @@ effort estimates, and sequencing.
 
 ## 4. Missing Features / Enhancements
 
-### 4.1 First-class decimal / typed-literal support
-- **Why:** See 3.3 — `xsd:decimal` is currently coerced to float.
-- **Approach:** Add an `OWLLiteral` path backed by `decimal.Decimal`; medium
-  effort, touches `owl_literal.py`, `parser.py`, `render.py`.
+### 4.1 First-class decimal / typed-literal support -- *partly done*
+- **Done (#292/#294):** `OWLLiteral` already supports `xsd:decimal` via
+  `decimal.Decimal`, and the OWLAPI mapper preserves the datatype of every XSD
+  literal in both directions (see `tests/test_xsd_literal_mapping.py`).
+- **Remaining:** `parser.py` (both `visit_decimal_literal`s, see 3.3) still
+  builds `DoubleOWLDatatype` literals; check `render.py` round-trips a decimal
+  literal. Also open: language-tagged literals drop their tag (owlapy literals
+  have no language field).
+- **Approach:** Return `OWLLiteral(Decimal(text), DecimalOWLDatatype)` from the
+  parser visitors; small effort, but a user-visible parse-result change.
 
 ### 4.2 Equivalence-set handling in `OWLHierarchy`
 - **Why:** `owl_hierarchy.py:32,124` explicitly defers eq-set handling
@@ -347,18 +340,6 @@ effort estimates, and sequencing.
 ---
 
 ## 5. Project Housekeeping
-
-### 5.1 Remove stray artifacts from the repo root — *quick win*
-- **Where (untracked, per `git status`):** `dummy.py`, `demo.owl`,
-  `inferred_axioms_ontology.owl`, `iris_dataset.csv`, and root-level
-  `iris_kg.owl`, `owl_class_expressions.owl` (already gitignored), plus
-  `tests/saved_formats/`.
-- **Why:** `dummy.py` is clearly a scratch script; generated `.owl`/`.csv`
-  outputs clutter the working tree and risk accidental commits.
-- **Approach:** Delete scratch files or move examples into `examples/`; extend
-  `.gitignore` to cover `demo.owl`, `inferred_axioms_ontology.owl`,
-  `iris_dataset.csv`, and any test-generated `tests/saved_formats/` output. Point
-  test fixtures at the scratchpad/`tmp` rather than the repo root.
 
 ### 5.2 Enforce version sync in CI — ✅ *done*
 - **Status:** `.github/workflows/test.yml` now has a "Check version sync" step

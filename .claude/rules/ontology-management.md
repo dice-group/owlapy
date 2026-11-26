@@ -13,14 +13,13 @@ paths:
 # Ontology Management
 
 ```python
-from owlapy.owl_ontology import SyncOntology, RDFLibOntology, Ontology, NeuralOntology
-from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg, save_owl_class_expressions
+from owlapy.owl_ontology import SyncOntology, RDFLibOntology, NeuralOntology
+from owlapy.util_owl_static_funcs import csv_to_rdf_kg, save_owl_class_expressions
 
 onto = SyncOntology("path/to/ontology.owl")            # thread-safe, Java OWL API-backed (needs the JVM); full read/write
-onto = RDFLibOntology("path/to/ontology.owl")            # pure Python (rdflib), no JVM/owlready2; read/write, named entities only (#205)
-onto = Ontology("path/to/ontology.owl")                  # owlready2-backed; legacy, being phased out in favor of RDFLibOntology (#205)
+onto = RDFLibOntology("path/to/ontology.owl")            # pure Python (rdflib), no JVM/owlready2; reads and writes complex class expressions too (#205, #310)
 onto = NeuralOntology("path/to/pretrained_kge_model")     # embedding-backed (requires `dicee`); pairs with the EBR reasoner, see .claude/rules/reasoning.md
-onto = create_ontology("file:/my_ontology.owl", with_owlapi=False)
+onto = RDFLibOntology("http://example.com/my_ontology", load=False)  # new, empty ontology (SyncOntology(iri, load=False) for the OWL API)
 ```
 
 ## Signature and Axioms
@@ -95,8 +94,8 @@ save_owl_class_expressions(expressions=[expr1, expr2], path="predictions.owl",
 ## Constraints
 
 - Use full IRIs or `IRI.create(namespace, remainder)` when constructing entities — never bare strings
-- `SyncOntology` is preferred when you need Java-backed reasoning; `RDFLibOntology` is preferred for pure-Python read/write use (no JVM/owlready2), but only between *named* entities -- `Ontology` (owlready2-backed) is legacy, being phased out (#205)
-- `RDFLibOntology.add_axiom()`/`remove_axiom()`/`general_class_axioms()` raise `NotImplementedError` on axioms involving complex (blank-node) class/property expressions or general class axioms, and on a handful of axiom types not yet covered (e.g. `OWLSameIndividualAxiom`, `OWLAnnotationAssertionAxiom`) -- the error message states what's supported. Annotations are still read-only there: `annotation_assertion_axioms()` works, but `add_axiom(OWLAnnotationAssertionAxiom(...))` is not yet implemented. `RDFLibOntology(iri, load=False)` creates a blank ontology at the given IRI
-- `create_ontology` paths need a valid file URI scheme (e.g. `"file:/path.owl"`)
+- `SyncOntology` is preferred when you need Java-backed reasoning; `RDFLibOntology` is preferred for pure-Python read/write use (no JVM/owlready2) -- never write new code against the owlready2-backed `Ontology`/`StructuralReasoner`/`ToOwlready2`/`FromOwlready2`: deprecated, removed in 2.0, replacements in `markdown_docs/10_migrating_from_owlready2.md` (#310)
+- `RDFLibOntology.add_axiom()` writes complex class expressions/data ranges (restrictions, boolean combinations, cardinalities, nominals, datatype restrictions) via the W3C OWL 2 -> RDF mapping, and the read API (`get_tbox_axioms()`, `equivalent_classes_axioms()`, `general_class_axioms()`, domain/range, class assertions) rebuilds them from the blank-node structures (#310); unreadable ones (anonymous individuals) are skipped with one logged warning per call. `remove_axiom()` raises `NotImplementedError` on an axiom with a complex operand. Both also raise on a handful of axiom types not yet covered (e.g. `OWLSameIndividualAxiom`, `OWLDisjointUnionAxiom`) -- the error message states what's supported. Annotation axioms (`OWLAnnotationAssertionAxiom` on an IRI with an IRI/literal value, `OWLSubAnnotationPropertyOfAxiom`, `OWLAnnotationProperty{Domain,Range}Axiom`) are written and removed; custom annotation properties are auto-declared, built-ins like `rdfs:label` are not; anonymous individuals raise `NotImplementedError`; annotations *on an axiom* are silently dropped (true for every axiom type). `RDFLibOntology(iri, load=False)` creates a blank ontology at the given IRI
+- `create_ontology(iri)` (without `with_owlapi=True`) returns the deprecated `Ontology` and emits a `FutureWarning`; construct `RDFLibOntology(iri, load=False)` directly instead
 - Don't pass `with_owlapi=True` unless Java/OWLAPI interop is explicitly needed — it starts a JVM (see `.claude/rules/owlapi-swrl.md`)
 - `owlready2` is an optional install extra (`pip install owlapy[owlready2]`), not a hard dependency (#205) — constructing an `Ontology` (or a `StructuralReasoner`) without it installed raises a clear `ImportError`; `SyncOntology`/`RDFLibOntology` are unaffected either way

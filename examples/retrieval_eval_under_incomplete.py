@@ -10,8 +10,8 @@
 
 from argparse import ArgumentParser
 # Replace ontolearn dependencies with owlapy components
-from owlapy.owl_reasoner import StructuralReasoner
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
+from owlapy.owl_ontology import RDFLibOntology
 from owlapy.util_owl_static_funcs import make_kb_incomplete, make_kb_inconsistent
 from owlapy.utils import jaccard_similarity
 import pandas as pd
@@ -85,8 +85,8 @@ def generate_subgraphs(kb_path: str, directory: str, n: int, ratio: float, opera
 
 def execute(args):
     # Initialize symbolic reasoner using owlapy components
-    ontology = Ontology(ontology_iri=args.path_kg)
-    symbolic_kb = StructuralReasoner(ontology)
+    ontology = RDFLibOntology(args.path_kg)
+    symbolic_kb = RDFLibReasoner(ontology)
     namespace = list(symbolic_kb.get_root_ontology().classes_in_signature())[0].iri.get_namespace()
     parser = DLSyntaxParser(namespace)
     name_KG = args.path_kg.split('/')[-1].split('.')[0]

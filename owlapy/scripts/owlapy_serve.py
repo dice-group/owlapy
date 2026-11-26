@@ -28,6 +28,7 @@ class InferenceType(str, Enum):
     InferredSubObjectPropertyAxiomGenerator = "InferredSubObjectPropertyAxiomGenerator"
     InferredDataPropertyCharacteristicAxiomGenerator = "InferredDataPropertyCharacteristicAxiomGenerator"
     InferredObjectPropertyCharacteristicAxiomGenerator = "InferredObjectPropertyCharacteristicAxiomGenerator"
+    InferredPropertyAssertionGenerator = "InferredPropertyAssertionGenerator"
     All = "all"
 
 

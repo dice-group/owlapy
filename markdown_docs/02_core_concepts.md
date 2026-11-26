@@ -25,10 +25,6 @@ onto = SyncOntology("path/to/ontology.owl")
 from owlapy.owl_ontology import RDFLibOntology
 onto = RDFLibOntology("path/to/ontology.owl")
 
-# Ontology - owlready2-backed; legacy, being phased out in favor of RDFLibOntology (#205)
-from owlapy.owl_ontology import Ontology
-onto = Ontology("path/to/ontology.owl")
-
 # NeuralOntology - For neural network-backed reasoning
 from owlapy.owl_ontology import NeuralOntology
 neural_onto = NeuralOntology("ontology.owl", "embeddings.pkl")
@@ -38,9 +34,10 @@ neural_onto = NeuralOntology("ontology.owl", "embeddings.pkl")
 JVM via `startJVM()`/`stopJVM()`, but gives complete OWL 2 support). `RDFLibOntology` is a
 pure-Python, rdflib-backed alternative with no JVM or owlready2 dependency -- prefer it when you
 don't need Java-backed reasoning; it supports both inspection (signature queries, TBox/ABox axiom
-retrieval) and mutation (`add_axiom`/`remove_axiom`/`save`), limited to axioms between *named*
-entities (no complex/blank-node class expressions). `Ontology` is the original owlready2-backed
-implementation; treat it as legacy.
+retrieval) and mutation (`add_axiom`/`remove_axiom`/`save`). It *reads* only axioms between named
+entities, but `add_axiom` also *writes* axioms with complex class expressions (e.g. `A ⊑ ∃r.B`).
+The owlready2-backed `Ontology` is deprecated and removed in owlapy 2.0; see
+[Migrating from owlready2](10_migrating_from_owlready2.md).
 
 ### 2. OWL Entities
 
@@ -255,13 +252,9 @@ Reasoners infer implicit knowledge from explicit axioms.
 #### Types of Reasoners in owlapy
 
 ```python
-# RDFLibReasoner (Recommended) - Pure Python, SPARQL-based, no circular deps, no owlready2/JVM
+# RDFLibReasoner (Recommended) - Pure Python (rdflib), no circular deps, no owlready2/JVM
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 reasoner = RDFLibReasoner(ontology)
-
-# StructuralReasoner (Legacy) - Fast, incomplete, owlready2-based; being phased out (#205)
-from owlapy.owl_reasoner import StructuralReasoner
-reasoner = StructuralReasoner(ontology)
 
 # SyncReasoner - Complete OWL 2 DL reasoning, Java-based
 from owlapy.owl_reasoner import SyncReasoner
@@ -271,6 +264,20 @@ startJVM()
 reasoner = SyncReasoner(ontology, reasoner="HermiT")
 # ... use reasoner ...
 stopJVM()
+
+# Extra jars (e.g. for a package built on top of owlapy): JPype cannot extend the classpath once the JVM
+# runs, so they must be known before the first ontology/reasoner is created. An installable extension
+# should declare them in its pyproject.toml; owlapy then picks them up automatically, whichever code
+# starts the JVM, and several extensions can be installed side by side:
+#   [project.entry-points."owlapy.jars"]
+#   my_extension = "my_extension.jars:jar_paths"   # no-arg callable returning jar files and/or directories
+# Ad hoc, either
+#   export OWLAPY_EXTRA_CLASSPATH=/path/to/extra.jar:/path/to/jar_dir   (os.pathsep-separated)
+# or explicitly:
+startJVM(extra_jars=["/path/to/extra.jar", "/path/to/jar_dir"])
+# Classpath order: bundled jars, extra_jars, OWLAPY_EXTRA_CLASSPATH, entry-point jars (first one wins on
+# conflicting classes, so the bundled OWLAPI always takes precedence). A failing entry point is skipped
+# with a RuntimeWarning.
 
 # EBR - Embedding-based instance prediction over a NeuralOntology (requires `dicee`)
 from owlapy.owl_ontology import NeuralOntology

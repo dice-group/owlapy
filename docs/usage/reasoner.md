@@ -6,31 +6,32 @@ component is required.
 For this guide we will also consider the 'father' ontology that we slightly described [here](ontologies.md):
 
 ```python
-from owlapy.iri import IRI
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 
-onto = Ontology(IRI.create("KGs/Family/father.owl"))
+onto = RDFLibOntology("KGs/Family/father.owl")
 ```
 
-In Owlapy, we provide two main reasoner classes:
+In Owlapy, we provide the following reasoner classes:
 
 
-- [**StructuralReasoner**](owlapy.owl_reasoner.StructuralReasoner) (What used to be FastInstanceCheckerReasoner )
+- [**RDFLibReasoner**](owlapy.owl_reasoner_rdflib.RDFLibReasoner)
 
-    Structural Reasoner is the base reasoner in Owlapy. This reasoner works 
-   under CWA/PCWA and the base library used for it is _owlready2_. The functionalities
-  of this reasoner are limited and may be incomplete. It does not provide full reasoning in _ALCH_. 
-  It provides support for finding instance of complex class expression.
-  It has a cache storing system that allows for faster execution of some reasoning functionalities.
+    RDFLibReasoner is the pure-Python reasoner in Owlapy (no JVM, no owlready2). It works
+  under CWA/PCWA and answers queries with SPARQL over an rdflib graph. Its functionalities
+  are structural and may be incomplete: it does not provide full reasoning in _ALCH_.
+  It supports finding instances of complex class expressions, and it caches class and property
+  lookups for faster repeated queries. It replaces the deprecated owlready2-based
+  `StructuralReasoner` (removed in owlapy 2.0, see the
+  [migration guide](https://github.com/dice-group/owlapy/blob/main/markdown_docs/10_migrating_from_owlready2.md)).
 
     **Initialization:**
 
     ```python
-    from owlapy.owl_reasoner import StructuralReasoner
+    from owlapy.owl_reasoner_rdflib import RDFLibReasoner
     
-    structural_reasoner = StructuralReasoner(onto, property_cache = True, negation_default = True, sub_properties = False)
+    reasoner = RDFLibReasoner(onto, property_cache = True, negation_default = True, sub_properties = False)
     ```
-  The structural reasoner requires an ontology ([AbstractOWLOntology](owlapy.abstracts.AbstractOWLOntology)).
+  RDFLibReasoner requires an ontology ([AbstractOWLOntology](owlapy.abstracts.AbstractOWLOntology)) or a file path.
   `property_cache` specifies whether to cache property values. This
   requires more memory, but it speeds up the reasoning processes. If `negation_default` argument is set
   to `True` the missing facts in the ontology means false. The argument
@@ -60,7 +61,7 @@ In Owlapy, we provide two main reasoner classes:
    `"Openllet"`, `"Structural"` specified as a string value.
 
    **Note that SyncReasoner with `reasoner` argument set to `"Structural"` is referring to 
-   _StructuralReasoner_ implemented in OWLAPI. That is different from our StructuralReasoner.**
+   _StructuralReasoner_ implemented in OWLAPI, not to Owlapy's own (deprecated) StructuralReasoner.**
 
   **Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner 
   can perform. You will get a `NotImplementedError` if you try to use them. Note that we use these reasoners via jar
@@ -96,10 +97,10 @@ In Owlapy, we provide two main reasoner classes:
   **Initialization:**
 
   ```python
-  from owlapy.owl_ontology import Ontology
+  from owlapy.owl_ontology import RDFLibOntology
   from owlapy.owl_reasoner import NIRReasoner
 
-  onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+  onto = RDFLibOntology("KGs/Family/family-benchmark_rich_background.owl")
   reasoner = NIRReasoner(
       onto,
       model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
@@ -116,7 +117,7 @@ In Owlapy, we provide two main reasoner classes:
 ## Usage of the Reasoner
 All the reasoners available in Owlapy inherit from the
 class: [AbstractOWLReasoner](owlapy.abstracts.AbstractOWLReasoner).
-Further on, in this guide, we use [StructuralReasoner](owlapy.owl_reasoner.StructuralReasoner)
+Further on, in this guide, we use [RDFLibReasoner](owlapy.owl_reasoner_rdflib.RDFLibReasoner)
 to show the capabilities of a reasoner in Owlapy.
 
 We will proceed to use the _father_ dataset to give examples.
@@ -137,9 +138,9 @@ from owlapy.iri import IRI
 namespace = "http://example.com/father#"
 male = OWLClass(IRI(namespace, "male"))
 
-male_super_classes = structural_reasoner.super_classes(male)
-male_sub_classes = structural_reasoner.sub_classes(male)
-male_equivalent_classes = structural_reasoner.equivalent_classes(male)
+male_super_classes = reasoner.super_classes(male)
+male_sub_classes = reasoner.sub_classes(male)
+male_equivalent_classes = reasoner.equivalent_classes(male)
 ```
 
 We define the _male_ class by creating an [OWLClass](owlapy.class_expression.owl_class.OWLClass) object. The 
@@ -165,7 +166,7 @@ You can get all the types of a certain individual using `types` method:
 ```python
 anna = list(onto.individuals_in_signature()).pop(0)
 
-anna_types = structural_reasoner.types(anna)
+anna_types = reasoner.types(anna)
 ```
 
 We retrieve _anna_ as the first individual on the list of individuals 
@@ -183,8 +184,7 @@ following method:
 
 <!--pytest-codeblocks:cont-->
 ```python
-anna = individuals[0] 
-object_properties = structural_reasoner.ind_object_properties(anna)
+object_properties = reasoner.ind_object_properties(anna)
 ```
 In this example, `object_properties` contains all the object properties
 that _anna_ has, which in our case would only be _hasChild_.
@@ -193,7 +193,7 @@ Now we can get the individuals of this object property for _anna_.
 <!--pytest-codeblocks:cont-->
 ```python
 for op in object_properties:
-    object_properties_values = structural_reasoner.object_property_values(anna, op)
+    object_properties_values = reasoner.object_property_values(anna, op)
     for individual in object_properties_values:
         print(individual)
 ```
@@ -221,16 +221,16 @@ from owlapy.owl_property import OWLObjectProperty
 
 hasChild = OWLObjectProperty(IRI(namespace, "hasChild"))
 
-equivalent_to_hasChild = structural_reasoner.equivalent_object_properties(hasChild)
-hasChild_sub_properties = structural_reasoner.sub_object_properties(hasChild)
+equivalent_to_hasChild = reasoner.equivalent_object_properties(hasChild)
+hasChild_sub_properties = reasoner.sub_object_properties(hasChild)
 ```
 
 In case you want to get the domains and ranges of an object property use the following:
 
 <!--pytest-codeblocks:cont-->
 ```python
-hasChild_domains = structural_reasoner.object_property_domains(hasChild)
-hasChild_ranges = structural_reasoner.object_property_ranges(hasChild)
+hasChild_domains = reasoner.object_property_domains(hasChild)
+hasChild_ranges = reasoner.object_property_ranges(hasChild)
 ```
 
 > **NOTE:** Again, you can do the same for data properties but instead of the word 'object' in the 
@@ -248,7 +248,7 @@ Let us now show a simple example by finding the instances of the class _male_ an
 
 <!--pytest-codeblocks:cont-->
 ```python
-male_individuals = structural_reasoner.instances(male)
+male_individuals = reasoner.instances(male)
 for ind in male_individuals:
     print(ind)
 ```
