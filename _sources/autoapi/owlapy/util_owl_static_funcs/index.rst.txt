@@ -10,8 +10,6 @@ Attributes
 .. autoapisummary::
 
    owlapy.util_owl_static_funcs.logger
-   owlapy.util_owl_static_funcs.destroy_entity
-   owlapy.util_owl_static_funcs.get_ontology
 
 
 Functions
@@ -34,17 +32,16 @@ Module Contents
 
 .. py:data:: logger
 
-.. py:data:: destroy_entity
-
-.. py:data:: get_ontology
-
 .. py:function:: save_owl_class_expressions(expressions: owlapy.class_expression.OWLClassExpression | List[owlapy.class_expression.OWLClassExpression], path: str = 'predictions', document_format: str = 'rdfxml', namespace: str = None) -> None
 
    Saves a set of OWL class expressions to an ontology file in RDF/XML format.
 
    This function takes one or more OWL class expressions, creates an ontology,
    and saves the expressions as OWL equivalent class axioms in the specified format.
-   By default, it saves the file to the specified path using the 'rdfxml' format.
+   The i-th expression becomes equivalent to the class ``<namespace>i``. The ontology is
+   built and written with :class:`~owlapy.owl_ontology.RDFLibOntology`, so neither owlready2
+   nor a JVM is needed. By default, it saves the file to the specified path using the
+   'rdfxml' format.
 
    :param expressions: A single or a list of OWL class expressions
                        to be saved as equivalent class axioms.
@@ -119,7 +116,16 @@ Module Contents
 
 .. py:function:: create_ontology(iri, with_owlapi=False)
 
-   A convenient function
+   Create a blank ontology with the given IRI.
+
+   :param iri: IRI of the new ontology.
+   :param with_owlapi: If True, return an OWL API-backed :class:`SyncOntology` (starts the JVM).
+                       If False (default), return the owlready2-backed :class:`Ontology`.
+
+   .. note::
+       ``with_owlapi=False`` emits a ``FutureWarning``: in owlapy 2.0 it will return an
+       :class:`RDFLibOntology` instead, because ``Ontology`` is removed (see #310). To opt in
+       now, construct ``RDFLibOntology(iri, load=False)`` yourself.
 
 
 .. py:function:: generate_ontology(graph_as_json: str = None, output_path: str = 'generated_ontology.owl', output_format: str = 'xml', namespace: str = 'http://example.org/', generate_classes: bool = True, base_url: str = None, api_key: str = None, model: str = None, context: str = '', temperature: float = 0.15)
@@ -157,13 +163,16 @@ Module Contents
 
 .. py:function:: make_kb_incomplete_ass(kb_path, output_path, rate, seed)
 
-   Makes the knowledge base incomplete by removing a certain percentage of statements (triples).
+   Makes the knowledge base incomplete by removing a certain percentage of property assertions.
+
+   The candidate statements are all object and data property assertions whose subject is an
+   individual of the knowledge base; ``rate`` percent of them are removed at random.
 
    Inputs:
    ---------------
 
    kb_path: Path to the input knowledge base.
-   output_path: Path to save the modified (incomplete) knowledge base.
+   output_path: Path to save the modified (incomplete) knowledge base (RDF/XML).
    rate: Percentage of statements to remove (0-100).
    seed: random seed for reproducibility.
 
@@ -177,29 +186,39 @@ Module Contents
 
    Makes the knowledge base incomplete by removing a certain percentage of individuals.
 
+   A removed individual disappears completely: every triple that mentions it, as subject or as
+   object, is deleted.
+
    Inputs:
    ---------------
 
    kb_path: Path to the input knowledge base.
-   output_path: Path to save the modified (incomplete) knowledge base.
+   output_path: Path to save the modified (incomplete) knowledge base (RDF/XML).
    rate: Percentage of individuals to remove (0-100).
    seed: random seed for reproducibility.
 
    Output:
    ---------------
 
-   Incomplete KB at level rate %
+   The IRIs of the removed individuals.
 
 
 .. py:function:: make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100)
 
    This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.
 
+   ``rate`` percent of the number of triples in the KB are added as incorrect statements: either a
+   class assertion to a class the individual does not belong to, or an object property assertion
+   between two randomly chosen individuals that does not exist yet.
+
    Parameters:
    kb_path (str): Path to the original OWL ontology file.
-   output_path (str): Path to save the inconsistent ontology file.
+   output_path (str): Path to save the inconsistent ontology file (RDF/XML).
    rate (float): Percentage of incorrect statements to introduce (0-100).
    seed (int): Seed for reproducibility.
    max_attempts (int): Maximum attempts to find a valid incorrect statement.
+
+   Returns:
+   list[str]: A description of every incorrect statement that was added.
 
 

@@ -13,16 +13,16 @@ An ontology can be loaded using the following Python code:
 
 ```python
 from owlapy.iri import IRI
-from owlapy.owl_ontology import Ontology
+from owlapy.owl_ontology import RDFLibOntology
 
-onto = Ontology(IRI.create("file://KGs/Family/father.owl"), load=True)
+onto = RDFLibOntology("KGs/Family/father.owl")
 ```
 
-To load an ontology from your local machine, you can use the `IRI` class which 
-should be created using a file path or just specify the path of the file storing
-the ontology directly (`.owl` format is recommended). In the `Ontology` class you can
-also specify the `load` argument which tells the system whether you are trying to load an
-existing ontology or creating a new one.
+[RDFLibOntology](owlapy.owl_ontology.RDFLibOntology) is pure Python (rdflib) and needs neither
+the JVM nor owlready2. Pass the path of the file storing the ontology (`.owl` format is
+recommended). To create a new, empty ontology instead, pass its IRI and `load=False`, e.g.
+`RDFLibOntology("http://example.com/father", load=False)`. If you need the full Java OWL API,
+use [SyncOntology](owlapy.owl_ontology.SyncOntology), which takes the same arguments.
 
 Now, you can already inspect the contents of the ontology. For example,
 list all individuals:
@@ -41,8 +41,9 @@ onto.object_properties_in_signature()
 ```
 
 For more methods, see the abstract class [AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology)
-or one of the concrete implementation [Ontology](owlapy.owl_ontology.Ontology), [SyncOntology](owlapy.owl_ontology.SyncOntology),
-[RDFLibOntology](owlapy.owl_ontology.RDFLibOntology).
+or one of the concrete implementations [RDFLibOntology](owlapy.owl_ontology.RDFLibOntology) and
+[SyncOntology](owlapy.owl_ontology.SyncOntology). The owlready2-backed `Ontology` is deprecated and
+removed in owlapy 2.0; see the [migration guide](https://github.com/dice-group/owlapy/blob/main/markdown_docs/10_migrating_from_owlready2.md).
 
 ## Modifying an Ontology
 
@@ -179,11 +180,11 @@ The required argument is the axiom/axioms you want to remove.
 
 If you modified an ontology, you may want to save it as a new file. To do this
 you can use the `save` method of the [AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology).
-It requires one argument, the IRI of the new ontology.
+Pass the path of the new file:
 
 <!--pytest-codeblocks:cont-->
 ```python
-onto.save(IRI.create('file:/' + 'test' + '.owl'))
+onto.save(path="test.owl")
 ```
 The above line of code will save the ontology `onto` in the file *test.owl* which will be
 created in the same directory as the file you are running this code.
@@ -264,15 +265,6 @@ You can also configure chunking settings by calling `configure_chunking` method 
 After running the example, a file named `generated_ontology.owl` will be created in your working directory.
 You can change the output path by setting the `save_path` argument.
 
-
-## Worlds
-
-Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
-Owlready2 uses an optimized quadstore to store the world. Each world object is stored in a separate quadstore and 
-by default the quadstore is stored in memory,
-but it can also be stored in an SQLite3 file. In owlapy we have deprecated OntologyManager
-and when an ontology is created a new world is also created to be associated with it.
-However, you can still load an ontology to a specific world using the method `load_ontology(iri)`.
 
 -------------------------------------------------------------------------------------
 

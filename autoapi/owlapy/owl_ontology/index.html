@@ -1328,8 +1328,12 @@ Structural Specification).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.get_tbox_axioms">
 <span class="sig-name descname"><span class="pre">get_tbox_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.get_tbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.get_tbox_axioms" title="Link to this definition"></a></dt>
-<dd><p>Get all TBox (schema-level) axioms this loader can represent: class declarations,
-SubClassOf, EquivalentClasses and DisjointClasses axioms between <em>named</em> classes.</p>
+<dd><p>Get all TBox (schema-level) axioms this loader can represent: class declarations, and
+SubClassOf, EquivalentClasses and DisjointClasses axioms (including <cite>owl:AllDisjointClasses</cite>).</p>
+<p>Operands may be complex class expressions (restrictions, boolean combinations,
+cardinalities, nominals, …), rebuilt from their blank-node RDF structures following the
+W3C OWL 2 → RDF mapping. An axiom whose class expression can’t be read (e.g. one using an
+anonymous individual) is skipped with a single logged warning per call.</p>
 <p>Predicates this loader doesn’t understand as TBox structure (e.g. <cite>rdfs:label</cite>,
 <cite>rdfs:comment</cite>, or any other annotation on a class) are silently skipped rather than
 raising – they aren’t TBox axioms, and virtually every real-world ontology has them.</p>
@@ -1428,29 +1432,16 @@ anonymous individual) is skipped, matching how blank nodes are handled elsewhere
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.equivalent_classes_axioms">
 <span class="sig-name descname"><span class="pre">equivalent_classes_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="owlapy.owl_axiom.OWLEquivalentClassesAxiom"><span class="pre">owlapy.owl_axiom.OWLEquivalentClassesAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.equivalent_classes_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.equivalent_classes_axioms" title="Link to this definition"></a></dt>
-<dd><p>Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>c</strong> – The class for which the EquivalentClasses axioms should be retrieved.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>EquivalentClasses axioms contained in this ontology.</p>
-</dd>
-</dl>
+<dd><p>EquivalentClasses axioms between <cite>c</cite> and another (named or complex) class expression,
+whichever side of <cite>owl:equivalentClass</cite> <cite>c</cite> appears on.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.general_class_axioms">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">general_class_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><span class="pre">owlapy.owl_axiom.OWLClassAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.general_class_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.general_class_axioms" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression</dt><dd><p>as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>General class axioms contained in this ontology.</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">general_class_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><span class="pre">owlapy.owl_axiom.OWLClassAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.general_class_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.general_class_axioms" title="Link to this definition"></a></dt>
+<dd><p>Class axioms without a named class to index them by, as the OWL API defines them:
+SubClassOf axioms whose subclass is a complex class expression, and EquivalentClasses /
+DisjointClasses axioms none of whose operands is a named class.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1513,9 +1504,13 @@ anonymous individual) is skipped, matching how blank nodes are handled elsewhere
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.add_axiom">
 <span class="sig-name descname"><span class="pre">add_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.add_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.add_axiom" title="Link to this definition"></a></dt>
 <dd><p>Add the given axiom(s) to this ontology, translating them into rdflib triples.</p>
-<p>Only axioms between/on <em>named</em> entities are supported (matching the read API’s scope –
-see <cite>get_tbox_axioms()</cite>/<cite>get_abox_axioms()</cite>); axioms involving complex class/property
-expressions raise <cite>NotImplementedError</cite>. Adding an axiom that references an entity not yet
+<p>Class expressions and data ranges may be complex (restrictions, boolean combinations,
+cardinalities, nominals, <cite>ObjectHasSelf</cite>, datatype restrictions, …): they are written as
+blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API (and
+<cite>SyncOntology</cite>) reads them back. Properties must be named, except an <cite>OWLObjectInverseOf</cite>
+inside a class expression; anonymous individuals and unsupported axiom types raise
+<cite>NotImplementedError</cite>. The read API (<cite>get_tbox_axioms()</cite> etc.) reads such axioms back, but
+<cite>remove_axiom()</cite> cannot remove an axiom with a complex operand yet. Adding an axiom that references an entity not yet
 declared in this ontology (e.g. an <cite>OWLSubClassOfAxiom</cite> between two classes that were never
 independently declared <cite>owl:Class</cite>) implicitly declares those entities too, so the axiom
 stays visible to <cite>get_tbox_axioms()</cite>/<cite>classes_in_signature()</cite>/etc. immediately afterwards.</p>

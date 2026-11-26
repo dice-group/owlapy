@@ -1,5 +1,8 @@
 # RDFLibReasoner - Pure Python OWL Reasoner
 
+> `StructuralReasoner` is deprecated and removed in owlapy 2.0. For the full list of replacements, see
+> [Migrating from owlready2](https://github.com/dice-group/owlapy/blob/main/markdown_docs/10_migrating_from_owlready2.md).
+
 ## Overview
 
 `RDFLibReasoner` is a pure-Python OWL reasoner based on RDFLib that serves as a **drop-in replacement** for `StructuralReasoner`. It provides predictable, SPARQL-based reasoning without the circular dependency issues and owlready2 quirks found in the original implementation.

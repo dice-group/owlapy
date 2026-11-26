@@ -9,6 +9,15 @@ owlapy.static_funcs
 
 
 
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.static_funcs.EXTRA_CLASSPATH_ENV
+   owlapy.static_funcs.JARS_ENTRY_POINT_GROUP
+
+
 Functions
 ---------
 
@@ -34,10 +43,41 @@ Module Contents
 
 .. py:function:: download_external_files(ftp_link: str)
 
-.. py:function:: startJVM()
+.. py:data:: EXTRA_CLASSPATH_ENV
+   :value: 'OWLAPY_EXTRA_CLASSPATH'
+
+
+.. py:data:: JARS_ENTRY_POINT_GROUP
+   :value: 'owlapy.jars'
+
+
+.. py:function:: startJVM(extra_jars: Optional[Iterable[str]] = None)
 
    Start the JVM with jar dependencies. This method is called automatically on object initialization,
    if the JVM is not started yet.
+
+   JPype cannot extend the classpath once the JVM is running, so third-party packages building on owlapy
+   (e.g. ones needing an additional Java library) must make their jars known before the first ontology or
+   reasoner is created. There are three ways to do so:
+
+   - the ``owlapy.jars`` entry-point group (recommended for installable extensions): the extension declares
+     in its packaging metadata a callable returning its jar files and/or directories, e.g. in
+     ``pyproject.toml``::
+
+         [project.entry-points."owlapy.jars"]
+         my_extension = "my_extension.jars:jar_paths"
+
+     Every installed extension is then picked up automatically, whichever code starts the JVM;
+   - the ``OWLAPY_EXTRA_CLASSPATH`` environment variable: ``os.pathsep``-separated jar files and/or
+     directories (every ``.jar`` directly inside a directory is added);
+   - the ``extra_jars`` argument, with the same kind of entries, by calling ``startJVM(extra_jars=...)``
+     explicitly before anything else starts the JVM.
+
+   The classpath order is: bundled jars, ``extra_jars``, ``OWLAPY_EXTRA_CLASSPATH``, entry-point jars, with
+   duplicates removed. On conflicting classes the earlier jar wins, so the bundled OWLAPI version takes
+   precedence, and explicitly given jars take precedence over automatically discovered ones.
+
+   :param extra_jars: Additional jar files and/or directories containing jars to put on the classpath.
 
 
 .. py:function:: stopJVM() -> None

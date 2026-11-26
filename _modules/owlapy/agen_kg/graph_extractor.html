@@ -82,7 +82,10 @@
              
   <h1>Source code for owlapy.agen_kg.graph_extractor</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -90,6 +93,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy._lazy_owlready2</span><span class="w"> </span><span class="kn">import</span> <span class="n">owlready2_installed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.chunking_models.simple_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextChunker</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFS_COMMENT_IRI</span><span class="p">,</span> <span class="n">RDFS_LABEL_IRI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.logging_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">enable_console_logging</span>
@@ -117,12 +122,28 @@
     <span class="n">OWLAnnotationProperty</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">RDFLibOntology</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="c1"># A compatible metaclass that combines dspy.Module's metaclass with ABCMeta</span>
+<span class="n">_ONTOGEN_IRI</span> <span class="o">=</span> <span class="s2">"http://example.com/ontogen"</span>
+<span class="n">_AGEN_KG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_stacklevel_outside_agen_kg</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""`warnings.warn` stacklevel, as seen from its caller, of the first frame outside owlapy.agen_kg.</span>
+
+<span class="sd">    The FutureWarning should point at user code whether it called an extractor directly or went</span>
+<span class="sd">    through AGenKG.generate_ontology().</span>
+<span class="sd">    """</span>
+    <span class="n">frame</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span>  <span class="c1"># 1 = the function calling warnings.warn</span>
+    <span class="k">while</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">_AGEN_KG_DIR</span><span class="p">):</span>
+        <span class="n">frame</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_back</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">level</span>
+
+
 <div class="viewcode-block" id="GraphExtractorMeta">
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractorMeta">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GraphExtractorMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Module</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">ABC</span><span class="p">)):</span>
@@ -1593,7 +1614,7 @@
 <div class="viewcode-block" id="GraphExtractor.generate_ontology">
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.generate_ontology">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">ontology_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"open"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">ontology_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"open"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate an ontology from the given text or file.</span>
 <span class="sd">        Must be implemented by subclasses.</span>
@@ -1613,6 +1634,27 @@
 <span class="sd">        """</span>
         <span class="k">pass</span></div>
 
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractOWLOntology</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The ontology generate_ontology() fills: the caller's, or a new one at `_ONTOGEN_IRI`.</span>
+
+<span class="sd">        The default is still an owlready2-backed `Ontology` (with a FutureWarning) while owlready2 is</span>
+<span class="sd">        installed, and an `RDFLibOntology` once it isn't -- the `agentic` extra doesn't install it, and</span>
+<span class="sd">        failing here would throw away every LLM call made so far. owlapy 2.0 always uses `RDFLibOntology`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">ontology</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ontology</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">owlready2_installed</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">RDFLibOntology</span><span class="p">(</span><span class="n">_ONTOGEN_IRI</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">"generate_ontology() builds an owlready2-backed Ontology by default. In owlapy 2.0 it will "</span>
+            <span class="s2">"build an RDFLibOntology instead. To opt in now, pass "</span>
+            <span class="sa">f</span><span class="s2">"ontology=RDFLibOntology(</span><span class="si">{</span><span class="n">_ONTOGEN_IRI</span><span class="si">!r}</span><span class="s2">, load=False) (or a SyncOntology). See issue #310."</span><span class="p">,</span>
+            <span class="ne">FutureWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="n">_stacklevel_outside_agen_kg</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">_ONTOGEN_IRI</span><span class="p">),</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_annotation_assertion_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">annotation_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>

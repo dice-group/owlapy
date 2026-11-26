@@ -82,7 +82,11 @@
            <div itemprop="articleBody">
              
   <section id="rdflibreasoner-pure-python-owl-reasoner">
-<h1>RDFLibReasoner - Pure Python OWL Reasoner<a class="headerlink" href="#rdflibreasoner-pure-python-owl-reasoner" title="Link to this heading"></a></h1>
+<span id="rdflibreasoner---pure-python-owl-reasoner"></span><h1>RDFLibReasoner - Pure Python OWL Reasoner<a class="headerlink" href="#rdflibreasoner-pure-python-owl-reasoner" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">StructuralReasoner</span></code> is deprecated and removed in owlapy 2.0. For the full list of replacements, see
+<a class="reference external" href="https://github.com/dice-group/owlapy/blob/main/markdown_docs/10_migrating_from_owlready2.md">Migrating from owlready2</a>.</p>
+</div></blockquote>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code> is a pure-Python OWL reasoner based on RDFLib that serves as a <strong>drop-in replacement</strong> for <code class="docutils literal notranslate"><span class="pre">StructuralReasoner</span></code>. It provides predictable, SPARQL-based reasoning without the circular dependency issues and owlready2 quirks found in the original implementation.</p>
@@ -127,7 +131,7 @@
 <section id="advantages-over-structuralreasoner">
 <h2>Advantages Over StructuralReasoner<a class="headerlink" href="#advantages-over-structuralreasoner" title="Link to this heading"></a></h2>
 <section id="no-circular-dependencies">
-<h3>1. No Circular Dependencies<a class="headerlink" href="#no-circular-dependencies" title="Link to this heading"></a></h3>
+<span id="1-no-circular-dependencies"></span><h3>1. No Circular Dependencies<a class="headerlink" href="#no-circular-dependencies" title="Link to this heading"></a></h3>
 <p><strong>Problem in StructuralReasoner:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># owl_reasoner.py line 385</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_super_classes_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -166,7 +170,7 @@
 </div>
 </section>
 <section id="predictable-sparql-based-queries">
-<h3>2. Predictable SPARQL-Based Queries<a class="headerlink" href="#predictable-sparql-based-queries" title="Link to this heading"></a></h3>
+<span id="2-predictable-sparql-based-queries"></span><h3>2. Predictable SPARQL-Based Queries<a class="headerlink" href="#predictable-sparql-based-queries" title="Link to this heading"></a></h3>
 <p><strong>StructuralReasoner approach:</strong></p>
 <ul class="simple">
 <li><p>Mixed owlready2 API calls and manual filtering</p></li>
@@ -197,7 +201,7 @@
 </div>
 </section>
 <section id="built-in-hierarchy-caching">
-<h3>3. Built-in Hierarchy Caching<a class="headerlink" href="#built-in-hierarchy-caching" title="Link to this heading"></a></h3>
+<span id="3-built-in-hierarchy-caching"></span><h3>3. Built-in Hierarchy Caching<a class="headerlink" href="#built-in-hierarchy-caching" title="Link to this heading"></a></h3>
 <p><strong>StructuralReasoner:</strong></p>
 <ul class="simple">
 <li><p>Rebuilds hierarchy on every call</p></li>
@@ -223,7 +227,7 @@
 </div>
 </section>
 <section id="no-owlready2-quirks">
-<h3>4. No owlready2 Quirks<a class="headerlink" href="#no-owlready2-quirks" title="Link to this heading"></a></h3>
+<span id="4-no-owlready2-quirks"></span><h3>4. No owlready2 Quirks<a class="headerlink" href="#no-owlready2-quirks" title="Link to this heading"></a></h3>
 <p><strong>StructuralReasoner issues:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">_world</span></code> synchronization problems</p></li>
@@ -402,7 +406,7 @@
 <h2>Addressing GitHub Issue #205<a class="headerlink" href="#addressing-github-issue-205" title="Link to this heading"></a></h2>
 <p>The RDFLibReasoner directly addresses the issues in <a class="reference external" href="https://github.com/dice-group/owlapy/issues/205">#205</a>:</p>
 <section id="issue-circular-dependencies-in-sub-classes-and-super-classes">
-<h3>Issue: Circular Dependencies in <code class="docutils literal notranslate"><span class="pre">sub_classes</span></code> and <code class="docutils literal notranslate"><span class="pre">super_classes</span></code><a class="headerlink" href="#issue-circular-dependencies-in-sub-classes-and-super-classes" title="Link to this heading"></a></h3>
+<span id="issue-circular-dependencies-in-sub_classes-and-super_classes"></span><h3>Issue: Circular Dependencies in <code class="docutils literal notranslate"><span class="pre">sub_classes</span></code> and <code class="docutils literal notranslate"><span class="pre">super_classes</span></code><a class="headerlink" href="#issue-circular-dependencies-in-sub-classes-and-super-classes" title="Link to this heading"></a></h3>
 <p><strong>Root cause:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># StructuralReasoner creates infinite recursion risk</span>
 <span class="n">_super_classes_recursive</span> <span class="err">→</span> <span class="n">sub_classes</span> <span class="err">→</span> <span class="n">_sub_classes_recursive</span> <span class="err">→</span> <span class="n">super_classes</span> <span class="err">→</span> <span class="o">...</span>

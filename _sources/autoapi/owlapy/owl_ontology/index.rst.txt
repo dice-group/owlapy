@@ -757,8 +757,13 @@ Module Contents
 
    .. py:method:: get_tbox_axioms() -> Iterable[owlapy.owl_axiom.OWLAxiom]
 
-      Get all TBox (schema-level) axioms this loader can represent: class declarations,
-      SubClassOf, EquivalentClasses and DisjointClasses axioms between *named* classes.
+      Get all TBox (schema-level) axioms this loader can represent: class declarations, and
+      SubClassOf, EquivalentClasses and DisjointClasses axioms (including `owl:AllDisjointClasses`).
+
+      Operands may be complex class expressions (restrictions, boolean combinations,
+      cardinalities, nominals, ...), rebuilt from their blank-node RDF structures following the
+      W3C OWL 2 → RDF mapping. An axiom whose class expression can't be read (e.g. one using an
+      anonymous individual) is skipped with a single logged warning per call.
 
       Predicates this loader doesn't understand as TBox structure (e.g. `rdfs:label`,
       `rdfs:comment`, or any other annotation on a class) are silently skipped rather than
@@ -838,22 +843,16 @@ Module Contents
 
    .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
 
-      Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
-
-      :param c: The class for which the EquivalentClasses axioms should be retrieved.
-
-      :returns: EquivalentClasses axioms contained in this ontology.
+      EquivalentClasses axioms between `c` and another (named or complex) class expression,
+      whichever side of `owl:equivalentClass` `c` appears on.
 
 
 
    .. py:method:: general_class_axioms() -> Iterable[owlapy.owl_axiom.OWLClassAxiom]
-      :abstractmethod:
 
-
-      Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression
-         as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.
-
-      :returns: General class axioms contained in this ontology.
+      Class axioms without a named class to index them by, as the OWL API defines them:
+      SubClassOf axioms whose subclass is a complex class expression, and EquivalentClasses /
+      DisjointClasses axioms none of whose operands is a named class.
 
 
 
@@ -901,9 +900,13 @@ Module Contents
 
       Add the given axiom(s) to this ontology, translating them into rdflib triples.
 
-      Only axioms between/on *named* entities are supported (matching the read API's scope --
-      see `get_tbox_axioms()`/`get_abox_axioms()`); axioms involving complex class/property
-      expressions raise `NotImplementedError`. Adding an axiom that references an entity not yet
+      Class expressions and data ranges may be complex (restrictions, boolean combinations,
+      cardinalities, nominals, `ObjectHasSelf`, datatype restrictions, ...): they are written as
+      blank-node structures following the W3C OWL 2 → RDF mapping, so the OWL API (and
+      `SyncOntology`) reads them back. Properties must be named, except an `OWLObjectInverseOf`
+      inside a class expression; anonymous individuals and unsupported axiom types raise
+      `NotImplementedError`. The read API (`get_tbox_axioms()` etc.) reads such axioms back, but
+      `remove_axiom()` cannot remove an axiom with a complex operand yet. Adding an axiom that references an entity not yet
       declared in this ontology (e.g. an `OWLSubClassOfAxiom` between two classes that were never
       independently declared `owl:Class`) implicitly declares those entities too, so the axiom
       stays visible to `get_tbox_axioms()`/`classes_in_signature()`/etc. immediately afterwards.

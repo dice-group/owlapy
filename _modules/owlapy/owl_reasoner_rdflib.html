@@ -83,10 +83,11 @@
   <h1>Source code for owlapy.owl_reasoner_rdflib</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""RDFLib-based OWL Reasoner - Pure Python implementation."""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWL</span><span class="p">,</span> <span class="n">RDF</span><span class="p">,</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">URIRef</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy._rdflib_instance_index</span><span class="w"> </span><span class="kn">import</span> <span class="n">InstanceIndex</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -100,6 +101,7 @@
     <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
     <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
     <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLThing</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">owl_expression_to_sparql</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
@@ -110,6 +112,9 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">InstancesEngine</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"index"</span><span class="p">,</span> <span class="s2">"sparql"</span><span class="p">]</span>
+<span class="n">_INSTANCES_ENGINES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"index"</span><span class="p">,</span> <span class="s2">"sparql"</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="RDFLibReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner_rdflib/index.html#owlapy.RDFLibReasoner">[docs]</a>
@@ -117,13 +122,15 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A pure Python OWL reasoner based on RDFLib.</span>
 
-<span class="sd">    This reasoner uses SPARQL queries over an RDF graph to perform reasoning tasks.</span>
+<span class="sd">    This reasoner answers queries over an rdflib graph: instances() evaluates class expressions with</span>
+<span class="sd">    set operations over indexes of the graph (engine="index", the default) or with SPARQL</span>
+<span class="sd">    (engine="sparql"); the hierarchy and property queries use SPARQL.</span>
 <span class="sd">    It's designed as a drop-in replacement for StructuralReasoner with better</span>
 <span class="sd">    predictability and no owlready2/Java dependencies for basic operations.</span>
 
 <span class="sd">    Features:</span>
 <span class="sd">    - Pure Python implementation using RDFLib</span>
-<span class="sd">    - SPARQL-based reasoning</span>
+<span class="sd">    - Index-based instance retrieval, with SPARQL as a selectable alternative</span>
 <span class="sd">    - Efficient graph traversal with caching</span>
 <span class="sd">    - Support for basic OWL 2 class expressions</span>
 <span class="sd">    - Direct and indirect hierarchy navigation for classes, object properties and data properties</span>
@@ -148,6 +155,7 @@
         <span class="n">infer_data_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="s2">"InstancesEngine"</span> <span class="o">=</span> <span class="s2">"index"</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the RDFLib-based reasoner.</span>
@@ -167,7 +175,15 @@
 <span class="sd">            sub_properties: Whether instances() should also match individuals connected via a</span>
 <span class="sd">                sub-property of the property used in someValuesFrom/allValuesFrom/hasValue/</span>
 <span class="sd">                cardinality restrictions, mirroring StructuralReasoner's sub_properties flag.</span>
+<span class="sd">            engine: How instances() evaluates class expressions, unless a call passes its own</span>
+<span class="sd">                `engine`. "index" (the default) indexes the graph once and evaluates with set</span>
+<span class="sd">                operations; "sparql" translates each expression to a SPARQL query</span>
+<span class="sd">                (owl_expression_to_sparql) and runs it with rdflib. Both return the same</span>
+<span class="sd">                individuals, but rdflib evaluates joins as nested loops, so "sparql" is typically</span>
+<span class="sd">                10-1000x slower on anything but tiny ontologies (#310). The engine also selects how</span>
+<span class="sd">                object_property_values() is answered.</span>
 <span class="sd">        """</span>
+        <span class="n">_check_engine</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># Parse straight into rdflib -- no owlready2 objects, no JVM.</span>
             <span class="n">ontology</span> <span class="o">=</span> <span class="n">RDFLibOntology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
@@ -181,6 +197,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_infer_data_property_values</span> <span class="o">=</span> <span class="n">infer_data_property_values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span> <span class="o">=</span> <span class="n">negation_default</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span> <span class="o">=</span> <span class="n">sub_properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">InstanceIndex</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache_size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="c1"># Cache structures</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -195,6 +215,9 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize or reload the RDF graph from the ontology."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache_size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">RDFLibOntology</span><span class="p">):</span>
             <span class="c1"># Already backed by an rdflib graph -- reuse it directly. No owlready2/JVM involved.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">rdflib_graph</span>
@@ -277,7 +300,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
         <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"InstancesEngine"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get individuals that are instances of the specified class expression.</span>
@@ -286,22 +310,39 @@
 <span class="sd">            ce: The class expression whose instances are to be retrieved.</span>
 <span class="sd">            direct: If True, retrieve only direct instances (not implemented - returns all).</span>
 <span class="sd">            timeout: Timeout in milliseconds (for compatibility, not enforced).</span>
+<span class="sd">            engine: "index" (set operations over indexes of the graph) or "sparql" (a SPARQL</span>
+<span class="sd">                query per expression); defaults to the reasoner's `engine`. Both return the same</span>
+<span class="sd">                individuals; see the constructor for the trade-off. The index reflects the graph</span>
+<span class="sd">                as of the last flush() (it is also rebuilt when the graph's size changes).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of named individuals that are instances of ce.</span>
 <span class="sd">        """</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="k">if</span> <span class="n">engine</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">engine</span>
+        <span class="n">_check_engine</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"direct=True not fully implemented, returning all instances"</span><span class="p">)</span>
 
         <span class="c1"># Handle simple named classes efficiently</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">engine</span> <span class="o">==</span> <span class="s2">"index"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ce</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span>
+                <span class="n">individuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instance_index</span><span class="p">()</span><span class="o">.</span><span class="n">class_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_cache_enabled</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span> <span class="o">=</span> <span class="n">individuals</span>  <span class="c1"># same set as the SPARQL path caches</span>
+                <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">individuals</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instances_of_class</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
 
         <span class="c1"># Max-cardinality / cardinality==0 restrictions need special-casing: see</span>
         <span class="c1"># _at_most_cardinality_instances for why.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
                 <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">))</span> <span class="ow">or</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_at_most_cardinality_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_at_most_cardinality_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">engine</span> <span class="o">==</span> <span class="s2">"index"</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_instance_index</span><span class="p">()</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># anything the index engine can't evaluate: same answer from SPARQL</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Index engine fell back to SPARQL for </span><span class="si">{</span><span class="n">ce</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># For complex class expressions, use SPARQL conversion</span>
         <span class="k">try</span><span class="p">:</span>
@@ -330,8 +371,18 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instances_manual</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_instance_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceIndex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The index engine's indexes, (re)built on first use and whenever the graph's size changed."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="n">InstanceIndex</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">,</span> <span class="n">negation_default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span><span class="p">,</span>
+                <span class="n">sub_classes</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="n">inverse_properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_inverse_properties</span><span class="p">,</span>
+                <span class="n">sub_properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_property_resolver</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_at_most_cardinality_instances</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">],</span> <span class="n">engine</span><span class="p">:</span> <span class="s2">"InstancesEngine"</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Use minimum-cardinality queries and set differences to avoid costly</span>
 <span class="sd">        per-individual OPTIONAL checks for zero matching values.</span>
@@ -346,7 +397,7 @@
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()))</span>
 
         <span class="n">at_least_one</span> <span class="o">=</span> <span class="n">min_restriction</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
-        <span class="n">s_any</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_one</span><span class="p">))</span>
+        <span class="n">s_any</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_one</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">))</span>
         <span class="n">s_zero</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span> <span class="o">-</span> <span class="n">s_any</span>
 
         <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -354,7 +405,7 @@
             <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">s_zero</span><span class="p">)</span>
 
         <span class="n">at_least_n_plus_one</span> <span class="o">=</span> <span class="n">min_restriction</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">filler</span><span class="p">)</span>
-        <span class="n">s_too_many</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_n_plus_one</span><span class="p">))</span>
+        <span class="n">s_too_many</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">at_least_n_plus_one</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">))</span>
         <span class="n">s_in_range</span> <span class="o">=</span> <span class="n">s_any</span> <span class="o">-</span> <span class="n">s_too_many</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">)):</span>
@@ -414,6 +465,11 @@
 <span class="w">        </span><span class="sd">"""Declared owl:inverseOf partner(s) of prop (bidirectional -- only one direction may be</span>
 <span class="sd">        physically asserted). Always passed as inverse_property_resolver to owl_expression_to_sparql</span>
 <span class="sd">        -- this fills in missing OWL entailment, it isn't an opt-in StructuralReasoner-parity flag."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache_size</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">):</span>  <span class="c1"># the graph changed without flush()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache_size</span> <span class="o">=</span> <span class="p">{},</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">)</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cached</span>
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
         <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?inv</span>
@@ -425,7 +481,9 @@
 <span class="s2">        </span><span class="se">}}</span>
 <span class="s2">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">inv</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="n">inverses</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">inv</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_cache</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">inverses</span>
+        <span class="k">return</span> <span class="n">inverses</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances_manual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Manual instance checking for complex expressions (fallback)."""</span>
@@ -468,11 +526,24 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"sub_classes for complex expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
+        <span class="k">if</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="c1"># owl:Thing is the implicit root: every named class is below it, and those without an</span>
+            <span class="c1"># asserted named superclass are directly below it (as in StructuralReasoner/OWL API).</span>
+            <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_thing_subclasses</span><span class="p">(</span><span class="n">direct</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_subclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_subclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_named_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">is_owl_nothing</span><span class="p">())}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_thing_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="n">named</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_named_classes</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">named</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">named</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_superclasses</span><span class="p">(</span><span class="n">c</span><span class="p">))}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Get direct subclasses using cache or SPARQL."""</span>
@@ -548,10 +619,14 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"super_classes for complex expressions not fully implemented"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
 
+        <span class="k">if</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
+        <span class="c1"># owl:Thing is a superclass of every class, and the direct one of a class without an asserted</span>
+        <span class="c1"># named superclass (as in StructuralReasoner/OWL API).</span>
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_superclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_superclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+            <span class="n">supers</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direct_superclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">()}</span>
+            <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">supers</span> <span class="ow">or</span> <span class="p">{</span><span class="n">OWLThing</span><span class="p">})</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">({</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_superclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">()}</span> <span class="o">|</span> <span class="p">{</span><span class="n">OWLThing</span><span class="p">})</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_direct_superclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
@@ -702,11 +777,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of individuals that are values of the property for ind.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_property_values_query</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">forward</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Complex property expressions not fully supported"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">iter</span><span class="p">([])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">==</span> <span class="s2">"index"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_instance_index</span><span class="p">()</span><span class="o">.</span><span class="n">property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_property_values_query</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">forward</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_property_values_query</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">forward</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
@@ -769,18 +846,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of OWLClass representing the types of the individual.</span>
 <span class="sd">        """</span>
-        <span class="n">ind_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
-
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
-<span class="s2">        SELECT DISTINCT ?type</span>
-<span class="s2">        WHERE </span><span class="se">{{</span>
-<span class="s2">            &lt;</span><span class="si">{</span><span class="n">ind_uri</span><span class="si">}</span><span class="s2">&gt; a ?type .</span>
-<span class="s2">            FILTER(isIRI(?type))</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        """</span>
-
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-        <span class="n">types_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">type</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="c1"># A direct triple lookup rather than a one-pattern SPARQL query: parsing the query costs ~10 ms</span>
+        <span class="c1"># per call, which dominated Ontolearn's EvoLearner (#310). Same result: distinct IRI types.</span>
+        <span class="n">types_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
+                      <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">objects</span><span class="p">(</span><span class="n">URIRef</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">),</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">URIRef</span><span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
             <span class="c1"># For direct types, filter out those that have subclass relationships</span>
@@ -803,18 +872,23 @@
 
 <span class="sd">        Mirrors StructuralReasoner's actual behavior (owl_reasoner.py): direct=True yields only the</span>
 <span class="sd">        asserted domain/range classes that are not themselves a subclass of another asserted class;</span>
-<span class="sd">        direct=False additionally yields every subclass of each asserted class.</span>
+<span class="sd">        direct=False additionally yields every subclass of each asserted class. A property without</span>
+<span class="sd">        an asserted domain/range has owl:Thing (every domain/range is entailed to be a subclass of</span>
+<span class="sd">        it); StructuralReasoner yields it too, and Ontolearn's KnowledgeBase indexes [0] (#310).</span>
 <span class="sd">        """</span>
         <span class="n">prop_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
         <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        SELECT DISTINCT ?cls</span>
 <span class="s2">        WHERE </span><span class="se">{{</span>
 <span class="s2">            &lt;</span><span class="si">{</span><span class="n">prop_uri</span><span class="si">}</span><span class="s2">&gt; </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2"> ?cls .</span>
-<span class="s2">            FILTER(isIRI(?cls))</span>
 <span class="s2">        </span><span class="se">}}</span>
 <span class="s2">        """</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-        <span class="n">asserted</span> <span class="o">=</span> <span class="p">{</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">cls</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="o">.</span><span class="n">cls</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)]</span>
+        <span class="c1"># Only named classes are returned; a complex domain/range (a blank node) is skipped, but still</span>
+        <span class="c1"># counts as declared, so it doesn't fall back to owl:Thing.</span>
+        <span class="n">asserted</span> <span class="o">=</span> <span class="p">{</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">URIRef</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">asserted</span> <span class="o">=</span> <span class="p">{</span><span class="n">OWLThing</span><span class="p">}</span>
 
         <span class="n">sub_of_asserted</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">asserted</span><span class="p">:</span>
@@ -1124,6 +1198,11 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"RDFLibReasoner(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="si">}</span><span class="s2">)"</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_engine</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">engine</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_INSTANCES_ENGINES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"engine must be one of </span><span class="si">{</span><span class="n">_INSTANCES_ENGINES</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">engine</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 
            </div>

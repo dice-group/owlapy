@@ -87,6 +87,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">entry_points</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype.imports</span>
@@ -133,23 +136,84 @@
 
 
 
+<span class="n">EXTRA_CLASSPATH_ENV</span> <span class="o">=</span> <span class="s2">"OWLAPY_EXTRA_CLASSPATH"</span>
+<span class="n">JARS_ENTRY_POINT_GROUP</span> <span class="o">=</span> <span class="s2">"owlapy.jars"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_collect_jars</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Expand classpath entries into jar paths: a directory contributes the ``.jar`` files directly inside it</span>
+<span class="sd">    (sorted, for a deterministic classpath), anything else is taken as a path to a single jar."""</span>
+    <span class="n">jars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+            <span class="n">jars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.jar'</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">jars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jars</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_entry_point_jars</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Classpath entries contributed by installed extension packages through the ``owlapy.jars`` entry-point group.</span>
+
+<span class="sd">    Each entry point must reference a callable taking no arguments and returning an iterable of jar files and/or</span>
+<span class="sd">    directories. Entry points are processed in name order for a deterministic classpath. A failing entry point is</span>
+<span class="sd">    skipped with a warning instead of preventing the JVM from starting.</span>
+<span class="sd">    """</span>
+    <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">JARS_ENTRY_POINT_GROUP</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">provided</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">load</span><span class="p">()()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">provided</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">)):</span>
+                <span class="n">provided</span> <span class="o">=</span> <span class="p">[</span><span class="n">provided</span><span class="p">]</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">provided</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 - third-party code; one broken extension must not block the JVM</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ignoring owlapy jar entry point '</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">exc</span><span class="si">!r}</span><span class="s2">"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">entries</span>
+
+
 <div class="viewcode-block" id="startJVM">
 <a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.startJVM">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">startJVM</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">startJVM</span><span class="p">(</span><span class="n">extra_jars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Start the JVM with jar dependencies. This method is called automatically on object initialization,</span>
-<span class="sd">    if the JVM is not started yet."""</span>
+<span class="sd">    if the JVM is not started yet.</span>
+
+<span class="sd">    JPype cannot extend the classpath once the JVM is running, so third-party packages building on owlapy</span>
+<span class="sd">    (e.g. ones needing an additional Java library) must make their jars known before the first ontology or</span>
+<span class="sd">    reasoner is created. There are three ways to do so:</span>
+
+<span class="sd">    - the ``owlapy.jars`` entry-point group (recommended for installable extensions): the extension declares</span>
+<span class="sd">      in its packaging metadata a callable returning its jar files and/or directories, e.g. in</span>
+<span class="sd">      ``pyproject.toml``::</span>
+
+<span class="sd">          [project.entry-points."owlapy.jars"]</span>
+<span class="sd">          my_extension = "my_extension.jars:jar_paths"</span>
+
+<span class="sd">      Every installed extension is then picked up automatically, whichever code starts the JVM;</span>
+<span class="sd">    - the ``OWLAPY_EXTRA_CLASSPATH`` environment variable: ``os.pathsep``-separated jar files and/or</span>
+<span class="sd">      directories (every ``.jar`` directly inside a directory is added);</span>
+<span class="sd">    - the ``extra_jars`` argument, with the same kind of entries, by calling ``startJVM(extra_jars=...)``</span>
+<span class="sd">      explicitly before anything else starts the JVM.</span>
+
+<span class="sd">    The classpath order is: bundled jars, ``extra_jars``, ``OWLAPY_EXTRA_CLASSPATH``, entry-point jars, with</span>
+<span class="sd">    duplicates removed. On conflicting classes the earlier jar wins, so the bundled OWLAPI version takes</span>
+<span class="sd">    precedence, and explicitly given jars take precedence over automatically discovered ones.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        extra_jars: Additional jar files and/or directories containing jars to put on the classpath.</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Access the jar_dependencies folder inside the 'owlapy' package</span>
     <span class="k">with</span> <span class="n">resources</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s1">'owlapy'</span><span class="p">,</span> <span class="s1">'jar_dependencies'</span><span class="p">)</span> <span class="k">as</span> <span class="n">jar_folder_path</span><span class="p">:</span>
-        <span class="n">jar_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">jar_folder_path</span><span class="p">)</span>
-        <span class="n">jar_files</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.jar'</span><span class="p">)</span>
-        <span class="p">]</span>
+        <span class="n">jar_files</span> <span class="o">=</span> <span class="n">_collect_jars</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">jar_folder_path</span><span class="p">)])</span>
 
-    <span class="c1"># Start JVM with the found jar files</span>
-    <span class="n">jpype</span><span class="o">.</span><span class="n">startJVM</span><span class="p">(</span><span class="n">classpath</span><span class="o">=</span><span class="n">jar_files</span><span class="p">)</span></div>
+    <span class="n">extra_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extra_jars</span> <span class="ow">or</span> <span class="p">[])</span>
+    <span class="n">extra_entries</span> <span class="o">+=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">EXTRA_CLASSPATH_ENV</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="p">]</span>
+    <span class="n">extra_entries</span> <span class="o">+=</span> <span class="n">_entry_point_jars</span><span class="p">()</span>
+
+    <span class="c1"># Start JVM with the found jar files, keeping the first occurrence of each path</span>
+    <span class="n">classpath</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">jar_files</span> <span class="o">+</span> <span class="n">_collect_jars</span><span class="p">(</span><span class="n">extra_entries</span><span class="p">)))</span>
+    <span class="n">jpype</span><span class="o">.</span><span class="n">startJVM</span><span class="p">(</span><span class="n">classpath</span><span class="o">=</span><span class="n">classpath</span><span class="p">)</span></div>
 
 
 
